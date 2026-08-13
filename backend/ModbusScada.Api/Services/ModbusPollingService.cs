@@ -82,7 +82,7 @@ public class ModbusPollingService : BackgroundService
             });
 
             await _hubContext.Clients
-                .Group($"dispositivo-{dispositivo.Id}")
+                .All
                 .SendAsync("lectura", new
                 {
                     dispositivo.Id,

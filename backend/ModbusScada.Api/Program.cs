@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using ModbusScada.Api.Data;
 using ModbusScada.Api.Hubs;
@@ -8,16 +9,36 @@ var builder = WebApplication.CreateBuilder(args);
 const string FrontendCorsPolicy = "FrontendCors";
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+bool useMockData = builder.Configuration.GetValue("Mocking:Enabled", false);
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (useMockData)
+    {
+        options.UseInMemoryDatabase("ModbusScadaMock");
+    }
+    else
+    {
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }
+});
 
 builder.Services.AddSignalR();
 
-builder.Services.AddHostedService<ModbusPollingService>();
+if (useMockData)
+{
+    builder.Services.AddHostedService<MockModbusPollingService>();
+}
+else
+{
+    builder.Services.AddHostedService<ModbusPollingService>();
+}
 
 builder.Services.AddCors(options =>
 {
@@ -32,6 +53,12 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+if (useMockData)
+{
+    using var scope = app.Services.CreateScope();
+    MockDataSeeder.Seed(scope.ServiceProvider.GetRequiredService<AppDbContext>());
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
