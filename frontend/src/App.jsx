@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getDispositivos } from "./api";
 import { useModbusHub } from "./useModbusHub";
+import { RegistroControl } from "./RegistroControl";
 import "./App.css";
 
 function App() {
@@ -29,14 +30,14 @@ function App() {
               {dispositivo.ipAddress}:{dispositivo.puerto} (slave {dispositivo.slaveId})
             </p>
             <ul>
-              {dispositivo.registros.map((registro) => {
-                const lectura = lecturas[registro.id];
-                return (
-                  <li key={registro.id}>
-                    {registro.nombre}: {lectura ? `${lectura.valor} ${registro.unidad ?? ""}` : "—"}
-                  </li>
-                );
-              })}
+              {dispositivo.registros.map((registro) => (
+                <RegistroControl
+                  key={registro.id}
+                  dispositivoId={dispositivo.id}
+                  registro={registro}
+                  lectura={lecturas[registro.id]}
+                />
+              ))}
             </ul>
           </div>
         ))}

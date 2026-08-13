@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ModbusScada.Api.Data;
 using ModbusScada.Api.Models;
+using ModbusScada.Api.Services;
 
 namespace ModbusScada.Api.Controllers;
 
@@ -10,10 +11,12 @@ namespace ModbusScada.Api.Controllers;
 public class DispositivosController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly IModbusWriter _modbusWriter;
 
-    public DispositivosController(AppDbContext db)
+    public DispositivosController(AppDbContext db, IModbusWriter modbusWriter)
     {
         _db = db;
+        _modbusWriter = modbusWriter;
     }
 
     [HttpGet]
@@ -48,4 +51,30 @@ public class DispositivosController : ControllerBase
             .Take(limite)
             .ToListAsync();
     }
+
+    // Escribe un parámetro (Coil o Holding Register) del dispositivo, igual
+    // que mover un valor desde el panel HMI físico (Kinco/ICH). Solo estas
+    // dos tablas son escribibles en Modbus (funciones 05 y 06).
+    [HttpPost("{dispositivoId:int}/registros/{registroId:int}/valor")]
+    public async Task<IActionResult> EscribirValor(int dispositivoId, int registroId, [FromBody] EscribirValorRequest request)
+    {
+        var registro = await _db.RegistrosModbus
+            .Include(r => r.Dispositivo)
+            .FirstOrDefaultAsync(r => r.Id == registroId && r.DispositivoId == dispositivoId);
+
+        if (registro is null)
+        {
+            return NotFound();
+        }
+
+        if (registro.Tabla is not (TipoTablaModbus.Coil or TipoTablaModbus.HoldingRegister))
+        {
+            return BadRequest("Este registro es de solo lectura.");
+        }
+
+        await _modbusWriter.EscribirAsync(registro.Dispositivo!, registro, request.Valor);
+        return NoContent();
+    }
 }
+
+public record EscribirValorRequest(double Valor);

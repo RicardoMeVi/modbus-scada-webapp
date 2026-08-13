@@ -15,14 +15,38 @@ public class MockModbusPollingService : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IHubContext<ModbusHub> _hubContext;
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(2);
+    private readonly object _lock = new();
 
     private double _nivel = 50;
     private bool _bombaOn = true;
+    private double _setpoint = 90;
 
     public MockModbusPollingService(IServiceScopeFactory scopeFactory, IHubContext<ModbusHub> hubContext)
     {
         _scopeFactory = scopeFactory;
         _hubContext = hubContext;
+    }
+
+    // Aplica una escritura de un cliente (dashboard) al estado simulado del
+    // dispositivo, igual que Write Single Coil / Write Single Register en
+    // un esclavo Modbus real. Se identifica el parámetro por nombre porque
+    // este servicio simula un único dispositivo fijo (ver MockDataSeeder).
+    public void EscribirValor(RegistroModbus registro, double valor)
+    {
+        lock (_lock)
+        {
+            switch (registro.Nombre)
+            {
+                case "Setpoint":
+                    _setpoint = Math.Clamp(valor, 0, 100);
+                    break;
+                case "Bomba":
+                    _bombaOn = valor != 0;
+                    break;
+                default:
+                    throw new InvalidOperationException($"El registro '{registro.Nombre}' no admite escritura en el mock.");
+            }
+        }
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -47,16 +71,30 @@ public class MockModbusPollingService : BackgroundService
             return;
         }
 
-        // Bombea si el nivel baja de 20%, corta si sube de 90% (mismo umbral que el simulador Python).
-        if (_nivel <= 20) _bombaOn = true;
-        if (_nivel >= 90) _bombaOn = false;
-        _nivel = Math.Clamp(_nivel + (_bombaOn ? 2 : -1), 0, 100);
+        double nivel, setpoint;
+        bool bombaOn;
+
+        lock (_lock)
+        {
+            // Arranca la bomba si el nivel cae por debajo del setpoint (con
+            // margen de 70 puntos), corta al alcanzar el setpoint. Con el
+            // setpoint por defecto (90) reproduce los umbrales 20/90 del
+            // modbus_servidor.py original.
+            var umbralArranque = Math.Max(_setpoint - 70, 5);
+            if (_nivel <= umbralArranque) _bombaOn = true;
+            if (_nivel >= _setpoint) _bombaOn = false;
+            _nivel = Math.Clamp(_nivel + (_bombaOn ? 2 : -1), 0, 100);
+
+            nivel = _nivel;
+            bombaOn = _bombaOn;
+            setpoint = _setpoint;
+        }
 
         var valores = new Dictionary<string, double>
         {
-            ["Nivel del tanque"] = _nivel,
-            ["Bomba"] = _bombaOn ? 1 : 0,
-            ["Setpoint"] = 90
+            ["Nivel del tanque"] = nivel,
+            ["Bomba"] = bombaOn ? 1 : 0,
+            ["Setpoint"] = setpoint
         };
 
         foreach (var registro in dispositivo.Registros)

@@ -33,11 +33,14 @@ builder.Services.AddSignalR();
 
 if (useMockData)
 {
-    builder.Services.AddHostedService<MockModbusPollingService>();
+    builder.Services.AddSingleton<MockModbusPollingService>();
+    builder.Services.AddHostedService(sp => sp.GetRequiredService<MockModbusPollingService>());
+    builder.Services.AddSingleton<IModbusWriter, MockModbusWriter>();
 }
 else
 {
     builder.Services.AddHostedService<ModbusPollingService>();
+    builder.Services.AddSingleton<IModbusWriter, RealModbusWriter>();
 }
 
 builder.Services.AddCors(options =>
