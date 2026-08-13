@@ -17,6 +17,7 @@ yarn-error.log*
 # Env / secrets
 .env
 .env.*
+!.env.example
 appsettings.Development.json
 appsettings.*.local.json
 

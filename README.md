@@ -10,8 +10,29 @@ decisiones técnicas y aprendizajes de Modbus.
 
 ## Estructura del repositorio
 
-- `backend/` — API en .NET (ASP.NET Core) + NModbus + SignalR
-- `frontend/` — Dashboard en React
+- `backend/ModbusScada.Api/` — API en .NET (ASP.NET Core) + NModbus + SignalR + EF Core
+- `frontend/` — Dashboard en React (Vite)
+
+## Cómo correrlo en desarrollo
+
+### Backend
+
+```bash
+cd backend/ModbusScada.Api
+dotnet run
+```
+
+Requiere una base PostgreSQL corriendo (ver `ConnectionStrings:DefaultConnection`
+en `appsettings.json`). Migraciones de EF Core aún no generadas.
+
+### Frontend
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
 
 ## Stack
 
