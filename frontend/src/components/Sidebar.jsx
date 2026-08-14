@@ -10,10 +10,12 @@ export function Sidebar({ activo, onSeleccionar }) {
               className={seccion.id === activo ? "activo" : ""}
               onClick={() => onSeleccionar(seccion.id)}
             >
-              <svg aria-hidden="true">
-                <use href={`/icons.svg#${seccion.icon}`} />
-              </svg>
-              {seccion.label}
+              <span className="icon-chip">
+                <svg aria-hidden="true">
+                  <use href={`/icons.svg#${seccion.icon}`} />
+                </svg>
+              </span>
+              <span className="label">{seccion.label}</span>
             </button>
           </li>
         ))}
