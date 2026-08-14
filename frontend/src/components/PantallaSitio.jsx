@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getDispositivo } from "../api";
+import { getDispositivo, getDispositivos } from "../api";
 import { useModbusHub } from "../useModbusHub";
 import { EarthLoader } from "./EarthLoader";
 import { ModalVerificacion } from "./ModalVerificacion";
@@ -9,9 +9,11 @@ import "./PantallaSitio.css";
 
 // Pantalla completa que replica la vista "UTD ICH PSI" del panel HMI
 // físico (Kinco/ICH): logo, Caudal instantáneo, Totalizado y la Unidad de
-// Verificación. Es una ruta aparte (no vive dentro del dashboard) porque
-// en el equipo real es una pantalla exclusiva, no una sección de un menú
-// persistente.
+// Verificación. Es la pantalla de inicio del sistema (igual que en el
+// equipo real), y desde acá se accede al Panel de control de
+// administración. Sin :dispositivoId en la URL (ruta "/") muestra el
+// primer dispositivo configurado; con :dispositivoId (ruta "/sitio/:id")
+// apunta a uno puntual.
 const NOMBRES_HERO = ["Caudal instantáneo", "Totalizado"];
 
 export function PantallaSitio() {
@@ -23,8 +25,21 @@ export function PantallaSitio() {
   const { lecturas } = useModbusHub();
 
   useEffect(() => {
-    getDispositivo(dispositivoId)
-      .then(setDispositivo)
+    if (dispositivoId) {
+      getDispositivo(dispositivoId)
+        .then(setDispositivo)
+        .catch(() => setError("No se pudo cargar el sitio."));
+      return;
+    }
+
+    getDispositivos()
+      .then((lista) => {
+        if (lista.length === 0) {
+          setError("No hay dispositivos configurados todavía.");
+        } else {
+          setDispositivo(lista[0]);
+        }
+      })
       .catch(() => setError("No se pudo cargar el sitio."));
   }, [dispositivoId]);
 
@@ -32,8 +47,8 @@ export function PantallaSitio() {
 
   return (
     <div className="pantalla-sitio">
-      <Link to="/" className="pantalla-sitio-volver">
-        ← Panel de control
+      <Link to="/panel" className="pantalla-sitio-volver">
+        Panel de control
       </Link>
 
       <button

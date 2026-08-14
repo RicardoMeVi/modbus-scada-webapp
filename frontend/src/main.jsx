@@ -9,8 +9,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App />} />
+        <Route path="/" element={<PantallaSitio />} />
         <Route path="/sitio/:dispositivoId" element={<PantallaSitio />} />
+        <Route path="/panel" element={<App />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
