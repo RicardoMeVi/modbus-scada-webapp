@@ -3,8 +3,8 @@ import { useModbusHub } from "./useModbusHub";
 import { Sidebar } from "./components/Sidebar";
 import { DatosDelSitio } from "./components/DatosDelSitio";
 import { SeccionPendiente } from "./components/SeccionPendiente";
-import { BrandMark } from "./components/BrandMark";
 import { SECCIONES } from "./sections";
+import logo from "./assets/Logo.png";
 import "./App.css";
 
 function App() {
@@ -16,7 +16,7 @@ function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          <BrandMark />
+          <img src={logo} alt="ICH" className="brand-mark" />
           <div className="brand-text">
             <span className="brand-nombre">ICH</span>
             <h1>Pozo 1 &mdash; Panel de control</h1>
