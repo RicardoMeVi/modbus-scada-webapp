@@ -443,7 +443,8 @@
 
   .sidebar ul {
     flex-direction: row;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 0.5rem;
     padding-bottom: 0.25rem;
   }

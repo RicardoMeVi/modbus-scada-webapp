@@ -2,10 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ModbusScada.Api.Controllers;
 
-// Valida el PIN de la "Unidad de Verificación" que desbloquea la edición de
-// parámetros en el dashboard (equivalente al login del panel HMI físico).
-// El PIN hoy vive en configuración (mock); más adelante puede reemplazarse
-// por un mecanismo de autenticación real sin tocar el contrato del endpoint.
+
 [ApiController]
 [Route("api/verificacion")]
 public class VerificacionController : ControllerBase
