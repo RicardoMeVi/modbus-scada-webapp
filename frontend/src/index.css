@@ -1,7 +1,7 @@
 :root {
   --text: #5b6572;
   --text-h: #0f2138;
-  --bg: #fff;
+  --bg: #faf9f6;
   --border: #e3e7ec;
   --code-bg: #f2f5f8;
   --accent: #2d6ccb;
@@ -9,6 +9,7 @@
   --accent-bg: rgba(45, 108, 203, 0.1);
   --accent-border: rgba(45, 108, 203, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
+  --textura-oleaje: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMjAiIGhlaWdodD0iMjIwIiB2aWV3Qm94PSIwIDAgMjIwIDIyMCI+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTY4OTdjIiBzdHJva2Utd2lkdGg9IjEuMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjI4Ij4KICAgIDxwYXRoIGQ9Ik0wLDMwIEMgNTUsMTIgNTUsNDggMTEwLDMwIEMgMTY1LDEyIDE2NSw0OCAyMjAsMzAiIC8+CiAgICA8cGF0aCBkPSJNMCw4NSBDIDU1LDY3IDU1LDEwMyAxMTAsODUgQyAxNjUsNjcgMTY1LDEwMyAyMjAsODUiIC8+CiAgICA8cGF0aCBkPSJNMCwxNDAgQyA1NSwxMjIgNTUsMTU4IDExMCwxNDAgQyAxNjUsMTIyIDE2NSwxNTggMjIwLDE0MCIgLz4KICAgIDxwYXRoIGQ9Ik0wLDE5NSBDIDU1LDE3NyA1NSwyMTMgMTEwLDE5NSBDIDE2NSwxNzcgMTY1LDIxMyAyMjAsMTk1IiAvPgogIDwvZz4KPC9zdmc+Cg==");
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
@@ -45,6 +46,7 @@
     --social-bg: rgba(47, 48, 58, 0.5);
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    --textura-oleaje: none;
   }
 
   #social .button-icon {
@@ -54,6 +56,12 @@
 
 body {
   margin: 0;
+  background-color: var(--bg);
+  background-image: var(--textura-oleaje);
+  background-repeat: repeat;
+  background-position: top;
+  background-size: 220px 220px;
+  background-attachment: fixed;
 }
 
 #root {
