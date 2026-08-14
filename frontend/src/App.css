@@ -104,7 +104,7 @@
 }
 
 .sidebar {
-  flex: 0 0 224px;
+  flex: 0 0 240px;
   position: sticky;
   top: 1.5rem;
 }
@@ -123,7 +123,7 @@
   align-items: center;
   gap: 0.85rem;
   width: 100%;
-  padding: 0.55rem 0.7rem;
+  padding: 0.5rem 0.75rem;
   border: 1px solid transparent;
   border-radius: 14px;
   background: none;

@@ -9,7 +9,7 @@ export function SeccionPendiente({ id, titulo, icono }) {
   return (
     <div className="seccion-pendiente">
       {IconoPersonalizado ? (
-        <IconoPersonalizado size={72} />
+        <IconoPersonalizado size={96} />
       ) : (
         <svg aria-hidden="true" className="icono-grande">
           <use href={`/icons.svg#${icono}`} />

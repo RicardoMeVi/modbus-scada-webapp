@@ -28,7 +28,7 @@ export function DatosDelSitio({ lecturas }) {
         {dispositivos.map((dispositivo) => (
           <div key={dispositivo.id} className="card">
             <div className="card-header">
-              <EarthLoader size={40} pulso={false} />
+              <EarthLoader size={48} pulso={false} />
               <div>
                 <h3>{dispositivo.nombre}</h3>
                 <span className="badge">

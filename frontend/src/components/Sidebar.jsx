@@ -14,7 +14,7 @@ export function Sidebar({ activo, onSeleccionar }) {
                 onClick={() => onSeleccionar(seccion.id)}
               >
                 {IconoPersonalizado ? (
-                  <IconoPersonalizado size={32} />
+                  <IconoPersonalizado size={46} />
                 ) : (
                   <span className="icon-chip">
                     <svg aria-hidden="true">
