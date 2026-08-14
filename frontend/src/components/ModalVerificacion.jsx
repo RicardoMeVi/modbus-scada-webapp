@@ -44,12 +44,6 @@ export function ModalVerificacion({ onClose, onSuccess }) {
         </div>
 
         <div className="modal-body">
-          <div className="modal-key-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="8" cy="15" r="4" />
-              <path d="M10.5 12.5 20 3m0 0h-4m4 0v4" />
-            </svg>
-          </div>
 
           <div className={`modal-input ${error ? "error" : ""}`}>
             {valor ? "•".repeat(valor.length) : <span className="placeholder">Ingresá el PIN</span>}

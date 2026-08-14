@@ -43,12 +43,11 @@
   right: 1.5rem;
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 1.5rem;
 }
 
 .etiqueta-verificacion {
-  left: 70%;
-  font-size: 0.85rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: var(--text-h);
 }
