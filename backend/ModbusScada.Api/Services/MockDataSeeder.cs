@@ -17,7 +17,7 @@ public static class MockDataSeeder
 
         var tanque = new Dispositivo
         {
-            Nombre = "Tanque de prueba (mock)",
+            Nombre = "UTD ICH PSI",
             IpAddress = "127.0.0.1",
             Puerto = 502,
             SlaveId = 1,

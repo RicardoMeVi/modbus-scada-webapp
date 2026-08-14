@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useModbusHub } from "./useModbusHub";
 import { Sidebar } from "./components/Sidebar";
 import { DatosDelSitio } from "./components/DatosDelSitio";
@@ -17,11 +18,16 @@ function App() {
     <div className="app">
       <header className="topbar">
         <TopbarLines />
-        <div className="brand">
-          <img src={logo} alt="ICH" className="brand-mark" />
-          <div className="brand-text">
-            <span className="brand-nombre">ICH</span>
-            <h1>Panel de control</h1>
+        <div className="topbar-izquierda">
+          <Link to="/" className="boton-volver-sitio" aria-label="Volver a la pantalla del sitio">
+            ← Pantalla del sitio
+          </Link>
+          <div className="brand">
+            <img src={logo} alt="ICH" className="brand-mark" />
+            <div className="brand-text">
+              <span className="brand-nombre">ICH</span>
+              <h1>Panel de control</h1>
+            </div>
           </div>
         </div>
         <span className={`estado-pill ${conectado ? "en-linea" : "desconectado"}`}>

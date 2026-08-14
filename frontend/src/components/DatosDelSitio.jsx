@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { getDispositivos } from "../api";
 import { RegistroControl } from "../RegistroControl";
 import { EarthLoader } from "./EarthLoader";
 
-// Panel de administración: lista de dispositivos y sus registros, todos
-// editables directamente. La vista de pantalla completa que replica el
-// panel HMI físico (Caudal/Totalizado + Unidad de Verificación) vive en
-// una ruta aparte (ver PantallaSitio) — acá solo hay un link hacia ella.
+// Vista principal: dispositivos (Mobicon por sitio) y sus registros Modbus
+// en tiempo real. Ver CONTEXTO.md, secciones 2 y 3.
 export function DatosDelSitio({ lecturas }) {
   const [dispositivos, setDispositivos] = useState([]);
   const [error, setError] = useState(null);
@@ -31,16 +28,13 @@ export function DatosDelSitio({ lecturas }) {
         {dispositivos.map((dispositivo) => (
           <div key={dispositivo.id} className="card">
             <div className="card-header">
-              <EarthLoader size={40} pulso={false} />
+              <EarthLoader size={48} pulso={false} />
               <div>
                 <h3>{dispositivo.nombre}</h3>
                 <span className="badge">
                   {dispositivo.ipAddress}:{dispositivo.puerto} &middot; slave {dispositivo.slaveId}
                 </span>
               </div>
-              <Link to={`/sitio/${dispositivo.id}`} className="boton-pantalla-completa">
-                Abrir pantalla del sitio
-              </Link>
             </div>
             <ul className="registros">
               {dispositivo.registros.map((registro) => (

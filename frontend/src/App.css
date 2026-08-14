@@ -1,7 +1,11 @@
 .app {
-  background:#e9ebea;
-  max-width: 1200px;
-  margin: 0 auto;
+  background: #e9ebea;
+  width: 100%;
+  min-height: 100svh;
+  box-sizing: border-box;
+  /* Por ahora a todo el ancho, sin max-width, para que no se achique al
+     contenido (bug: margin:auto + flex del #root colapsaba el ancho). */
+  margin: 0;
   padding: 1.5rem 1.5rem 3rem;
   text-align: left;
 }
@@ -39,12 +43,38 @@
   pointer-events: none;
 }
 
-.brand {
+.topbar-izquierda {
   position: relative;
   z-index: 1;
   display: flex;
   align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.boton-volver-sitio {
+  flex: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.boton-volver-sitio:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
   gap: 0.75rem;
+  min-width: 0;
 }
 
 .brand-mark {
