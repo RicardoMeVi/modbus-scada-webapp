@@ -49,8 +49,10 @@
 }
 
 .etiqueta-verificacion {
-  font-size: 1.05rem;
-  font-weight: 600;
+  position: absolute;
+  left: 0; 
+  font-size: 1.15rem;
+  font-weight: 500;
   color: var(--text-h);
 }
 
