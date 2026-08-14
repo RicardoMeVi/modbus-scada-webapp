@@ -21,7 +21,7 @@ function App() {
           <img src={logo} alt="ICH" className="brand-mark" />
           <div className="brand-text">
             <span className="brand-nombre">ICH</span>
-            <h1>Pozo 1 &mdash; Panel de control</h1>
+            <h1>Panel de control</h1>
           </div>
         </div>
         <span className={`estado-pill ${conectado ? "en-linea" : "desconectado"}`}>

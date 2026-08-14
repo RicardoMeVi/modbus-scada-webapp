@@ -1,4 +1,5 @@
 .app {
+  background:#e9ebea;
   max-width: 1200px;
   margin: 0 auto;
   padding: 1.5rem 1.5rem 3rem;
@@ -223,13 +224,112 @@
   margin: 0;
 }
 
-/* Tarjetas de dispositivos */
+/* Sitio: hero de Caudal/Totalizado + parámetros de detalle */
 
-.dispositivos {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+.sitio {
+  display: flex;
+  flex-direction: column;
   gap: 1.25rem;
   margin-top: 1.5rem;
+}
+
+.sitio-hero {
+  border-radius: 20px;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, var(--accent) 0%, #123464 100%);
+  color: #fff;
+}
+
+.sitio-hero-top {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.sitio-hero-titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-right: auto;
+  min-width: 0;
+}
+
+.sitio-hero-nombre {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.sitio-hero .badge {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.boton-verificacion {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.boton-verificacion:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.boton-verificacion.activo {
+  background: #fff;
+  color: var(--accent);
+  border-color: transparent;
+}
+
+.sitio-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.stat-tile {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.stat-valor {
+  font-size: 1.9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.stat-valor small {
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.aviso-bloqueo {
+  font-size: 0.82rem;
+  margin: 0 0 0.75rem;
 }
 
 .card {
@@ -239,27 +339,9 @@
   background: var(--bg);
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  margin-bottom: 0.9rem;
-}
-
-.card-icon {
-  width: 20px;
-  height: 20px;
-  flex: none;
-  padding: 10px;
-  border-radius: 12px;
-  background: var(--accent-bg);
-  color: var(--accent);
-  box-sizing: content-box;
-}
-
-.card-header h3 {
-  margin: 0;
-  font-size: 1.05rem;
+.card > h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
   color: var(--text-h);
 }
 

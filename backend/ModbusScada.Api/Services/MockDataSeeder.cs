@@ -47,6 +47,22 @@ public static class MockDataSeeder
                     Direccion = 0,
                     TipoDato = TipoDatoModbus.UInt16,
                     Unidad = "%"
+                },
+                new()
+                {
+                    Nombre = "Caudal instantáneo",
+                    Tabla = TipoTablaModbus.InputRegister,
+                    Direccion = 1,
+                    TipoDato = TipoDatoModbus.Float32,
+                    Unidad = "m3/h"
+                },
+                new()
+                {
+                    Nombre = "Totalizado",
+                    Tabla = TipoTablaModbus.InputRegister,
+                    Direccion = 3,
+                    TipoDato = TipoDatoModbus.Float32,
+                    Unidad = "m3"
                 }
             }
         };

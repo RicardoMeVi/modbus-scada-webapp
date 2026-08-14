@@ -20,6 +20,8 @@ public class MockModbusPollingService : BackgroundService
     private double _nivel = 50;
     private bool _bombaOn = true;
     private double _setpoint = 90;
+    private double _totalizado = 0;
+    private readonly Random _random = new();
 
     public MockModbusPollingService(IServiceScopeFactory scopeFactory, IHubContext<ModbusHub> hubContext)
     {
@@ -71,7 +73,7 @@ public class MockModbusPollingService : BackgroundService
             return;
         }
 
-        double nivel, setpoint;
+        double nivel, setpoint, caudal, totalizado;
         bool bombaOn;
 
         lock (_lock)
@@ -85,16 +87,24 @@ public class MockModbusPollingService : BackgroundService
             if (_nivel >= _setpoint) _bombaOn = false;
             _nivel = Math.Clamp(_nivel + (_bombaOn ? 2 : -1), 0, 100);
 
+            // Caudal instantáneo: solo hay flujo mientras la bomba está
+            // bombeando hacia el tanque; el totalizado acumula ese caudal.
+            caudal = _bombaOn ? 9.5 + _random.NextDouble() * 1.5 : 0;
+            _totalizado += caudal * (PollInterval.TotalHours);
+
             nivel = _nivel;
             bombaOn = _bombaOn;
             setpoint = _setpoint;
+            totalizado = _totalizado;
         }
 
         var valores = new Dictionary<string, double>
         {
             ["Nivel del tanque"] = nivel,
             ["Bomba"] = bombaOn ? 1 : 0,
-            ["Setpoint"] = setpoint
+            ["Setpoint"] = setpoint,
+            ["Caudal instantáneo"] = Math.Round(caudal, 2),
+            ["Totalizado"] = Math.Round(totalizado, 3)
         };
 
         foreach (var registro in dispositivo.Registros)

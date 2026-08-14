@@ -2,13 +2,17 @@ import { useState } from "react";
 import { escribirValor, TABLA_MODBUS } from "./api";
 
 // Control de un registro Modbus: solo lectura para Input Register/Discrete
-// Input, y editable (como en un panel HMI) para Coil/Holding Register.
-export function RegistroControl({ dispositivoId, registro, lectura }) {
+// Input, y editable (como en un panel HMI) para Coil/Holding Register —
+// salvo que `bloqueado` esté activo (sin verificar el PIN todavía), en
+// cuyo caso se muestra el valor pero no el control de escritura.
+export function RegistroControl({ dispositivoId, registro, lectura, bloqueado = false }) {
   const [valorEditado, setValorEditado] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [errorEscritura, setErrorEscritura] = useState(null);
 
   const valorActual = lectura ? `${lectura.valor} ${registro.unidad ?? ""}`.trim() : "—";
+  const esEscribible =
+    registro.tabla === TABLA_MODBUS.COIL || registro.tabla === TABLA_MODBUS.HOLDING_REGISTER;
 
   async function enviar(valor) {
     setEnviando(true);
@@ -20,6 +24,21 @@ export function RegistroControl({ dispositivoId, registro, lectura }) {
     } finally {
       setEnviando(false);
     }
+  }
+
+  if (esEscribible && bloqueado) {
+    return (
+      <li className="registro-row">
+        <span className="registro-label">{registro.nombre}</span>
+        <span className="registro-valor">
+          {registro.tabla === TABLA_MODBUS.COIL
+            ? lectura?.valor === 1
+              ? "Encendido"
+              : "Apagado"
+            : valorActual}
+        </span>
+      </li>
+    );
   }
 
   if (registro.tabla === TABLA_MODBUS.COIL) {

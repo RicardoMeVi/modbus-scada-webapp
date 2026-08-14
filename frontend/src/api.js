@@ -12,6 +12,14 @@ export function escribirValor(dispositivoId, registroId, valor) {
   return api.post(`/api/dispositivos/${dispositivoId}/registros/${registroId}/valor`, { valor });
 }
 
+// Devuelve true si el PIN es correcto, false si no.
+export function validarPin(pin) {
+  return api
+    .post("/api/verificacion/validar", { pin })
+    .then(() => true)
+    .catch(() => false);
+}
+
 // Coincide con el orden del enum TipoTablaModbus en el backend.
 export const TABLA_MODBUS = {
   COIL: 0,

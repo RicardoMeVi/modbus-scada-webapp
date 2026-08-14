@@ -1,0 +1,38 @@
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.keypad .key {
+  padding: 0.75rem 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--code-bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.keypad .key:active {
+  background: var(--accent-bg);
+}
+
+.keypad .key:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.keypad .key-clr {
+  color: #dc2626;
+}
+
+.keypad .key-enter {
+  grid-column: span 2;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
