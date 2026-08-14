@@ -35,7 +35,7 @@ function App() {
           {seccionActiva === "datos-sitio" ? (
             <DatosDelSitio lecturas={lecturas} />
           ) : (
-            <SeccionPendiente titulo={seccion.label} icono={seccion.icon} />
+            <SeccionPendiente id={seccion.id} titulo={seccion.label} icono={seccion.icon} />
           )}
         </main>
       </div>

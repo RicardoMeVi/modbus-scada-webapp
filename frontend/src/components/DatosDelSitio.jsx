@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getDispositivos } from "../api";
 import { RegistroControl } from "../RegistroControl";
+import { EarthLoader } from "./EarthLoader";
 
 // Vista principal: dispositivos (Mobicon por sitio) y sus registros Modbus
 // en tiempo real. Ver CONTEXTO.md, secciones 2 y 3.
@@ -27,9 +28,7 @@ export function DatosDelSitio({ lecturas }) {
         {dispositivos.map((dispositivo) => (
           <div key={dispositivo.id} className="card">
             <div className="card-header">
-              <svg aria-hidden="true" className="card-icon">
-                <use href="/icons.svg#site-icon" />
-              </svg>
+              <EarthLoader size={40} pulso={false} />
               <div>
                 <h3>{dispositivo.nombre}</h3>
                 <span className="badge">
