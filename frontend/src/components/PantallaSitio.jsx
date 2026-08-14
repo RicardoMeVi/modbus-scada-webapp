@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getDispositivo, getDispositivos } from "../api";
 import { useModbusHub } from "../useModbusHub";
-import { EarthLoader } from "./EarthLoader";
 import { ModalVerificacion } from "./ModalVerificacion";
 import logo from "../assets/Logo.png";
 import "./PantallaSitio.css";
@@ -10,18 +9,18 @@ import "./PantallaSitio.css";
 // Pantalla completa que replica la vista "UTD ICH PSI" del panel HMI
 // físico (Kinco/ICH): logo, Caudal instantáneo, Totalizado y la Unidad de
 // Verificación. Es la pantalla de inicio del sistema (igual que en el
-// equipo real), y desde acá se accede al Panel de control de
-// administración. Sin :dispositivoId en la URL (ruta "/") muestra el
-// primer dispositivo configurado; con :dispositivoId (ruta "/sitio/:id")
-// apunta a uno puntual.
+// equipo real) y NO tiene navegación visible al Panel de control — se
+// entra únicamente validando el PIN de la Unidad de Verificación. Sin
+// :dispositivoId en la URL (ruta "/") muestra el primer dispositivo
+// configurado; con :dispositivoId (ruta "/sitio/:id") apunta a uno puntual.
 const NOMBRES_HERO = ["Caudal instantáneo", "Totalizado"];
 
 export function PantallaSitio() {
   const { dispositivoId } = useParams();
+  const navigate = useNavigate();
   const [dispositivo, setDispositivo] = useState(null);
   const [error, setError] = useState(null);
   const [modalAbierto, setModalAbierto] = useState(false);
-  const [verificado, setVerificado] = useState(false);
   const { lecturas } = useModbusHub();
 
   useEffect(() => {
@@ -47,16 +46,12 @@ export function PantallaSitio() {
 
   return (
     <div className="pantalla-sitio">
-      <Link to="/panel" className="pantalla-sitio-volver">
-        Panel de control
-      </Link>
-
-      <button
-        className={`boton-verificacion pantalla-sitio-verificacion ${verificado ? "activo" : ""}`}
-        onClick={() => setModalAbierto(true)}
-      >
-        {verificado ? "Verificado" : "Unidad de Verificación"}
-      </button>
+      <div className="pantalla-sitio-verificacion">
+        <span className="etiqueta-verificacion">Unidad de Verificación</span>
+        <button className="boton-skew" onClick={() => setModalAbierto(true)}>
+          <span>Ingresar</span>
+        </button>
+      </div>
 
       <div className="pantalla-sitio-header">
         <img src={logo} alt="ICH" className="brand-mark" />
@@ -86,10 +81,7 @@ export function PantallaSitio() {
       {modalAbierto && (
         <ModalVerificacion
           onClose={() => setModalAbierto(false)}
-          onSuccess={() => {
-            setVerificado(true);
-            setModalAbierto(false);
-          }}
+          onSuccess={() => navigate("/panel")}
         />
       )}
     </div>

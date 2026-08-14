@@ -264,34 +264,7 @@
   background: var(--accent-border);
 }
 
-/* Reutilizados por la pantalla completa (PantallaSitio) y por el hero */
-
-.boton-verificacion {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  flex: none;
-  padding: 0.5rem 0.9rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.boton-verificacion:hover {
-  background: rgba(255, 255, 255, 0.22);
-}
-
-.boton-verificacion.activo {
-  background: #fff;
-  color: var(--accent);
-  border-color: transparent;
-}
+/* Base de las tarjetas de lectura destacada, reutilizada por PantallaSitio */
 
 .stat-tile {
   background: rgba(255, 255, 255, 0.12);

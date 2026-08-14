@@ -6,33 +6,10 @@
   justify-content: center;
   gap: 2.5rem;
   padding: 2rem 1.5rem;
-  background: linear-gradient(135deg, var(--accent) 0%, #0d2447 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #e9ebea 0%, #e9ebea 42%, var(--accent) 72%, #123464 100%);
+  color: var(--text-h);
   position: relative;
   overflow: hidden;
-}
-
-.pantalla-sitio-volver {
-  position: absolute;
-  top: 1.25rem;
-  left: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 0.9rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.pantalla-sitio-volver:hover {
-  background: rgba(255, 255, 255, 0.2);
 }
 
 .pantalla-sitio-header {
@@ -48,20 +25,76 @@
 }
 
 .pantalla-sitio-marca .brand-nombre {
-  color: #fff;
-  opacity: 0.85;
+  color: var(--accent);
+  opacity: 1;
 }
 
 .pantalla-sitio-marca h1 {
   margin: 0;
-  color: #fff;
+  color: var(--text-h);
   font-size: 1.3rem;
 }
 
+/* Unidad de Verificación: texto fijo + botón que abre el PIN */
+
 .pantalla-sitio-verificacion {
   position: absolute;
-  top: 1.25rem;
-  right: 1.25rem;
+  top: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.etiqueta-verificacion {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.boton-skew {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  border: none;
+  padding: 10px 20px;
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 600;
+  width: 120px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transform: skew(-21deg);
+  color: var(--text-h);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.boton-skew span {
+  display: inline-block;
+  transform: skew(21deg);
+}
+
+.boton-skew::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 100%;
+  left: 0;
+  background: var(--accent);
+  opacity: 0;
+  z-index: -1;
+  transition: all 0.5s;
+}
+
+.boton-skew:hover {
+  color: #fff;
+}
+
+.boton-skew:hover::before {
+  left: 0;
+  right: 0;
+  opacity: 1;
 }
 
 .pantalla-sitio-stats {
@@ -75,23 +108,26 @@
 
 .pantalla-sitio-stats .stat-tile {
   flex: 1 1 220px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #fff;
+  border: 1px solid rgba(15, 33, 56, 0.08);
   border-radius: 18px;
   padding: 1.75rem 1.5rem;
   text-align: center;
   align-items: center;
+  box-shadow: 0 4px 16px rgba(15, 33, 56, 0.08);
 }
 
 .pantalla-sitio-stats .stat-label {
   font-size: 0.9rem;
+  color: var(--text);
 }
 
 .pantalla-sitio-stats .stat-valor {
   font-size: 2.75rem;
   justify-content: center;
+  color: var(--text-h);
 }
 
 .pantalla-sitio-error {
-  color: #fff;
+  color: var(--text-h);
 }
