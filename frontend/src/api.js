@@ -8,6 +8,10 @@ export function getDispositivos() {
   return api.get("/api/dispositivos").then((res) => res.data);
 }
 
+export function getDispositivo(id) {
+  return api.get(`/api/dispositivos/${id}`).then((res) => res.data);
+}
+
 export function escribirValor(dispositivoId, registroId, valor) {
   return api.post(`/api/dispositivos/${dispositivoId}/registros/${registroId}/valor`, { valor });
 }

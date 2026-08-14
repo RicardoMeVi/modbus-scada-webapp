@@ -224,46 +224,47 @@
   margin: 0;
 }
 
-/* Sitio: hero de Caudal/Totalizado + parámetros de detalle */
+/* Tarjetas de dispositivos */
 
-.sitio {
-  display: flex;
-  flex-direction: column;
+.dispositivos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.25rem;
   margin-top: 1.5rem;
 }
 
-.sitio-hero {
-  border-radius: 20px;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, var(--accent) 0%, #123464 100%);
-  color: #fff;
-}
-
-.sitio-hero-top {
+.card-header {
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.9rem;
 }
 
-.sitio-hero-titulo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  margin-right: auto;
-  min-width: 0;
-}
-
-.sitio-hero-nombre {
-  font-weight: 700;
+.card-header h3 {
+  margin: 0;
   font-size: 1.05rem;
+  color: var(--text-h);
 }
 
-.sitio-hero .badge {
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
+.boton-pantalla-completa {
+  margin-left: auto;
+  flex: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
 }
+
+.boton-pantalla-completa:hover {
+  background: var(--accent-border);
+}
+
+/* Reutilizados por la pantalla completa (PantallaSitio) y por el hero */
 
 .boton-verificacion {
   display: flex;
@@ -290,12 +291,6 @@
   background: #fff;
   color: var(--accent);
   border-color: transparent;
-}
-
-.sitio-hero-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1rem;
 }
 
 .stat-tile {
@@ -327,22 +322,11 @@
   opacity: 0.85;
 }
 
-.aviso-bloqueo {
-  font-size: 0.82rem;
-  margin: 0 0 0.75rem;
-}
-
 .card {
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.25rem;
   background: var(--bg);
-}
-
-.card > h3 {
-  margin: 0 0 0.75rem;
-  font-size: 1rem;
-  color: var(--text-h);
 }
 
 .badge {
