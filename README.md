@@ -1,12 +1,16 @@
 # Modbus SCADA Webapp
 
-Sistema tipo SCADA/HMI web para monitoreo y control remoto de dispositivos
-industriales que hablan protocolo **Modbus** (TCP y/o RTU), pensado para ser
-escalable a múltiples clientes/plantas sin modificar código para cada nuevo
-dispositivo.
+Sistema tipo SCADA/HMI web para monitoreo y control remoto de un sistema de
+**extracción de agua de pozos**, que reemplaza los paneles HMI industriales
+fijos (Kinco) actuales. Se conecta vía protocolo **Modbus** (TCP y/o RTU) al
+RTU **Mobicon MT-151**, que centraliza las señales de cada sitio, y está
+pensado para ser escalable a múltiples pozos/sitios sin modificar código
+para cada uno nuevo.
 
 Ver [CONTEXTO.md](./CONTEXTO.md) para el detalle completo de arquitectura,
-decisiones técnicas y aprendizajes de Modbus.
+decisiones técnicas y aprendizajes de Modbus, y
+[PENDIENTES_INSTALACION.md](./PENDIENTES_INSTALACION.md) para lo que falta
+instalar/configurar manualmente.
 
 ## Estructura del repositorio
 

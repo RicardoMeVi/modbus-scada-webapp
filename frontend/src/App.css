@@ -1,5 +1,5 @@
 .app {
-  max-width: 960px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 2rem 1rem;
   text-align: left;
@@ -7,6 +7,71 @@
 
 .error {
   color: #d33;
+}
+
+.pendiente {
+  color: var(--text);
+  font-style: italic;
+}
+
+.layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.sidebar {
+  flex: 0 0 200px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sidebar button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar button svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--text);
+}
+
+.sidebar button:hover {
+  background: var(--accent-bg);
+}
+
+.sidebar button.activo {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--text-h);
+}
+
+.sidebar button.activo svg {
+  color: var(--accent);
+}
+
+.contenido {
+  flex: 1;
+  min-width: 0;
 }
 
 .dispositivos {
@@ -17,7 +82,7 @@
 }
 
 .card {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1rem;
   text-align: left;
@@ -31,5 +96,25 @@
 
 .card li {
   padding: 0.25rem 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    flex: none;
+    width: 100%;
+  }
+
+  .sidebar ul {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .sidebar button {
+    width: auto;
+  }
 }
