@@ -1,13 +1,21 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import "./Toast.css";
 
 // Banner de confirmación flotante (esquina inferior derecha). Se cierra
 // solo a los 4s, o al tocar la X.
 export function Toast({ tipo, mensaje, onCerrar }) {
+  // onCerrar suele ser un closure nuevo en cada render del padre (acá,
+  // FichaSitio se re-renderiza cada ~2s por las lecturas de SignalR). Si el
+  // timer dependiera de esa referencia, se reiniciaba antes de completar
+  // los 4s y el toast nunca desaparecía solo. La ref lo desacopla: el
+  // temporizador arranca una sola vez, al montar.
+  const onCerrarRef = useRef(onCerrar);
+  onCerrarRef.current = onCerrar;
+
   useEffect(() => {
-    const id = setTimeout(onCerrar, 4000);
+    const id = setTimeout(() => onCerrarRef.current(), 4000);
     return () => clearTimeout(id);
-  }, [onCerrar]);
+  }, []);
 
   return (
     <div className={`toast ${tipo}`} role="status">

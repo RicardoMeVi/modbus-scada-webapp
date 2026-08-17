@@ -19,6 +19,7 @@ export function FichaSitio({ dispositivo }) {
   });
   const [guardando, setGuardando] = useState(false);
   const [estado, setEstado] = useState(null); // "ok" | "error" | null
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
   function actualizarCampo(campo, valor) {
     setEstado(null);
@@ -75,11 +76,32 @@ export function FichaSitio({ dispositivo }) {
         </label>
         <label>
           Contraseña UTD
-          <input
-            type="password"
-            value={campos.contrasenaUtd}
-            onChange={(e) => actualizarCampo("contrasenaUtd", e.target.value)}
-          />
+          <div className="campo-contrasena">
+            <input
+              type={mostrarContrasena ? "text" : "password"}
+              value={campos.contrasenaUtd}
+              onChange={(e) => actualizarCampo("contrasenaUtd", e.target.value)}
+            />
+            <button
+              type="button"
+              className="boton-ojo"
+              onClick={() => setMostrarContrasena((v) => !v)}
+              aria-label={mostrarContrasena ? "Ocultar contraseña" : "Mostrar contraseña"}
+            >
+              {mostrarContrasena ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M3 3l18 18" />
+                  <path d="M10.6 10.6a3 3 0 0 0 4.24 4.24" />
+                  <path d="M9.9 4.24A10.4 10.4 0 0 1 12 4c6.5 0 10 7 10 7a17 17 0 0 1-3.06 3.94M6.1 6.1A17.4 17.4 0 0 0 2 11s3.5 7 10 7a10.4 10.4 0 0 0 4.1-.83" />
+                </svg>
+              )}
+            </button>
+          </div>
         </label>
         <label>
           Latitud
