@@ -9,19 +9,19 @@ import "./ModalVerificacion.css";
 // tipea con el teclado físico (sistema pensado para notebook, no touch).
 export function ModalVerificacion({ onClose, onSuccess }) {
   const [valor, setValor] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(null);
   const [verificando, setVerificando] = useState(false);
 
   async function confirmar(e) {
     e.preventDefault();
     if (!valor || verificando) return;
     setVerificando(true);
-    const ok = await validarPin(valor);
+    const resultado = await validarPin(valor);
     setVerificando(false);
-    if (ok) {
+    if (resultado.ok) {
       onSuccess();
     } else {
-      setError(true);
+      setError(resultado.motivo);
       setValor("");
     }
   }
@@ -43,13 +43,16 @@ export function ModalVerificacion({ onClose, onSuccess }) {
             placeholder="Ingresá el PIN"
             value={valor}
             onChange={(e) => {
-              setError(false);
+              setError(null);
               setValor(e.target.value);
             }}
             disabled={verificando}
             autoFocus
           />
-          {error && <p className="modal-error-msg">PIN incorrecto</p>}
+          {error === "incorrecto" && <p className="modal-error-msg">PIN incorrecto</p>}
+          {error === "conexion" && (
+            <p className="modal-error-msg">No se pudo conectar con el backend. ¿Está corriendo?</p>
+          )}
 
           <button type="submit" className="modal-validar" disabled={verificando || !valor}>
             Validar
