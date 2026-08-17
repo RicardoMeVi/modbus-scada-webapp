@@ -20,6 +20,12 @@ export function escribirValor(dispositivoId, registroId, valor) {
   return api.post(`/api/dispositivos/${dispositivoId}/registros/${registroId}/valor`, { valor });
 }
 
+// Datos de identificación del sitio (NSM, NSUE, NSUT, RFC, Unidad de
+// verificación, Contraseña UTD, coordenadas) — no son registros Modbus.
+export function actualizarDatosSitio(dispositivoId, datos) {
+  return api.put(`/api/dispositivos/${dispositivoId}/datos-sitio`, datos);
+}
+
 // Devuelve { ok: true } si el PIN es correcto. Si no, distingue { ok:
 // false, motivo: "incorrecto" } (el backend respondió que el PIN está mal)
 // de { ok: false, motivo: "conexion" } (no hubo respuesta: backend caído,

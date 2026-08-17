@@ -42,6 +42,31 @@ public class DispositivosController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = dispositivo.Id }, dispositivo);
     }
 
+    // Actualiza los datos de identificación del sitio (pantalla "Datos del
+    // sitio" del HMI físico): NSM, NSUE, NSUT, RFC, Unidad de verificación,
+    // Contraseña UTD y coordenadas. No son registros Modbus.
+    [HttpPut("{id:int}/datos-sitio")]
+    public async Task<IActionResult> ActualizarDatosSitio(int id, [FromBody] DatosSitioRequest request)
+    {
+        var dispositivo = await _db.Dispositivos.FindAsync(id);
+        if (dispositivo is null)
+        {
+            return NotFound();
+        }
+
+        dispositivo.Nsm = request.Nsm;
+        dispositivo.Nsue = request.Nsue;
+        dispositivo.Nsut = request.Nsut;
+        dispositivo.Rfc = request.Rfc;
+        dispositivo.UnidadVerificacion = request.UnidadVerificacion;
+        dispositivo.ContrasenaUtd = request.ContrasenaUtd;
+        dispositivo.Latitud = request.Latitud;
+        dispositivo.Longitud = request.Longitud;
+
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
     [HttpGet("{id:int}/lecturas")]
     public async Task<ActionResult<List<LecturaHistorica>>> GetLecturas(int id, [FromQuery] int limite = 100)
     {
@@ -78,3 +103,13 @@ public class DispositivosController : ControllerBase
 }
 
 public record EscribirValorRequest(double Valor);
+
+public record DatosSitioRequest(
+    string? Nsm,
+    string? Nsue,
+    string? Nsut,
+    string? Rfc,
+    string? UnidadVerificacion,
+    string? ContrasenaUtd,
+    double? Latitud,
+    double? Longitud);

@@ -10,5 +10,16 @@ public class Dispositivo
     public TipoConexion Conexion { get; set; }
     public string? PuertoSerial { get; set; }   // COM3, /dev/ttyUSB0, etc (si RTU)
 
+    // Datos de identificación del sitio (pantalla "Datos del sitio" del HMI
+    // físico). No son registros Modbus: son metadatos fijos del sitio/pozo.
+    public string? Nsm { get; set; }
+    public string? Nsue { get; set; }
+    public string? Nsut { get; set; }
+    public string? Rfc { get; set; }
+    public string? UnidadVerificacion { get; set; }
+    public string? ContrasenaUtd { get; set; }
+    public double? Latitud { get; set; }
+    public double? Longitud { get; set; }
+
     public ICollection<RegistroModbus> Registros { get; set; } = new List<RegistroModbus>();
 }
