@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getDispositivo, getDispositivos } from "../api";
-import { useModbusHub } from "../useModbusHub";
-import { ModalVerificacion } from "./ModalVerificacion";
+import { useModbusHub } from "../hooks/useModbusHub";
+import { ModalVerificacion } from "../components/ModalVerificacion";
 import logo from "../assets/Logo.png";
 import "./PantallaSitio.css";
 

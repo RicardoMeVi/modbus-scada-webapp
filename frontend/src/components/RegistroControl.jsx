@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { escribirValor, TABLA_MODBUS } from "./api";
+import { escribirValor, TABLA_MODBUS } from "../api";
 
 // Control de un registro Modbus: solo lectura para Input Register/Discrete
 // Input, y editable (como en un panel HMI) para Coil/Holding Register —

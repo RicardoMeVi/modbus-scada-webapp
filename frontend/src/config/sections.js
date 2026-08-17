@@ -6,4 +6,5 @@ export const SECCIONES = [
   { id: "ftp", label: "FTP", icon: "ftp-icon" },
   { id: "fecha-hora", label: "Fecha / Hora", icon: "clock-icon" },
   { id: "alarmas", label: "Alarmas", icon: "alarm-icon" },
+  { id: "medidores", label: "Medidores", icon: "medidor-icon" },
 ];

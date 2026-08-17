@@ -21,5 +21,23 @@ public class Dispositivo
     public double? Latitud { get; set; }
     public double? Longitud { get; set; }
 
+    // Configuración de SMS (pantalla "SMS" del HMI físico). Igual que los
+    // datos del sitio: no son registros Modbus, son metadatos del
+    // dispositivo. SmsTipoMensaje: 1 = Mensaje de UV, 3 = Mensaje de prueba.
+    public string? SmsNumero { get; set; }
+    public int? SmsHoraEnvio { get; set; }
+    public int? SmsMinutoEnvio { get; set; }
+    public int? SmsTipoMensaje { get; set; }
+
+    // Configuración de FTP (pantalla "FTP" del HMI físico). Mismo patrón:
+    // metadatos del dispositivo, no registros Modbus.
+    public string? FtpIpServidor { get; set; }
+    public string? FtpUsuario { get; set; }
+    public string? FtpContrasena { get; set; }
+    public string? FtpCarpeta { get; set; }
+    public int? FtpHoraEnvio { get; set; }
+    public int? FtpMinutoEnvio { get; set; }
+    public int? FtpTipoMensaje { get; set; }
+
     public ICollection<RegistroModbus> Registros { get; set; } = new List<RegistroModbus>();
 }

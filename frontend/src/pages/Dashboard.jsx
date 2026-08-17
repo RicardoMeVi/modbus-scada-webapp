@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { getDispositivos } from "../api";
-import { SECCIONES } from "../sections";
-import { ICONOS_PERSONALIZADOS } from "../iconosPersonalizados";
+import { SECCIONES } from "../config/sections";
 
 // Pantalla de bienvenida del Panel de control: resumen del estado del
 // sistema y accesos directos a las demás secciones. Es la primera sección

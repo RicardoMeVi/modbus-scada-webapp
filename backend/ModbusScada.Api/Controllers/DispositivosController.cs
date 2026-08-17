@@ -67,6 +67,51 @@ public class DispositivosController : ControllerBase
         return NoContent();
     }
 
+    // Actualiza la configuración de SMS (pantalla "SMS" del HMI físico):
+    // número de teléfono, hora/minuto de envío automático y tipo de
+    // mensaje (1 = UV, 3 = prueba). No son registros Modbus.
+    [HttpPut("{id:int}/sms")]
+    public async Task<IActionResult> ActualizarSms(int id, [FromBody] SmsRequest request)
+    {
+        var dispositivo = await _db.Dispositivos.FindAsync(id);
+        if (dispositivo is null)
+        {
+            return NotFound();
+        }
+
+        dispositivo.SmsNumero = request.Numero;
+        dispositivo.SmsHoraEnvio = request.HoraEnvio;
+        dispositivo.SmsMinutoEnvio = request.MinutoEnvio;
+        dispositivo.SmsTipoMensaje = request.TipoMensaje;
+
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    // Actualiza la configuración de FTP (pantalla "FTP" del HMI físico):
+    // IP servidor, usuario, contraseña, carpeta, hora/minuto de envío
+    // automático y tipo de mensaje. No son registros Modbus.
+    [HttpPut("{id:int}/ftp")]
+    public async Task<IActionResult> ActualizarFtp(int id, [FromBody] FtpRequest request)
+    {
+        var dispositivo = await _db.Dispositivos.FindAsync(id);
+        if (dispositivo is null)
+        {
+            return NotFound();
+        }
+
+        dispositivo.FtpIpServidor = request.IpServidor;
+        dispositivo.FtpUsuario = request.Usuario;
+        dispositivo.FtpContrasena = request.Contrasena;
+        dispositivo.FtpCarpeta = request.Carpeta;
+        dispositivo.FtpHoraEnvio = request.HoraEnvio;
+        dispositivo.FtpMinutoEnvio = request.MinutoEnvio;
+        dispositivo.FtpTipoMensaje = request.TipoMensaje;
+
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
     [HttpGet("{id:int}/lecturas")]
     public async Task<ActionResult<List<LecturaHistorica>>> GetLecturas(int id, [FromQuery] int limite = 100)
     {
@@ -113,3 +158,18 @@ public record DatosSitioRequest(
     string? ContrasenaUtd,
     double? Latitud,
     double? Longitud);
+
+public record SmsRequest(
+    string? Numero,
+    int? HoraEnvio,
+    int? MinutoEnvio,
+    int? TipoMensaje);
+
+public record FtpRequest(
+    string? IpServidor,
+    string? Usuario,
+    string? Contrasena,
+    string? Carpeta,
+    int? HoraEnvio,
+    int? MinutoEnvio,
+    int? TipoMensaje);

@@ -1,22 +1,32 @@
 :root {
-  --text: #5b6572;
-  --text-h: #0f2138;
-  --bg: #faf9f6;
-  --border: #e3e7ec;
-  --code-bg: #f2f5f8;
-  --accent: #2d6ccb;
+  --text: #667085;
+  --text-h: #1c2444;
+  --bg: #f4f5fb;
+  --border: #e5e7f5;
+  --code-bg: #eef0fa;
+  --accent: #4f5fd9;
   --accent-2: #6fcfe0;
-  --accent-bg: rgba(45, 108, 203, 0.1);
-  --accent-border: rgba(45, 108, 203, 0.5);
+  --accent-bg: rgba(79, 95, 217, 0.1);
+  --accent-border: rgba(79, 95, 217, 0.45);
   --social-bg: rgba(244, 243, 236, 0.5);
+  --card-bg: #ffffff;
+  --ok-bg: #e9faf1;
+  --ok-border: rgba(22, 163, 74, 0.25);
+  --ok-text: #16a34a;
+  --mal-bg: #fdedef;
+  --mal-border: rgba(220, 38, 38, 0.2);
+  --mal-text: #dc2626;
+  --neutral-bg: #f2f3fb;
+  --neutral-border: rgba(79, 95, 217, 0.18);
+  --neutral-text: #4b5565;
   --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+    rgba(31, 41, 89, 0.08) 0 10px 15px -3px, rgba(31, 41, 89, 0.04) 0 4px 6px -2px;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
+  font: 16px/145% var(--sans);
   letter-spacing: 0.18px;
   color-scheme: light dark;
   color: var(--text);
@@ -27,7 +37,7 @@
   -moz-osx-font-smoothing: grayscale;
 
   @media (max-width: 1024px) {
-    font-size: 16px;
+    font-size: 15px;
   }
 }
 
@@ -38,11 +48,21 @@
     --bg: #12181f;
     --border: #263340;
     --code-bg: #1b2530;
-    --accent: #5fa0e8;
+    --accent: #7c88ea;
     --accent-2: #7fd8e8;
-    --accent-bg: rgba(95, 160, 232, 0.15);
-    --accent-border: rgba(95, 160, 232, 0.5);
+    --accent-bg: rgba(124, 136, 234, 0.18);
+    --accent-border: rgba(124, 136, 234, 0.5);
     --social-bg: rgba(47, 48, 58, 0.5);
+    --card-bg: #182029;
+    --ok-bg: rgba(22, 163, 74, 0.14);
+    --ok-border: rgba(22, 163, 74, 0.35);
+    --ok-text: #4ade80;
+    --mal-bg: rgba(220, 38, 38, 0.14);
+    --mal-border: rgba(220, 38, 38, 0.35);
+    --mal-text: #f87171;
+    --neutral-bg: rgba(124, 136, 234, 0.12);
+    --neutral-border: rgba(124, 136, 234, 0.3);
+    --neutral-text: #b7bef0;
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }

@@ -1,12 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useModbusHub } from "./useModbusHub";
-import { Sidebar } from "./components/Sidebar";
-import { Dashboard } from "./components/Dashboard";
-import { DatosDelSitio } from "./components/DatosDelSitio";
-import { SeccionPendiente } from "./components/SeccionPendiente";
-import { TopbarLines } from "./components/TopbarLines";
-import { SECCIONES } from "./sections";
+import { useModbusHub } from "./hooks/useModbusHub";
+import { Sidebar } from "./components/layout/Sidebar";
+import { TopbarLines } from "./components/layout/TopbarLines";
+import { Dashboard } from "./pages/Dashboard";
+import { DatosDelSitio } from "./pages/DatosDelSitio";
+import { Medidores } from "./pages/Medidores";
+import { Mensajes } from "./pages/Mensajes";
+import { Ftp } from "./pages/Ftp";
+import { FechaHora } from "./pages/FechaHora";
+import { Alarmas } from "./pages/Alarmas";
+import { SeccionPendiente } from "./pages/SeccionPendiente";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { SECCIONES } from "./config/sections";
 import logo from "./assets/Logo.png";
 import "./App.css";
 
@@ -41,13 +47,23 @@ function App() {
         <Sidebar activo={seccionActiva} onSeleccionar={setSeccionActiva} />
 
         <main className="contenido">
-          {seccionActiva === "dashboard" && (
-            <Dashboard lecturas={lecturas} conectado={conectado} onNavegar={setSeccionActiva} />
-          )}
-          {seccionActiva === "datos-sitio" && <DatosDelSitio />}
-          {seccionActiva !== "dashboard" && seccionActiva !== "datos-sitio" && (
-            <SeccionPendiente id={seccion.id} titulo={seccion.label} icono={seccion.icon} />
-          )}
+          {/* key=seccionActiva: si una sección se rompió y quedó con el
+              boundary activado, cambiar de sección arranca un boundary
+              nuevo en vez de arrastrar el error a la siguiente pantalla. */}
+          <ErrorBoundary key={seccionActiva}>
+            {seccionActiva === "dashboard" && (
+              <Dashboard lecturas={lecturas} conectado={conectado} onNavegar={setSeccionActiva} />
+            )}
+            {seccionActiva === "datos-sitio" && <DatosDelSitio />}
+            {seccionActiva === "medidores" && <Medidores lecturas={lecturas} />}
+            {seccionActiva === "mensajes" && <Mensajes />}
+            {seccionActiva === "ftp" && <Ftp />}
+            {seccionActiva === "fecha-hora" && <FechaHora lecturas={lecturas} />}
+            {seccionActiva === "alarmas" && <Alarmas />}
+            {!["dashboard", "datos-sitio", "medidores", "mensajes", "ftp", "fecha-hora", "alarmas"].includes(seccionActiva) && (
+              <SeccionPendiente id={seccion?.id} titulo={seccion?.label} icono={seccion?.icon} />
+            )}
+          </ErrorBoundary>
         </main>
       </div>
     </div>

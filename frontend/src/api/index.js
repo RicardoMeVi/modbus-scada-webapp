@@ -26,6 +26,18 @@ export function actualizarDatosSitio(dispositivoId, datos) {
   return api.put(`/api/dispositivos/${dispositivoId}/datos-sitio`, datos);
 }
 
+// Configuración de SMS (número de teléfono, hora/minuto de envío
+// automático, tipo de mensaje) — no son registros Modbus.
+export function actualizarSms(dispositivoId, datos) {
+  return api.put(`/api/dispositivos/${dispositivoId}/sms`, datos);
+}
+
+// Configuración de FTP (IP servidor, usuario, contraseña, carpeta,
+// hora/minuto de envío automático, tipo de mensaje) — no son registros Modbus.
+export function actualizarFtp(dispositivoId, datos) {
+  return api.put(`/api/dispositivos/${dispositivoId}/ftp`, datos);
+}
+
 // Devuelve { ok: true } si el PIN es correcto. Si no, distingue { ok:
 // false, motivo: "incorrecto" } (el backend respondió que el PIN está mal)
 // de { ok: false, motivo: "conexion" } (no hubo respuesta: backend caído,

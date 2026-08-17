@@ -1,5 +1,5 @@
 .app {
-  background: #e9ebea;
+  background: var(--bg);
   width: 100%;
   min-height: 100svh;
   box-sizing: border-box;
@@ -29,9 +29,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 1.25rem;
+  padding: 1rem 1.5rem;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
 }
 
 .topbar-lines {
@@ -153,6 +156,11 @@
   flex: 0 0 240px;
   position: sticky;
   top: 1.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 0.85rem;
+  box-shadow: var(--shadow);
 }
 
 .sidebar ul {
@@ -161,35 +169,35 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.3rem;
 }
 
 .sidebar button {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.7rem;
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid transparent;
-  border-radius: 14px;
+  padding: 0.55rem 0.7rem;
+  border: none;
+  border-radius: 12px;
   background: none;
   color: var(--text);
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .sidebar button:hover {
-  background: var(--accent-bg);
+  background: var(--code-bg);
 }
 
 .sidebar button.activo {
-  background: var(--accent-bg);
-  border-color: var(--accent-border);
-  color: var(--text-h);
+  background: linear-gradient(135deg, var(--accent), #6672e0);
+  color: #fff;
+  box-shadow: 0 6px 14px -4px rgba(79, 95, 217, 0.55);
 }
 
 .icon-chip {
@@ -197,21 +205,22 @@
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--code-bg);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: none;
   transition: background 0.15s ease;
 }
 
 .sidebar button svg {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   color: var(--text);
+  transition: color 0.15s ease;
 }
 
 .sidebar button.activo .icon-chip {
-  background: var(--accent);
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .sidebar button.activo svg {
@@ -264,16 +273,56 @@
 }
 
 .card-header {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  margin-bottom: 0.9rem;
+  gap: 0.75rem;
+  padding: 1.1rem 1.25rem;
+  background: linear-gradient(135deg, #f4f5fc 0%, #fbfbfe 65%);
+  border-radius: 20px 20px 0 0;
+}
+
+.card-textura {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.card-header > *:not(.card-textura) {
+  position: relative;
+  z-index: 1;
 }
 
 .card-header h3 {
   margin: 0;
   font-size: 1.05rem;
   color: var(--text-h);
+}
+
+.icono-tarjeta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), #6672e0);
+  box-shadow: 0 6px 14px -4px rgba(79, 95, 217, 0.5);
+  color: #fff;
+}
+
+.icono-tarjeta svg {
+  width: 22px;
+  height: 22px;
+}
+
+.card-body {
+  padding: 1.25rem;
 }
 
 .boton-pantalla-completa {
@@ -325,36 +374,23 @@
   opacity: 0.85;
 }
 
-:root {
-  
-  --bg-gradient-top: #d2d4d8; /* Azul oscuro suave */
-  --bg-gradient-bottom: #8293bd; /* Azul grisáceo más claro */
-}
-
 .card {
+  position: relative;
+  overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 1.25rem;
-  background: none; 
-  background-color: transparent;
-
-  background-image: linear-gradient(
-    180deg,
-    var(--bg-gradient-top) 0%,
-    var(--bg-gradient-bottom) 100%
-  );
-
-  /* OPCIONAL: Añade una sombra suave para que flote más */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 20px;
+  padding: 0;
+  background: var(--card-bg);
+  box-shadow: var(--shadow);
 }
-
 
 .badge {
   display: inline-block;
   margin-top: 0.2rem;
   font-size: 0.78rem;
   color: var(--text);
-  background: var(--code-bg);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
 }
@@ -366,6 +402,7 @@
 }
 
 .ficha-sitio-grid {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem 1.25rem;
@@ -386,20 +423,30 @@
   font-weight: 600;
 }
 
-.ficha-sitio-grid input {
-  padding: 0.45rem 0.6rem;
+.ficha-sitio-grid input,
+.ficha-sitio-grid select {
+  padding: 0.55rem 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   font: inherit;
   font-size: 0.9rem;
   font-weight: 400;
   color: var(--text-h);
-  background: var(--bg);
+  background: var(--card-bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.ficha-sitio-grid input:focus {
+.ficha-sitio-grid input:focus,
+.ficha-sitio-grid select:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.ficha-sitio-grid input:disabled {
+  opacity: 0.55;
+  background: var(--code-bg);
+  cursor: not-allowed;
 }
 
 .campo-contrasena {
@@ -410,14 +457,21 @@
 .campo-contrasena input {
   width: 100%;
   box-sizing: border-box;
-  padding-right: 2.2rem;
+  padding-right: 4rem;
+}
+
+/* Envuelve ojo + copiar cuando van juntos en un campo de contraseña. */
+.acciones-campo {
+  position: absolute;
+  top: 50%;
+  right: 0.4rem;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
 }
 
 .boton-ojo {
-  position: absolute;
-  top: 50%;
-  right: 0.5rem;
-  transform: translateY(-50%);
   border: none;
   background: none;
   padding: 0.2rem;
@@ -430,23 +484,358 @@
   color: var(--accent);
 }
 
+/* Ícono a la izquierda dentro del input (teléfono, reloj, candado, etc.).
+   Se combina con .campo-con-copiar agregando ambas clases al mismo div. */
+.campo-icono {
+  position: relative;
+}
+
+.campo-icono input,
+.campo-icono select {
+  padding-left: 2.5rem;
+}
+
+.icono-campo-izq {
+  position: absolute;
+  top: 50%;
+  left: 0.7rem;
+  transform: translateY(-50%);
+  display: flex;
+  color: var(--text);
+  pointer-events: none;
+}
+
+.icono-campo-izq svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Campo simple (sin ojo) con un solo botón de copiar superpuesto. */
+.campo-con-copiar {
+  position: relative;
+  display: flex;
+}
+
+.campo-con-copiar input {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 2.2rem;
+}
+
+.campo-con-copiar .boton-copiar {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
+}
+
+.boton-copiar {
+  border: none;
+  background: none;
+  padding: 0.2rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.boton-copiar:hover {
+  color: var(--accent);
+}
+
+.boton-copiar.copiado {
+  color: #16a34a;
+}
+
+.boton-copiar:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Insignia "IP:puerto · slave N" con botón de copiar en línea. */
+.badge-copiable {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.campo-ancho {
+  grid-column: span 2;
+}
+
+@media (max-width: 900px) {
+  .campo-ancho {
+    grid-column: span 1;
+  }
+}
+
+.hora-envio {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.hora-envio input {
+  width: 4.4rem;
+  text-align: center;
+}
+
+/* Variante chica del ícono-en-input para los campos angostos de hora/minuto. */
+.campo-icono-chico input {
+  padding-left: 2.1rem;
+}
+
+.campo-icono-chico .icono-campo-izq {
+  left: 0.5rem;
+}
+
+.ficha-sms-leyenda {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text);
+}
+
+/* Pie del formulario de SMS: leyenda a la izquierda, acción (Enviar /
+   loader) a la derecha — reemplaza el loader posicionado en absoluto por
+   flujo normal, ya no hace falta ese truco porque ahora vive en su propio
+   renglón en vez de flotar sobre la grilla. */
+.ficha-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.1rem;
+}
+
+.campo-invalido {
+  border-color: #dc2626 !important;
+}
+
+.campo-error {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: #dc2626;
+}
+
+.envio-sms-cargando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Loader de sobre/envío (SMS), formado íntegramente con bordes CSS. Es una
+   versión a escala (75%) del diseño original (120x70px), más grande que el
+   botón "Enviar" al que reemplaza mientras se simula el envío; los valores
+   en px y en los keyframes están recalculados a esa escala (no se usa
+   transform: scale() porque no reduce el tamaño de layout que ocupa la
+   caja, solo lo pintado). */
+.sms-envio-loader {
+  position: relative;
+  border-style: solid;
+  box-sizing: border-box;
+  border-width: 30px 45px 23px 45px;
+  border-color: #3760c9 #96ddfc #96ddfc #36bbf7;
+  animation: envFloating 1s ease-in infinite alternate;
+}
+
+.sms-envio-loader::after {
+  content: "";
+  position: absolute;
+  right: 47px;
+  top: -30px;
+  height: 53px;
+  width: 38px;
+  background-image: linear-gradient(#fff 34px, transparent 0),
+    linear-gradient(#fff 34px, transparent 0),
+    linear-gradient(#fff 34px, transparent 0);
+  background-repeat: no-repeat;
+  background-size: 23px 3px;
+  background-position: 0px 8px, 6px 26px, 0px 45px;
+  animation: envDropping 0.75s linear infinite;
+}
+
+@keyframes envFloating {
+  0% {
+    transform: translate(-2px, -4px);
+  }
+  100% {
+    transform: translate(0, 4px);
+  }
+}
+
+@keyframes envDropping {
+  0% {
+    background-position: 75px 8px, 86px 26px, 79px 45px;
+    opacity: 1;
+  }
+  50% {
+    background-position: 0px 8px, 15px 26px, 4px 45px;
+  }
+  60% {
+    background-position: -23px 8px, 0px 26px, -8px 45px;
+  }
+  75%,
+  100% {
+    background-position: -23px 8px, -23px 26px, -23px 45px;
+    opacity: 0;
+  }
+}
+
+/* Tarjetas de estado (GSM/GPRS/IHM en SMS y FTP; Alimentación/Batería/etc.
+   en Alarmas) — reemplazan la fila de puntos+texto por tarjetas de color
+   con ícono, igual a la pantalla de referencia. */
+.estado-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.estado-tarjeta {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  border: 1px solid var(--neutral-border);
+  background: var(--neutral-bg);
+}
+
+.estado-tarjeta.ok {
+  background: var(--ok-bg);
+  border-color: var(--ok-border);
+}
+
+.estado-tarjeta.mal {
+  background: var(--mal-bg);
+  border-color: var(--mal-border);
+}
+
+.estado-tarjeta-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--neutral-text);
+}
+
+.estado-tarjeta.ok .estado-tarjeta-icono {
+  color: var(--ok-text);
+}
+
+.estado-tarjeta.mal .estado-tarjeta-icono {
+  color: var(--mal-text);
+}
+
+.estado-tarjeta-icono svg {
+  width: 19px;
+  height: 19px;
+}
+
+.estado-tarjeta-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.estado-tarjeta-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-h);
+}
+
+.estado-tarjeta-sub {
+  font-size: 0.7rem;
+  color: var(--text);
+}
+
+.estado-tarjeta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  width: fit-content;
+  background: rgba(75, 85, 101, 0.12);
+  color: var(--neutral-text);
+}
+
+.estado-tarjeta.ok .estado-tarjeta-pill {
+  background: rgba(22, 163, 74, 0.15);
+  color: var(--ok-text);
+}
+
+.estado-tarjeta.mal .estado-tarjeta-pill {
+  background: rgba(220, 38, 38, 0.15);
+  color: var(--mal-text);
+}
+
+/* Parpadeo tipo LED de alarma (el indicador "En línea" de la barra superior
+   usa la misma clase .estado-dot pero sin esta animación aplicada). */
+.estado-tarjeta-pill .estado-dot {
+  width: 6px;
+  height: 6px;
+  animation: estado-dot-parpadeo 1.3s ease-in-out infinite;
+}
+
+@keyframes estado-dot-parpadeo {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
 .ficha-sitio-acciones {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.75rem;
-  margin-top: 0.9rem;
+  margin-top: 1.1rem;
 }
 
 .ficha-sitio-guardar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   border: none;
-  border-radius: 8px;
-  padding: 0.5rem 1.1rem;
-  background: var(--accent);
+  border-radius: 999px;
+  padding: 0.6rem 1.4rem;
+  background: linear-gradient(135deg, var(--accent), #6672e0);
+  box-shadow: 0 8px 16px -6px rgba(79, 95, 217, 0.55);
   color: #fff;
   font: inherit;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.ficha-sitio-guardar:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px -6px rgba(79, 95, 217, 0.6);
+}
+
+.ficha-sitio-guardar svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
 }
 
 .ficha-sitio-guardar:disabled {
@@ -458,6 +847,38 @@
   .ficha-sitio-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.ficha-fecha-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem 1.25rem;
+  max-width: 420px;
+}
+
+.ficha-fecha-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.ficha-fecha-grid input {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--text-h);
+  background: var(--bg);
+}
+
+.ficha-fecha-grid input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .registros {

@@ -14,7 +14,15 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-h);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.22s ease, transform 0.22s ease;
   animation: toast-in 0.2s ease-out;
+}
+
+.toast.saliendo {
+  opacity: 0;
+  transform: translateY(8px);
 }
 
 @keyframes toast-in {

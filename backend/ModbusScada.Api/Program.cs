@@ -16,16 +16,20 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 bool useMockData = builder.Configuration.GetValue("Mocking:Enabled", false);
+// Independiente del simulador: si hay Postgres configurado (típicamente en
+// appsettings.Development.json, que no se sube al repo), se usa como
+// persistencia real aunque el simulador mock siga generando lecturas.
+bool usarPostgres = builder.Configuration.GetValue("UsarPostgres", false);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    if (useMockData)
+    if (usarPostgres)
     {
-        options.UseInMemoryDatabase("ModbusScadaMock");
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
     }
     else
     {
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+        options.UseInMemoryDatabase("ModbusScadaMock");
     }
 });
 
