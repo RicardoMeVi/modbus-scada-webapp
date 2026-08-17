@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { getDispositivos } from "../api";
-import { RegistroControl } from "../RegistroControl";
 import { EarthLoader } from "./EarthLoader";
 import { FichaSitio } from "./FichaSitio";
 
-// Vista principal: identificación del sitio + dispositivos (Mobicon por
-// sitio) y sus registros Modbus en tiempo real. Ver CONTEXTO.md, secciones
-// 2 y 3.
-export function DatosDelSitio({ lecturas }) {
+// Identificación del sitio, igual a la pantalla "Datos del sitio" del HMI
+// físico (Kinco/ICH): NSM, NSUE, NSUT, RFC, Unidad de verificación,
+// Contraseña UTD y coordenadas. No incluye lecturas Modbus en vivo — esas
+// viven en el Dashboard y en la pantalla completa del sitio.
+export function DatosDelSitio() {
   const [dispositivos, setDispositivos] = useState([]);
   const [error, setError] = useState(null);
 
@@ -40,17 +40,6 @@ export function DatosDelSitio({ lecturas }) {
             </div>
 
             <FichaSitio dispositivo={dispositivo} />
-
-            <ul className="registros">
-              {dispositivo.registros.map((registro) => (
-                <RegistroControl
-                  key={registro.id}
-                  dispositivoId={dispositivo.id}
-                  registro={registro}
-                  lectura={lecturas[registro.id]}
-                />
-              ))}
-            </ul>
           </div>
         ))}
       </div>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useModbusHub } from "./useModbusHub";
 import { Sidebar } from "./components/Sidebar";
+import { Dashboard } from "./components/Dashboard";
 import { DatosDelSitio } from "./components/DatosDelSitio";
 import { SeccionPendiente } from "./components/SeccionPendiente";
 import { TopbarLines } from "./components/TopbarLines";
@@ -40,9 +41,11 @@ function App() {
         <Sidebar activo={seccionActiva} onSeleccionar={setSeccionActiva} />
 
         <main className="contenido">
-          {seccionActiva === "datos-sitio" ? (
-            <DatosDelSitio lecturas={lecturas} />
-          ) : (
+          {seccionActiva === "dashboard" && (
+            <Dashboard lecturas={lecturas} conectado={conectado} onNavegar={setSeccionActiva} />
+          )}
+          {seccionActiva === "datos-sitio" && <DatosDelSitio />}
+          {seccionActiva !== "dashboard" && seccionActiva !== "datos-sitio" && (
             <SeccionPendiente id={seccion.id} titulo={seccion.label} icono={seccion.icon} />
           )}
         </main>

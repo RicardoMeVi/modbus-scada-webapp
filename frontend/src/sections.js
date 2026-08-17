@@ -1,5 +1,6 @@
 
 export const SECCIONES = [
+  { id: "dashboard", label: "Dashboard", icon: "dashboard-icon" },
   { id: "datos-sitio", label: "Datos del sitio", icon: "site-icon" },
   { id: "mensajes", label: "Mensaje (SMS)", icon: "message-icon" },
   { id: "ftp", label: "FTP", icon: "ftp-icon" },

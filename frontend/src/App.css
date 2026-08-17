@@ -325,11 +325,36 @@
   opacity: 0.85;
 }
 
+:root {
+  /* ... tus variables existentes ... */
+  
+  /* NUEVAS Variables para el degradado de fondo, inspiradas en mi pantalla */
+  --bg-gradient-top: #2c4266; /* Azul oscuro suave */
+  --bg-gradient-bottom: #4d5c80; /* Azul grisáceo más claro */
+}
+
 .card {
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.25rem;
-  background: var(--bg);
+  /* Eliminamos el color plano y background antiguo */
+  background: none; 
+  background-color: transparent;
+
+  /* NUEVO: Degradado lineal de fondo (arriba a abajo) */
+  background-image: linear-gradient(
+    180deg,
+    var(--bg-gradient-top) 0%,
+    var(--bg-gradient-bottom) 100%
+  );
+
+  /* OPCIONAL: Añade una sombra suave para que flote más */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* OPCIONAL: Para que los iconos resalten más, añadí un brillo suave (box-shadow) en las imágenes de las tarjetas */
+.card img {
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
 }
 
 .badge {
@@ -345,9 +370,7 @@
 /* Ficha de identificación del sitio (NSM/NSUE/NSUT/RFC/etc.) */
 
 .ficha-sitio {
-  margin-bottom: 1.25rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
 }
 
 .ficha-sitio-grid {
@@ -559,4 +582,91 @@
     align-items: flex-start;
     gap: 0.6rem;
   }
+}
+
+/* Dashboard: resumen del sistema + accesos rápidos */
+
+h3 {
+  font-size: 1rem;
+  color: var(--text-h);
+  margin: 1.75rem 0 0.75rem;
+}
+
+.resumen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.resumen-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.resumen-card-ancha {
+  grid-column: span 2;
+}
+
+.resumen-label {
+  font-size: 0.8rem;
+  color: var(--text);
+}
+
+.resumen-valor {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--text-h);
+  font-variant-numeric: tabular-nums;
+}
+
+.resumen-valor-texto {
+  font-size: 1.15rem;
+}
+
+.resumen-card.ok .resumen-valor {
+  color: #16a34a;
+}
+
+.resumen-card.mal .resumen-valor {
+  color: #dc2626;
+}
+
+.accesos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.85rem;
+}
+
+.acceso-rapido {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.25rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+
+.acceso-rapido:hover {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+}
+
+.acceso-rapido svg {
+  width: 32px;
+  height: 32px;
+  color: var(--accent);
 }
