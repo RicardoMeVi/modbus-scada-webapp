@@ -607,7 +607,15 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-top: 1.1rem;
+  margin: 1.1rem 0 1.5rem;
+}
+
+/* Fila propia y centrada para el loader de envío — antes vivía metido en
+   la esquina derecha de .ficha-pie junto a la leyenda, se veía apretado. */
+.envio-sms-centrado {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0 1.75rem;
 }
 
 .campo-invalido {
@@ -641,7 +649,7 @@
   border-style: solid;
   box-sizing: border-box;
   border-width: 30px 45px 23px 45px;
-  border-color: #3760c9 #96ddfc #96ddfc #36bbf7;
+  border-color: var(--accent) #c7ccf5 #c7ccf5 #6672e0;
   animation: envFloating 1s ease-in infinite alternate;
 }
 

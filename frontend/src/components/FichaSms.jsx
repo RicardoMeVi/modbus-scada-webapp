@@ -165,29 +165,31 @@ export function FichaSms({ dispositivo }) {
       <div className="ficha-pie">
         <p className="ficha-sms-leyenda">1 = Mensaje de UV &middot; 3 = Mensaje de prueba</p>
 
-        {enviando ? (
+        {!enviando && tipoMensajeValido && (
+          <button
+            type="button"
+            className="ficha-sitio-guardar"
+            disabled={!envioCompleto}
+            title={envioCompleto ? undefined : "Completá el número y la hora de envío automático para poder enviar."}
+            onClick={enviarSms}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="m22 2-7 20-4-9-9-4Z" />
+              <path d="M22 2 11 13" />
+            </svg>
+            Enviar mensaje
+          </button>
+        )}
+      </div>
+
+      {enviando && (
+        <div className="envio-sms-centrado">
           <div className="envio-sms-cargando">
             <div className="sms-envio-loader" />
             <span>Enviando</span>
           </div>
-        ) : (
-          tipoMensajeValido && (
-            <button
-              type="button"
-              className="ficha-sitio-guardar"
-              disabled={!envioCompleto}
-              title={envioCompleto ? undefined : "Completá el número y la hora de envío automático para poder enviar."}
-              onClick={enviarSms}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="m22 2-7 20-4-9-9-4Z" />
-                <path d="M22 2 11 13" />
-              </svg>
-              Enviar mensaje
-            </button>
-          )
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="estado-tarjetas">
         <div className="estado-tarjeta mal">
