@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { actualizarDatosSitio } from "../api";
+import { Toast } from "./Toast";
 
 // Datos de identificación del sitio, igual a la pantalla "Datos del sitio"
 // del HMI físico (Kinco/ICH): NSM, NSUE, NSUT, RFC, Unidad de verificación,
@@ -104,9 +105,15 @@ export function FichaSitio({ dispositivo }) {
         <button type="submit" className="ficha-sitio-guardar" disabled={guardando}>
           {guardando ? "Guardando…" : "Guardar"}
         </button>
-        {estado === "ok" && <span className="ficha-sitio-estado ok">Guardado.</span>}
-        {estado === "error" && <span className="ficha-sitio-estado error">No se pudo guardar.</span>}
       </div>
+
+      {estado && (
+        <Toast
+          tipo={estado}
+          mensaje={estado === "ok" ? "Datos del sitio guardados correctamente." : "No se pudo guardar. Intentá de nuevo."}
+          onCerrar={() => setEstado(null)}
+        />
+      )}
     </form>
   );
 }

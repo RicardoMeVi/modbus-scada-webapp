@@ -68,24 +68,6 @@ export function Dashboard({ lecturas, conectado, onNavegar }) {
         </>
       )}
 
-      <h3>Accesos rápidos</h3>
-      <div className="accesos-grid">
-        {SECCIONES.filter((s) => s.id !== "dashboard").map((seccion) => {
-          const IconoPersonalizado = ICONOS_PERSONALIZADOS[seccion.id];
-          return (
-            <button key={seccion.id} className="acceso-rapido" onClick={() => onNavegar(seccion.id)}>
-              {IconoPersonalizado ? (
-                <IconoPersonalizado size={36} />
-              ) : (
-                <svg aria-hidden="true">
-                  <use href={`/icons.svg#${seccion.icon}`} />
-                </svg>
-              )}
-              {seccion.label}
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }

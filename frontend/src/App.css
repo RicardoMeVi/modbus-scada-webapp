@@ -258,7 +258,7 @@
 
 .dispositivos {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
   gap: 1.25rem;
   margin-top: 1.5rem;
 }
@@ -326,22 +326,18 @@
 }
 
 :root {
-  /* ... tus variables existentes ... */
   
-  /* NUEVAS Variables para el degradado de fondo, inspiradas en mi pantalla */
-  --bg-gradient-top: #2c4266; /* Azul oscuro suave */
-  --bg-gradient-bottom: #4d5c80; /* Azul grisáceo más claro */
+  --bg-gradient-top: #d2d4d8; /* Azul oscuro suave */
+  --bg-gradient-bottom: #8293bd; /* Azul grisáceo más claro */
 }
 
 .card {
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.25rem;
-  /* Eliminamos el color plano y background antiguo */
   background: none; 
   background-color: transparent;
 
-  /* NUEVO: Degradado lineal de fondo (arriba a abajo) */
   background-image: linear-gradient(
     180deg,
     var(--bg-gradient-top) 0%,
@@ -352,10 +348,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* OPCIONAL: Para que los iconos resalten más, añadí un brillo suave (box-shadow) en las imágenes de las tarjetas */
-.card img {
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-}
 
 .badge {
   display: inline-block;
@@ -375,8 +367,14 @@
 
 .ficha-sitio-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem 1rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .ficha-sitio-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .ficha-sitio-grid label {
@@ -426,18 +424,6 @@
 .ficha-sitio-guardar:disabled {
   opacity: 0.6;
   cursor: default;
-}
-
-.ficha-sitio-estado {
-  font-size: 0.82rem;
-}
-
-.ficha-sitio-estado.ok {
-  color: #16a34a;
-}
-
-.ficha-sitio-estado.error {
-  color: #dc2626;
 }
 
 @media (max-width: 420px) {
