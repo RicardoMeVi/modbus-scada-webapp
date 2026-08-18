@@ -154,7 +154,14 @@ public class MockModbusPollingService : BackgroundService
             ["Año"] = reloj.Year,
             ["Hora"] = reloj.Hour,
             ["Minutos"] = reloj.Minute,
-            ["Segundos"] = reloj.Second
+            ["Segundos"] = reloj.Second,
+            // Valor fijo de ejemplo: bits 3 y 4 (GSM/GPRS) activos, el resto
+            // apagados -- coincide con el resto de la app (FichaSms/FichaFtp
+            // ya muestran GSM/GPRS como "mal" porque este banco de pruebas
+            // no tiene antena/chip conectado). Sirve para que la pantalla de
+            // Alarmas tenga algo que mostrar en modo simulador.
+            ["Alarmas"] = 0b11000,
+            ["Alarma IHM"] = 0
         };
 
         foreach (var registro in dispositivo.Registros)

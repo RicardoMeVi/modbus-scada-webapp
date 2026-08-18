@@ -12,9 +12,20 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
     <PackageReference Include="NModbus" Version="3.0.83" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" />
   </ItemGroup>
+
+  <!-- Publicación autocontenida para el ejecutable de campo (sin nube, sin
+       .NET instalado en la máquina destino). Solo aplica cuando se publica
+       con -r win-x64; el build normal para Render/Docker no la usa. -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)'=='win-x64'">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
 
 </Project>

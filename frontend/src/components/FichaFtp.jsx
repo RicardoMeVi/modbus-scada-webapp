@@ -100,8 +100,8 @@ export function FichaFtp({ dispositivo }) {
         usuario: campos.usuario || null,
         contrasena: campos.contrasena || null,
         carpeta: campos.carpeta || null,
-        horaEnvio: campos.horaEnvio === "" ? null : Number(campos.horaEnvio),
-        minutoEnvio: campos.minutoEnvio === "" ? null : Number(campos.minutoEnvio),
+        horaEnvio: campos.horaEnvio || null,
+        minutoEnvio: campos.minutoEnvio || null,
         tipoMensaje: campos.tipoMensaje === "" ? null : Number(campos.tipoMensaje),
       });
       setEstado("ok");

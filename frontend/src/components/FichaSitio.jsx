@@ -14,10 +14,11 @@ const RFC_REGEX = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/;
 // Contraseña UTD y coordenadas. No son registros Modbus — son metadatos
 // fijos del sitio que se guardan directo en el dispositivo. Los largos
 // máximos de NSM/NSUE/NSUT/RFC/Latitud/Longitud vienen de la especificación
-// real del equipo (CONTEXTONuevo.md, sección 3.2: "String N car."). Latitud
-// y Longitud son numéricas acá (el modelo actual las guarda como `double`);
-// el equipo real las guarda como string — ver nota conocida sobre esa
-// diferencia, no es parte de esta validación.
+// real del equipo ("Interrogador portátil", sección 3.2: "String N car.").
+// Latitud/Longitud son texto (igual que en el equipo real, String 11/15
+// caracteres) — se valida el rango numérico igual que antes por usabilidad,
+// pero lo que se guarda y se envía es el string tal cual lo escribió el
+// usuario, no un número parseado.
 export function FichaSitio({ dispositivo }) {
   const { t } = useTranslation();
   const [campos, setCampos] = useState({
@@ -68,6 +69,16 @@ export function FichaSitio({ dispositivo }) {
     actualizarCampo("contrasenaUtd", valor.replace(/\D/g, "").slice(0, 10));
   }
 
+  // Latitud/Longitud: solo dígitos, punto y signo negativo, respetando el
+  // largo máximo real (11/15 caracteres).
+  function actualizarLatitud(valor) {
+    actualizarCampo("latitud", valor.replace(/[^0-9.-]/g, "").slice(0, 11));
+  }
+
+  function actualizarLongitud(valor) {
+    actualizarCampo("longitud", valor.replace(/[^0-9.-]/g, "").slice(0, 15));
+  }
+
   async function guardar(e) {
     e.preventDefault();
     if (hayErrores) return;
@@ -80,8 +91,8 @@ export function FichaSitio({ dispositivo }) {
         rfc: campos.rfc || null,
         unidadVerificacion: campos.unidadVerificacion || null,
         contrasenaUtd: campos.contrasenaUtd || null,
-        latitud: campos.latitud === "" ? null : Number(campos.latitud),
-        longitud: campos.longitud === "" ? null : Number(campos.longitud),
+        latitud: campos.latitud || null,
+        longitud: campos.longitud || null,
       });
       setEstado("ok");
     } catch {
@@ -204,13 +215,11 @@ export function FichaSitio({ dispositivo }) {
               <IconoSeccion id="pin-icon" size={16} />
             </span>
             <input
-              type="number"
-              step="any"
-              min={-90}
-              max={90}
+              type="text"
+              inputMode="decimal"
               className={latitudInvalida ? "campo-invalido" : undefined}
               value={campos.latitud}
-              onChange={(e) => actualizarCampo("latitud", e.target.value)}
+              onChange={(e) => actualizarLatitud(e.target.value)}
             />
             <BotonCopiar valor={campos.latitud} />
           </div>
@@ -223,13 +232,11 @@ export function FichaSitio({ dispositivo }) {
               <IconoSeccion id="pin-icon" size={16} />
             </span>
             <input
-              type="number"
-              step="any"
-              min={-180}
-              max={180}
+              type="text"
+              inputMode="decimal"
               className={longitudInvalida ? "campo-invalido" : undefined}
               value={campos.longitud}
-              onChange={(e) => actualizarCampo("longitud", e.target.value)}
+              onChange={(e) => actualizarLongitud(e.target.value)}
             />
             <BotonCopiar valor={campos.longitud} />
           </div>

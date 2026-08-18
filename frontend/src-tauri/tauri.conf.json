@@ -1,0 +1,37 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "ModbusScadaCampo",
+  "version": "0.1.0",
+  "identifier": "mx.ich.modbusscada.campo",
+  "build": {
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "externalBin": [
+      "binaries/modbus-scada-api"
+    ],
+    "resources": {
+      "binaries/appsettings.json": "appsettings.json",
+      "binaries/appsettings.Campo.json": "appsettings.Campo.json",
+      "binaries/wwwroot": "wwwroot"
+    },
+    "android": {
+      "debugApplicationIdSuffix": ".debug"
+    }
+  }
+}

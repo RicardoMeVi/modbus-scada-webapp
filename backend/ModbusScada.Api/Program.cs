@@ -3,8 +3,19 @@ using Microsoft.EntityFrameworkCore;
 using ModbusScada.Api.Data;
 using ModbusScada.Api.Hubs;
 using ModbusScada.Api.Services;
+using ModbusScada.Api.Services.Modbus;
 
-var builder = WebApplication.CreateBuilder(args);
+// ContentRootPath explícito: por defecto ASP.NET Core usa el directorio de
+// trabajo del proceso, no la carpeta del propio ejecutable. Al hacer doble
+// clic desde el Explorador ambos coinciden "por accidente", pero un proceso
+// lanzado por Tauri (sidecar) puede heredar otro directorio de trabajo, lo
+// que rompería la ubicación de wwwroot/appsettings.Campo.json. Inocuo para
+// Render/Docker, donde ya coinciden.
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = AppContext.BaseDirectory
+});
 
 const string FrontendCorsPolicy = "FrontendCors";
 
@@ -20,12 +31,22 @@ bool useMockData = builder.Configuration.GetValue("Mocking:Enabled", false);
 // appsettings.Development.json, que no se sube al repo), se usa como
 // persistencia real aunque el simulador mock siga generando lecturas.
 bool usarPostgres = builder.Configuration.GetValue("UsarPostgres", false);
+// Ejecutable de campo (sin nube): persistencia en un archivo SQLite junto al
+// propio ejecutable. La ruta se construye en código (no desde
+// appsettings.Campo.json) para no depender del directorio de trabajo del
+// proceso, igual que el ContentRootPath de arriba.
+bool usarSqlite = builder.Configuration.GetValue("UsarSqlite", false);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     if (usarPostgres)
     {
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }
+    else if (usarSqlite)
+    {
+        var dbPath = Path.Combine(AppContext.BaseDirectory, "modbus_scada.db");
+        options.UseSqlite($"Data Source={dbPath}");
     }
     else
     {
@@ -40,11 +61,14 @@ if (useMockData)
     builder.Services.AddSingleton<MockModbusPollingService>();
     builder.Services.AddHostedService(sp => sp.GetRequiredService<MockModbusPollingService>());
     builder.Services.AddSingleton<IModbusWriter, MockModbusWriter>();
+    builder.Services.AddSingleton<ISiteConfigWriter, NullSiteConfigWriter>();
 }
 else
 {
+    builder.Services.AddSingleton<IModbusConnectionFactory, ModbusConnectionFactory>();
     builder.Services.AddHostedService<ModbusPollingService>();
     builder.Services.AddSingleton<IModbusWriter, RealModbusWriter>();
+    builder.Services.AddSingleton<ISiteConfigWriter, RealSiteConfigWriter>();
 }
 
 builder.Services.AddCors(options =>
@@ -70,6 +94,18 @@ if (usarPostgres)
     using var migrationScope = app.Services.CreateScope();
     migrationScope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
 }
+else if (usarSqlite)
+{
+    // Sin migraciones para SQLite: las existentes tienen anotaciones
+    // específicas de Npgsql que no aplican con este proveedor. EnsureCreated
+    // alcanza para un archivo local de un solo sitio; si el esquema cambia
+    // en el futuro, un modbus_scada.db ya desplegado en campo no se
+    // actualiza solo.
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+    PlaceholderDeviceSeeder.EnsureDispositivoExiste(db);
+}
 
 if (useMockData)
 {
@@ -78,19 +114,35 @@ if (useMockData)
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Campo"))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// El ejecutable de campo embebe el build de React en wwwroot y lo sirve
+// desde el mismo proceso. Inocuo en Render/Docker (ahí no existe wwwroot).
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+// Sin certificado TLS en el sidecar local -- forzar HTTPS rompería todas
+// las llamadas.
+if (!app.Environment.IsEnvironment("Campo"))
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors(FrontendCorsPolicy);
 
 app.UseAuthorization();
 
+// Señal de que el proceso ya levantó y la base de datos responde -- lo que
+// el sidecar de Tauri consulta para saber cuándo mostrar la app real.
+app.MapGet("/health", async (AppDbContext db) =>
+    await db.Database.CanConnectAsync() ? Results.Ok(new { status = "ok" }) : Results.StatusCode(503));
+
 app.MapControllers();
 app.MapHub<ModbusHub>("/hubs/modbus");
+app.MapFallbackToFile("index.html");
 
 app.Run();

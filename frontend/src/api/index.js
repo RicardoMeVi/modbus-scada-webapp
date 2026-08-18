@@ -38,6 +38,13 @@ export function actualizarFtp(dispositivoId, datos) {
   return api.put(`/api/dispositivos/${dispositivoId}/ftp`, datos);
 }
 
+// Estado de alarmas (registro 15 bits 0-4 + registro 29 bit 0 del equipo
+// real, o su equivalente simulado en modo mock) — ver GetAlarmas en
+// DispositivosController.
+export function getAlarmas(dispositivoId) {
+  return api.get(`/api/dispositivos/${dispositivoId}/alarmas`).then((res) => res.data);
+}
+
 // Devuelve { ok: true } si el PIN es correcto. Si no, distingue { ok:
 // false, motivo: "incorrecto" } (el backend respondió que el PIN está mal)
 // de { ok: false, motivo: "conexion" } (no hubo respuesta: backend caído,

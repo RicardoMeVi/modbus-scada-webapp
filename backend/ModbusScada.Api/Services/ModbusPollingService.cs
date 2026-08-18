@@ -4,29 +4,42 @@ using Microsoft.EntityFrameworkCore;
 using ModbusScada.Api.Data;
 using ModbusScada.Api.Hubs;
 using ModbusScada.Api.Models;
+using ModbusScada.Api.Services.Modbus;
 using NModbus;
 
 namespace ModbusScada.Api.Services;
 
-// Lee periódicamente los dispositivos Modbus TCP configurados en la base de
-// datos (tabla Dispositivos/RegistrosModbus) y publica cada lectura a los
-// clientes conectados vía SignalR, además de persistirla como histórico.
+// Lee periódicamente los dispositivos Modbus (TCP o RTU) configurados en la
+// base de datos (tabla Dispositivos/RegistrosModbus) y publica cada lectura
+// a los clientes conectados vía SignalR, además de persistirla como
+// histórico.
 public class ModbusPollingService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IHubContext<ModbusHub> _hubContext;
     private readonly ILogger<ModbusPollingService> _logger;
+    private readonly IModbusConnectionFactory _connectionFactory;
     private readonly ModbusFactory _modbusFactory = new();
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(5);
+
+    // Los campos de Datos del sitio/SMS/FTP casi no cambian (se editan una
+    // vez por sitio, no varían solos) -- a diferencia de los registros
+    // dinámicos, no hace falta leerlos cada 5s. Sumarles ~16 lecturas extra
+    // a cada ciclo saturaría innecesariamente un bus RS-485 compartido.
+    // Se leen 1 de cada 6 ciclos (~cada 30s).
+    private const int CiclosPorLecturaDeSitio = 6;
+    private int _ciclo;
 
     public ModbusPollingService(
         IServiceScopeFactory scopeFactory,
         IHubContext<ModbusHub> hubContext,
-        ILogger<ModbusPollingService> logger)
+        ILogger<ModbusPollingService> logger,
+        IModbusConnectionFactory connectionFactory)
     {
         _scopeFactory = scopeFactory;
         _hubContext = hubContext;
         _logger = logger;
+        _connectionFactory = connectionFactory;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -47,14 +60,16 @@ public class ModbusPollingService : BackgroundService
 
         var dispositivos = await db.Dispositivos
             .Include(d => d.Registros)
-            .Where(d => d.Conexion == TipoConexion.Tcp)
             .ToListAsync(stoppingToken);
+
+        bool leerConfigSitio = _ciclo % CiclosPorLecturaDeSitio == 0;
+        _ciclo++;
 
         foreach (var dispositivo in dispositivos)
         {
             try
             {
-                await PollDeviceAsync(db, dispositivo, stoppingToken);
+                await PollDeviceAsync(db, dispositivo, leerConfigSitio, stoppingToken);
             }
             catch (Exception ex)
             {
@@ -64,11 +79,53 @@ public class ModbusPollingService : BackgroundService
         }
     }
 
-    private async Task PollDeviceAsync(AppDbContext db, Dispositivo dispositivo, CancellationToken stoppingToken)
+    private async Task PollDeviceAsync(AppDbContext db, Dispositivo dispositivo, bool leerConfigSitio, CancellationToken stoppingToken)
     {
+        if (dispositivo.Conexion == TipoConexion.Rtu)
+        {
+            await PollDeviceRtuAsync(db, dispositivo, leerConfigSitio, stoppingToken);
+            return;
+        }
+
         using var tcpClient = new TcpClient();
         await tcpClient.ConnectAsync(dispositivo.IpAddress!, dispositivo.Puerto, stoppingToken);
         using IModbusMaster master = _modbusFactory.CreateMaster(tcpClient);
+
+        await LeerYPublicarRegistrosAsync(db, dispositivo, master, leerConfigSitio, stoppingToken);
+    }
+
+    // A diferencia de TCP (conexión nueva y descartable por ciclo), el
+    // master RTU es persistente -- lo entrega ModbusConnectionFactory, que
+    // reutiliza el mismo SerialPort entre ciclos. Si algo falla durante la
+    // lectura, se cierra la conexión para que el próximo ciclo la reabra
+    // desde cero en vez de insistir con un puerto en mal estado.
+    private async Task PollDeviceRtuAsync(AppDbContext db, Dispositivo dispositivo, bool leerConfigSitio, CancellationToken stoppingToken)
+    {
+        var master = _connectionFactory.ObtenerMasterRtu(dispositivo);
+
+        try
+        {
+            await LeerYPublicarRegistrosAsync(db, dispositivo, master, leerConfigSitio, stoppingToken);
+        }
+        catch
+        {
+            _connectionFactory.CerrarConexionRtu(dispositivo.PuertoSerial!);
+            throw;
+        }
+    }
+
+    private async Task LeerYPublicarRegistrosAsync(
+        AppDbContext db, Dispositivo dispositivo, IModbusMaster master, bool leerConfigSitio, CancellationToken stoppingToken)
+    {
+        if (leerConfigSitio)
+        {
+            // Actualiza las columnas fijas (Rfc, Nsm, SmsNumero, etc.) desde
+            // el equipo real -- sin esto, esos campos solo reflejarían lo
+            // último que alguien guardó desde la app, nunca lo que el
+            // equipo realmente tiene. Best-effort por campo (ver
+            // SiteConfigModbusIO), no aborta el resto del ciclo si falla.
+            await SiteConfigModbusIO.LeerCamposAsync(master, dispositivo, _logger);
+        }
 
         foreach (var registro in dispositivo.Registros)
         {

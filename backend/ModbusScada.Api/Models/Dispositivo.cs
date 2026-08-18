@@ -18,8 +18,11 @@ public class Dispositivo
     public string? Rfc { get; set; }
     public string? UnidadVerificacion { get; set; }
     public string? ContrasenaUtd { get; set; }
-    public double? Latitud { get; set; }
-    public double? Longitud { get; set; }
+    // El equipo real las guarda como cadena (String 11 / String 15
+    // caracteres, sección 3.2 de la especificación), no como número --
+    // formato exacto sin confirmar hasta poder leer un valor real.
+    public string? Latitud { get; set; }
+    public string? Longitud { get; set; }
 
     // Configuración de SMS (pantalla "SMS" del HMI físico). Igual que los
     // datos del sitio: no son registros Modbus, son metadatos del
@@ -35,8 +38,10 @@ public class Dispositivo
     public string? FtpUsuario { get; set; }
     public string? FtpContrasena { get; set; }
     public string? FtpCarpeta { get; set; }
-    public int? FtpHoraEnvio { get; set; }
-    public int? FtpMinutoEnvio { get; set; }
+    // A diferencia de SMS (registros de 16 bits simples), en FTP la
+    // especificación dice String 11 / String 15 caracteres para estos dos.
+    public string? FtpHoraEnvio { get; set; }
+    public string? FtpMinutoEnvio { get; set; }
     public int? FtpTipoMensaje { get; set; }
 
     public ICollection<RegistroModbus> Registros { get; set; } = new List<RegistroModbus>();

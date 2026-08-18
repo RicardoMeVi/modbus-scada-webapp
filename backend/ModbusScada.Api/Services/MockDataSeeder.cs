@@ -114,6 +114,23 @@ public static class MockDataSeeder
                     Direccion = 3,
                     TipoDato = TipoDatoModbus.Float32,
                     Unidad = "m3"
+                },
+                // Bits de alarma (sección 3.5 de la especificación): registro
+                // 15 = alimentación/batería/comunicación/GSM/GPRS (bits 0-4),
+                // registro 29 = IHM (bit 0). Usados por GET .../alarmas.
+                new()
+                {
+                    Nombre = "Alarmas",
+                    Tabla = TipoTablaModbus.HoldingRegister,
+                    Direccion = 15,
+                    TipoDato = TipoDatoModbus.UInt16
+                },
+                new()
+                {
+                    Nombre = "Alarma IHM",
+                    Tabla = TipoTablaModbus.HoldingRegister,
+                    Direccion = 29,
+                    TipoDato = TipoDatoModbus.UInt16
                 }
                 // Los registros de fecha/hora se agregan en AsegurarRegistrosFechaHora.
             }

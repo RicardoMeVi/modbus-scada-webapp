@@ -18,8 +18,16 @@ yarn-error.log*
 .env
 .env.*
 !.env.example
+!frontend/.env.campo
 appsettings.Development.json
 appsettings.*.local.json
+
+# Ejecutable de campo: build embebido del frontend y base local generada
+backend/ModbusScada.Api/wwwroot/
+backend/ModbusScada.Api/*.db
+backend/ModbusScada.Api/*.db-shm
+backend/ModbusScada.Api/*.db-wal
+backend/ModbusScada.Api/publish/
 
 # OS / editor
 .DS_Store
