@@ -61,6 +61,16 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Con Postgres real (Neon/Render), la base arranca vacía: hay que aplicar
+// las migraciones de EF Core al iniciar para que existan las tablas antes
+// de que el seeder o cualquier request intenten usarlas. Con InMemory no
+// aplica (no tiene migraciones).
+if (usarPostgres)
+{
+    using var migrationScope = app.Services.CreateScope();
+    migrationScope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
+}
+
 if (useMockData)
 {
     using var scope = app.Services.CreateScope();
