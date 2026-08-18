@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useModbusHub } from "./hooks/useModbusHub";
 import { Sidebar } from "./components/layout/Sidebar";
 import { TopbarLines } from "./components/layout/TopbarLines";
+import { BotonTema } from "./components/layout/BotonTema";
+import { SelectorIdioma } from "./components/layout/SelectorIdioma";
 import { Dashboard } from "./pages/Dashboard";
 import { DatosDelSitio } from "./pages/DatosDelSitio";
 import { Medidores } from "./pages/Medidores";
@@ -17,6 +20,7 @@ import logo from "./assets/Logo.png";
 import "./App.css";
 
 function App() {
+  const { t } = useTranslation();
   const [seccionActiva, setSeccionActiva] = useState(SECCIONES[0].id);
   const { lecturas, conectado } = useModbusHub();
   const seccion = SECCIONES.find((s) => s.id === seccionActiva);
@@ -26,21 +30,25 @@ function App() {
       <header className="topbar">
         <TopbarLines />
         <div className="topbar-izquierda">
-          <Link to="/" className="boton-volver-sitio" aria-label="Volver a la pantalla del sitio">
-            ← Pantalla del sitio
+          <Link to="/" className="boton-volver-sitio" aria-label={t("comun.volverSitio")}>
+            {t("comun.volverSitio")}
           </Link>
           <div className="brand">
             <img src={logo} alt="ICH" className="brand-mark" />
             <div className="brand-text">
               <span className="brand-nombre">ICH</span>
-              <h1>Panel de control</h1>
+              <h1>{t("comun.panelControl")}</h1>
             </div>
           </div>
         </div>
-        <span className={`estado-pill ${conectado ? "en-linea" : "desconectado"}`}>
-          <span className="estado-dot" />
-          {conectado ? "En línea" : "Desconectado"}
-        </span>
+        <div className="acciones-topbar">
+          <SelectorIdioma />
+          <BotonTema />
+          <span className={`estado-pill ${conectado ? "en-linea" : "desconectado"}`}>
+            <span className="estado-dot" />
+            {conectado ? t("comun.enLinea") : t("comun.desconectado")}
+          </span>
+        </div>
       </header>
 
       <div className="layout">
@@ -61,7 +69,7 @@ function App() {
             {seccionActiva === "fecha-hora" && <FechaHora lecturas={lecturas} />}
             {seccionActiva === "alarmas" && <Alarmas />}
             {!["dashboard", "datos-sitio", "medidores", "mensajes", "ftp", "fecha-hora", "alarmas"].includes(seccionActiva) && (
-              <SeccionPendiente id={seccion?.id} titulo={seccion?.label} icono={seccion?.icon} />
+              <SeccionPendiente id={seccion?.id} titulo={seccion ? t(seccion.labelKey) : ""} icono={seccion?.icon} />
             )}
           </ErrorBoundary>
         </main>

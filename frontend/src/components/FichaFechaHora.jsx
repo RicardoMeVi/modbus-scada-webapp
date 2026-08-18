@@ -1,14 +1,19 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { escribirValor } from "../api";
 import { Toast } from "./Toast";
 
+// `nombre` tiene que quedarse en español: es el nombre real del
+// RegistroModbus en el backend (ver MockDataSeeder.cs) y se usa para
+// emparejar con `registros`/`lecturas`, no es solo texto de UI. `labelKey`
+// es lo único que se traduce para mostrar en pantalla.
 const CAMPOS = [
-  { nombre: "Año", clave: "anio", min: 2000, max: 2099 },
-  { nombre: "Hora", clave: "hora", min: 0, max: 23 },
-  { nombre: "Mes", clave: "mes", min: 1, max: 12 },
-  { nombre: "Minutos", clave: "minutos", min: 0, max: 59 },
-  { nombre: "Día", clave: "dia", min: 1, max: 31 },
-  { nombre: "Segundos", clave: "segundos", min: 0, max: 59 },
+  { nombre: "Año", labelKey: "fechaHora.anio", clave: "anio", min: 2000, max: 2099 },
+  { nombre: "Hora", labelKey: "fechaHora.hora", clave: "hora", min: 0, max: 23 },
+  { nombre: "Mes", labelKey: "fechaHora.mes", clave: "mes", min: 1, max: 12 },
+  { nombre: "Minutos", labelKey: "fechaHora.minutos", clave: "minutos", min: 0, max: 59 },
+  { nombre: "Día", labelKey: "fechaHora.dia", clave: "dia", min: 1, max: 31 },
+  { nombre: "Segundos", labelKey: "fechaHora.segundos", clave: "segundos", min: 0, max: 59 },
 ];
 
 // Configuración de fecha/hora, igual a la pantalla "Configuración Fecha /
@@ -16,6 +21,7 @@ const CAMPOS = [
 // CONTEXTONuevo.md), con flujo de edición "modificar → escritura → lectura
 // de confirmación" (cada campo es un Holding Register individual).
 export function FichaFechaHora({ registros, lecturas }) {
+  const { t } = useTranslation();
   const registroPorNombre = Object.fromEntries(registros.map((r) => [r.nombre, r]));
 
   const [editando, setEditando] = useState(false);
@@ -78,10 +84,10 @@ export function FichaFechaHora({ registros, lecturas }) {
   return (
     <div className="ficha-sitio">
       <div className="ficha-fecha-grid">
-        {CAMPOS.map(({ nombre, clave, min, max }) => (
-          <label key={clave}>
-            {nombre.toUpperCase()}
-            <input
+          {CAMPOS.map(({ labelKey, clave, min, max }) => (
+            <label key={clave}>
+              {t(labelKey).toUpperCase()}
+              <input
               type="number"
               min={min}
               max={max}
@@ -94,18 +100,14 @@ export function FichaFechaHora({ registros, lecturas }) {
 
       <div className="ficha-sitio-acciones">
         <button type="button" className="ficha-sitio-guardar" onClick={modificar} disabled={guardando}>
-          {guardando ? "Guardando…" : "Modificar"}
+          {guardando ? t("comun.guardando") : t("comun.modificar")}
         </button>
       </div>
 
       {estado && (
         <Toast
           tipo={estado}
-          mensaje={
-            estado === "ok"
-              ? "Fecha y hora actualizadas correctamente."
-              : "No se pudo escribir la fecha/hora. Intentá de nuevo."
-          }
+          mensaje={estado === "ok" ? t("fechaHora.toastOk") : t("fechaHora.toastError")}
           onCerrar={() => setEstado(null)}
         />
       )}

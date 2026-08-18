@@ -1,6 +1,9 @@
+import { useTranslation } from "react-i18next";
 import { SECCIONES } from "../../config/sections";
 
 export function Sidebar({ activo, onSeleccionar }) {
+  const { t } = useTranslation();
+
   return (
     <nav className="sidebar">
       <ul>
@@ -15,7 +18,7 @@ export function Sidebar({ activo, onSeleccionar }) {
                   <use href={`/icons.svg#${seccion.icon}`} />
                 </svg>
               </span>
-              <span className="label">{seccion.label}</span>
+              <span className="label">{t(seccion.labelKey)}</span>
             </button>
           </li>
         ))}

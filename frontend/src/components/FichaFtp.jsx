@@ -1,14 +1,21 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { actualizarFtp } from "../api";
 import { Toast } from "./Toast";
 import { BotonCopiar } from "./BotonCopiar";
 import { IconoSeccion } from "./icons/IconoSeccion";
 
+// IPv4: cuatro octetos 0-255 separados por punto.
+const IP_REGEX = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+
 // Configuración de FTP, igual a la pantalla "FTP" del HMI físico
 // (Kinco/ICH): IP del servidor, usuario, contraseña, carpeta de
 // almacenamiento, hora/minuto de envío automático y tipo de mensaje
-// (1 = Mensaje de UV, 3 = Mensaje de prueba). No son registros Modbus.
+// (1 = Mensaje de UV, 3 = Mensaje de prueba). No son registros Modbus. Los
+// largos máximos vienen de la especificación real del equipo
+// (CONTEXTONuevo.md, sección 3.3: "String N car." por campo).
 export function FichaFtp({ dispositivo }) {
+  const { t } = useTranslation();
   const [campos, setCampos] = useState({
     ipServidor: dispositivo.ftpIpServidor ?? "",
     usuario: dispositivo.ftpUsuario ?? "",
@@ -22,13 +29,70 @@ export function FichaFtp({ dispositivo }) {
   const [estado, setEstado] = useState(null);
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
+  // IP, usuario, contraseña y carpeta son obligatorios: una configuración
+  // de FTP sin alguno de estos cuatro no sirve para nada (no hay a dónde
+  // conectarse). Hora/minuto/tipo de mensaje sí quedan opcionales — son el
+  // envío automático, el sitio puede no querer uno programado.
+  const ipVacia = campos.ipServidor === "";
+  const ipInvalida = !ipVacia && !IP_REGEX.test(campos.ipServidor);
+  const faltanCampos = ipVacia || campos.usuario === "" || campos.contrasena === "" || campos.carpeta === "";
+  const hayErrores = ipInvalida || faltanCampos;
+
   function actualizarCampo(campo, valor) {
     setEstado(null);
     setCampos((prev) => ({ ...prev, [campo]: valor }));
   }
 
+  // IP del servidor: solo dígitos y puntos, máximo 13 caracteres (el largo
+  // real del registro admite menos que una IPv4 completa en el peor caso,
+  // p.ej. "255.255.255.255" no entra — así está documentado el equipo).
+  function actualizarIp(valor) {
+    actualizarCampo("ipServidor", valor.replace(/[^0-9.]/g, "").slice(0, 13));
+  }
+
+  // Usuario: la especificación real (sección 3.3) solo dice "String 17
+  // caracteres" — nada sobre qué caracteres admite, así que no se filtra el
+  // set (si tu servidor FTP usa un usuario con espacio u otro símbolo, acá
+  // entra igual). Solo se respeta el largo máximo real.
+  function actualizarUsuario(valor) {
+    actualizarCampo("usuario", valor.slice(0, 17));
+  }
+
+  // Contraseña: máximo 17 caracteres, sin filtrar el set de caracteres (una
+  // contraseña puede llevar símbolos).
+  function actualizarContrasena(valor) {
+    actualizarCampo("contrasena", valor.slice(0, 17));
+  }
+
+  // Carpeta de almacenamiento: igual que Usuario, la especificación real
+  // solo dice "String 17 caracteres" — sin restricción de qué caracteres
+  // admite, así que una ruta con espacio ("/datos nuevos") entra igual.
+  // Solo se respeta el largo máximo real.
+  function actualizarCarpeta(valor) {
+    actualizarCampo("carpeta", valor.slice(0, 17));
+  }
+
+  // Formato 24 horas: no deja escribir una hora fuera de 0-23.
+  function actualizarHora(valor) {
+    const digitos = valor.replace(/\D/g, "");
+    actualizarCampo("horaEnvio", digitos === "" ? "" : String(Math.min(23, Number(digitos))));
+  }
+
+  // Minutos válidos: 0-59.
+  function actualizarMinuto(valor) {
+    const digitos = valor.replace(/\D/g, "");
+    actualizarCampo("minutoEnvio", digitos === "" ? "" : String(Math.min(59, Number(digitos))));
+  }
+
+  // Al salir del campo se completa a 2 dígitos (formato 24h: "7:5" -> "07:05").
+  function formatearDosDigitos(campo, valor) {
+    if (valor === "") return;
+    actualizarCampo(campo, valor.padStart(2, "0"));
+  }
+
   async function guardar(e) {
     e.preventDefault();
+    if (hayErrores) return;
     setGuardando(true);
     try {
       await actualizarFtp(dispositivo.id, {
@@ -52,7 +116,7 @@ export function FichaFtp({ dispositivo }) {
     <form className="ficha-sitio" onSubmit={guardar}>
       <div className="ficha-sitio-grid">
         <label className="campo-ancho">
-          IP del servidor
+          {t("ftp.ipServidor")}
           <div className="campo-con-copiar campo-icono">
             <span className="icono-campo-izq">
               <IconoSeccion id="site-icon" size={16} />
@@ -60,24 +124,27 @@ export function FichaFtp({ dispositivo }) {
             <input
               value={campos.ipServidor}
               placeholder="0.0.0.0"
-              onChange={(e) => actualizarCampo("ipServidor", e.target.value)}
+              inputMode="decimal"
+              className={ipInvalida ? "campo-invalido" : undefined}
+              onChange={(e) => actualizarIp(e.target.value)}
             />
             <BotonCopiar valor={campos.ipServidor} />
           </div>
+          {ipInvalida && <span className="campo-error">{t("ftp.ipInvalida")}</span>}
         </label>
         <label className="campo-ancho">
-          Usuario
+          {t("ftp.usuario")}
           <div className="campo-con-copiar campo-icono">
             <span className="icono-campo-izq">
               <IconoSeccion id="usuario-icon" size={16} />
             </span>
-            <input value={campos.usuario} onChange={(e) => actualizarCampo("usuario", e.target.value)} />
+            <input value={campos.usuario} onChange={(e) => actualizarUsuario(e.target.value)} />
             <BotonCopiar valor={campos.usuario} />
           </div>
         </label>
 
         <label className="campo-ancho">
-          Contraseña
+          {t("ftp.contrasena")}
           <div className="campo-contrasena campo-icono">
             <span className="icono-campo-izq">
               <IconoSeccion id="candado-icon" size={16} />
@@ -85,14 +152,14 @@ export function FichaFtp({ dispositivo }) {
             <input
               type={mostrarContrasena ? "text" : "password"}
               value={campos.contrasena}
-              onChange={(e) => actualizarCampo("contrasena", e.target.value)}
+              onChange={(e) => actualizarContrasena(e.target.value)}
             />
             <div className="acciones-campo">
               <button
                 type="button"
                 className="boton-ojo"
                 onClick={() => setMostrarContrasena((v) => !v)}
-                aria-label={mostrarContrasena ? "Ocultar contraseña" : "Mostrar contraseña"}
+                aria-label={mostrarContrasena ? t("comun.ocultarContrasena") : t("comun.mostrarContrasena")}
               >
                 {mostrarContrasena ? (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -112,29 +179,31 @@ export function FichaFtp({ dispositivo }) {
           </div>
         </label>
         <label className="campo-ancho">
-          Carpeta de almacenamiento
+          {t("ftp.carpeta")}
           <div className="campo-con-copiar campo-icono">
             <span className="icono-campo-izq">
               <IconoSeccion id="carpeta-icon" size={16} />
             </span>
-            <input value={campos.carpeta} onChange={(e) => actualizarCampo("carpeta", e.target.value)} />
+            <input value={campos.carpeta} onChange={(e) => actualizarCarpeta(e.target.value)} />
             <BotonCopiar valor={campos.carpeta} />
           </div>
         </label>
 
         <label>
-          Hora de envío automático
+          {t("ftp.horaEnvioAutomatico")}
           <div className="hora-envio">
             <div className="campo-icono campo-icono-chico">
               <span className="icono-campo-izq">
                 <IconoSeccion id="reloj-icon" size={14} />
               </span>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 min="0"
                 max="23"
                 value={campos.horaEnvio}
-                onChange={(e) => actualizarCampo("horaEnvio", e.target.value)}
+                onChange={(e) => actualizarHora(e.target.value)}
+                onBlur={(e) => formatearDosDigitos("horaEnvio", e.target.value)}
               />
             </div>
             <span>:</span>
@@ -143,27 +212,29 @@ export function FichaFtp({ dispositivo }) {
                 <IconoSeccion id="reloj-icon" size={14} />
               </span>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 min="0"
                 max="59"
                 value={campos.minutoEnvio}
-                onChange={(e) => actualizarCampo("minutoEnvio", e.target.value)}
+                onChange={(e) => actualizarMinuto(e.target.value)}
+                onBlur={(e) => formatearDosDigitos("minutoEnvio", e.target.value)}
               />
             </div>
-            <span>hrs</span>
+            <span>{t("comun.hrs")}</span>
           </div>
         </label>
         <label>
-          Tipo de mensaje
+          {t("ftp.tipoMensaje")}
           <select value={campos.tipoMensaje} onChange={(e) => actualizarCampo("tipoMensaje", e.target.value)}>
-            <option value="">Selecciona el tipo</option>
-            <option value="1">1 · Mensaje de UV</option>
-            <option value="3">3 · Mensaje de prueba</option>
+            <option value="">{t("comun.seleccionaTipo")}</option>
+            <option value="1">{t("comun.tipoUv")}</option>
+            <option value="3">{t("comun.tipoPrueba")}</option>
           </select>
         </label>
       </div>
 
-      <p className="ficha-sms-leyenda">1 = Mensaje de UV &middot; 3 = Mensaje de prueba</p>
+      <p className="ficha-sms-leyenda">{t("comun.leyendaTipoMensaje")}</p>
 
       <div className="estado-tarjetas">
         <div className="estado-tarjeta mal">
@@ -171,10 +242,10 @@ export function FichaFtp({ dispositivo }) {
             <IconoSeccion id="antena-icon" size={19} />
           </div>
           <div className="estado-tarjeta-texto">
-            <span className="estado-tarjeta-label">GSM</span>
-            <span className="estado-tarjeta-sub">Estado de conexión</span>
+            <span className="estado-tarjeta-label">{t("ftp.gsm")}</span>
+            <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
             <span className="estado-tarjeta-pill">
-              <span className="estado-dot" /> Desconectado
+              <span className="estado-dot" /> {t("comun.estadoDesconectado")}
             </span>
           </div>
         </div>
@@ -183,10 +254,10 @@ export function FichaFtp({ dispositivo }) {
             <IconoSeccion id="senal-icon" size={19} />
           </div>
           <div className="estado-tarjeta-texto">
-            <span className="estado-tarjeta-label">GPRS</span>
-            <span className="estado-tarjeta-sub">Estado de conexión</span>
+            <span className="estado-tarjeta-label">{t("ftp.gprs")}</span>
+            <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
             <span className="estado-tarjeta-pill">
-              <span className="estado-dot" /> Desconectado
+              <span className="estado-dot" /> {t("comun.estadoDesconectado")}
             </span>
           </div>
         </div>
@@ -195,28 +266,33 @@ export function FichaFtp({ dispositivo }) {
             <IconoSeccion id="chip-icon" size={19} />
           </div>
           <div className="estado-tarjeta-texto">
-            <span className="estado-tarjeta-label">IHM</span>
-            <span className="estado-tarjeta-sub">Estado de conexión</span>
+            <span className="estado-tarjeta-label">{t("ftp.ihm")}</span>
+            <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
             <span className="estado-tarjeta-pill">
-              <span className="estado-dot" /> Conectado
+              <span className="estado-dot" /> {t("comun.conectado")}
             </span>
           </div>
         </div>
       </div>
 
       <div className="ficha-sitio-acciones">
-        <button type="submit" className="ficha-sitio-guardar" disabled={guardando}>
+        <button
+          type="submit"
+          className="ficha-sitio-guardar"
+          disabled={guardando || hayErrores}
+          title={!guardando && faltanCampos ? t("ftp.completaCampos") : undefined}
+        >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M20 6 9 17l-5-5" />
           </svg>
-          {guardando ? "Guardando…" : "Guardar"}
+          {guardando ? t("comun.guardando") : t("comun.guardar")}
         </button>
       </div>
 
       {estado && (
         <Toast
           tipo={estado}
-          mensaje={estado === "ok" ? "Configuración de FTP guardada correctamente." : "No se pudo guardar. Intentá de nuevo."}
+          mensaje={estado === "ok" ? t("ftp.toastOk") : t("ftp.toastError")}
           onCerrar={() => setEstado(null)}
         />
       )}

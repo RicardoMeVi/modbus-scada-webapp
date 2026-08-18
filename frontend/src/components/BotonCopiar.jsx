@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 // Copia el valor de un campo al portapapeles con un clic, para no tener que
 // seleccionarlo a mano — útil en identificadores largos (NSM/NSUE/NSUT/RFC),
@@ -7,6 +8,7 @@ import { useState } from "react";
 // (superpuesto en un input, o en línea junto a una insignia) lo define el
 // contenedor vía CSS, así funciona igual en ambos contextos.
 export function BotonCopiar({ valor, className = "" }) {
+  const { t } = useTranslation();
   const [copiado, setCopiado] = useState(false);
 
   async function copiar() {
@@ -26,8 +28,8 @@ export function BotonCopiar({ valor, className = "" }) {
       className={`boton-copiar${copiado ? " copiado" : ""} ${className}`.trim()}
       onClick={copiar}
       disabled={!valor}
-      aria-label={copiado ? "Copiado" : "Copiar"}
-      title={copiado ? "Copiado" : "Copiar"}
+      aria-label={copiado ? t("comun.copiado") : t("comun.copiar")}
+      title={copiado ? t("comun.copiado") : t("comun.copiar")}
     >
       {copiado ? (
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

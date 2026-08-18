@@ -1,7 +1,9 @@
+import { useTranslation } from "react-i18next";
 import { useDispositivos } from "../hooks/useDispositivos";
 import { IconoSeccion } from "../components/icons/IconoSeccion";
 import { InsigniaDispositivo } from "../components/InsigniaDispositivo";
 import { CardTextura } from "../components/layout/CardTextura";
+import { traducirNombreRegistro } from "../i18n/registros";
 
 // Sección "Medidores": Caudal instantáneo y Totalizado, solo lectura.
 // Es el caso más simple del mapa de registros real (ver CONTEXTONuevo.md,
@@ -10,16 +12,21 @@ import { CardTextura } from "../components/layout/CardTextura";
 const NOMBRES_MEDIDORES = ["Caudal instantáneo", "Totalizado"];
 
 export function Medidores({ lecturas }) {
+  const { t } = useTranslation();
   const { dispositivos, error, cargando } = useDispositivos();
 
   return (
     <div>
-      <h2>Medidores</h2>
+      <h2>{t("medidores.titulo")}</h2>
 
-      {cargando && <p className="pendiente">Cargando…</p>}
-      {error && <p className="error">{error} Reintentando…</p>}
+      {cargando && <p className="pendiente">{t("comun.cargando")}</p>}
+      {error && (
+        <p className="error">
+          {t("comun.noSeConectoBackend")} {t("comun.reintentando")}
+        </p>
+      )}
       {!cargando && !error && dispositivos.length === 0 && (
-        <p className="pendiente">No hay dispositivos configurados todavía.</p>
+        <p className="pendiente">{t("comun.noHayDispositivos")}</p>
       )}
 
       <div className="dispositivos">
@@ -46,7 +53,7 @@ export function Medidores({ lecturas }) {
                     const lectura = lecturas[registro.id];
                     return (
                       <div key={registro.id} className="resumen-card">
-                        <span className="resumen-label">{registro.nombre}</span>
+                        <span className="resumen-label">{traducirNombreRegistro(t, registro.nombre)}</span>
                         <span className="resumen-valor">
                           {(lectura?.valor ?? 0).toFixed(2)} {registro.unidad}
                         </span>

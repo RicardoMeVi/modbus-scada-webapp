@@ -1,14 +1,25 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { actualizarDatosSitio } from "../api";
 import { Toast } from "./Toast";
 import { BotonCopiar } from "./BotonCopiar";
 import { IconoSeccion } from "./icons/IconoSeccion";
 
+// RFC mexicano: 3-4 letras (persona moral/física) + 6 dígitos (fecha) + 3
+// caracteres de homoclave = 12 o 13 caracteres en total.
+const RFC_REGEX = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/;
+
 // Datos de identificación del sitio, igual a la pantalla "Datos del sitio"
 // del HMI físico (Kinco/ICH): NSM, NSUE, NSUT, RFC, Unidad de verificación,
 // Contraseña UTD y coordenadas. No son registros Modbus — son metadatos
-// fijos del sitio que se guardan directo en el dispositivo.
+// fijos del sitio que se guardan directo en el dispositivo. Los largos
+// máximos de NSM/NSUE/NSUT/RFC/Latitud/Longitud vienen de la especificación
+// real del equipo (CONTEXTONuevo.md, sección 3.2: "String N car."). Latitud
+// y Longitud son numéricas acá (el modelo actual las guarda como `double`);
+// el equipo real las guarda como string — ver nota conocida sobre esa
+// diferencia, no es parte de esta validación.
 export function FichaSitio({ dispositivo }) {
+  const { t } = useTranslation();
   const [campos, setCampos] = useState({
     nsm: dispositivo.nsm ?? "",
     nsue: dispositivo.nsue ?? "",
@@ -23,13 +34,43 @@ export function FichaSitio({ dispositivo }) {
   const [estado, setEstado] = useState(null); // "ok" | "error" | null
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
+  const rfcInvalido = campos.rfc !== "" && !RFC_REGEX.test(campos.rfc);
+
+  const latitudNum = campos.latitud === "" ? null : Number(campos.latitud);
+  const latitudInvalida = latitudNum !== null && (latitudNum < -90 || latitudNum > 90);
+
+  const longitudNum = campos.longitud === "" ? null : Number(campos.longitud);
+  const longitudInvalida = longitudNum !== null && (longitudNum < -180 || longitudNum > 180);
+
+  const hayErrores = rfcInvalido || latitudInvalida || longitudInvalida;
+
   function actualizarCampo(campo, valor) {
     setEstado(null);
     setCampos((prev) => ({ ...prev, [campo]: valor }));
   }
 
+  // NSM/NSUE/NSUT: la especificación real (sección 3.2) solo dice "String
+  // 17 caracteres" — nada sobre qué caracteres admite (antes filtraba a
+  // solo alfanumérico, una regla inventada sin respaldo, igual que pasaba
+  // en FTP con Usuario/Carpeta). Solo se respeta el largo máximo real.
+  function actualizarConLargoMaximo(campo, valor, maxLen) {
+    actualizarCampo(campo, valor.slice(0, maxLen));
+  }
+
+  // RFC: mayúsculas, solo caracteres válidos, máximo 13.
+  function actualizarRfc(valor) {
+    actualizarCampo("rfc", valor.toUpperCase().replace(/[^A-ZÑ&0-9]/g, "").slice(0, 13));
+  }
+
+  // Contraseña UTD: PIN numérico (el equipo real solo tiene teclado
+  // numérico para esto), igual que el PIN de la Unidad de Verificación.
+  function actualizarContrasenaUtd(valor) {
+    actualizarCampo("contrasenaUtd", valor.replace(/\D/g, "").slice(0, 10));
+  }
+
   async function guardar(e) {
     e.preventDefault();
+    if (hayErrores) return;
     setGuardando(true);
     try {
       await actualizarDatosSitio(dispositivo.id, {
@@ -54,37 +95,48 @@ export function FichaSitio({ dispositivo }) {
     <form className="ficha-sitio" onSubmit={guardar}>
       <div className="ficha-sitio-grid">
         <label>
-          NSM
+          {t("datosSitio.nsm")}
           <div className="campo-con-copiar campo-icono">
             <span className="icono-campo-izq">
               <IconoSeccion id="id-icon" size={16} />
             </span>
-            <input value={campos.nsm} onChange={(e) => actualizarCampo("nsm", e.target.value)} />
+            <input
+              value={campos.nsm}
+              onChange={(e) => actualizarConLargoMaximo("nsm", e.target.value, 17)}
+            />
             <BotonCopiar valor={campos.nsm} />
           </div>
         </label>
         <label>
-          RFC
+          {t("datosSitio.rfc")}
           <div className="campo-con-copiar campo-icono">
             <span className="icono-campo-izq">
               <IconoSeccion id="id-icon" size={16} />
             </span>
-            <input value={campos.rfc} onChange={(e) => actualizarCampo("rfc", e.target.value)} />
+            <input
+              value={campos.rfc}
+              className={rfcInvalido ? "campo-invalido" : undefined}
+              onChange={(e) => actualizarRfc(e.target.value)}
+            />
             <BotonCopiar valor={campos.rfc} />
           </div>
+          {rfcInvalido && <span className="campo-error">{t("datosSitio.rfcInvalido")}</span>}
         </label>
         <label>
-          NSUE
+          {t("datosSitio.nsue")}
           <div className="campo-con-copiar campo-icono">
             <span className="icono-campo-izq">
               <IconoSeccion id="id-icon" size={16} />
             </span>
-            <input value={campos.nsue} onChange={(e) => actualizarCampo("nsue", e.target.value)} />
+            <input
+              value={campos.nsue}
+              onChange={(e) => actualizarConLargoMaximo("nsue", e.target.value, 17)}
+            />
             <BotonCopiar valor={campos.nsue} />
           </div>
         </label>
         <label>
-          Unidad de verificación
+          {t("datosSitio.unidadVerificacion")}
           <div className="campo-con-copiar campo-icono">
             <span className="icono-campo-izq">
               <IconoSeccion id="id-icon" size={16} />
@@ -97,32 +149,36 @@ export function FichaSitio({ dispositivo }) {
           </div>
         </label>
         <label>
-          NSUT
+          {t("datosSitio.nsut")}
           <div className="campo-con-copiar campo-icono">
             <span className="icono-campo-izq">
               <IconoSeccion id="id-icon" size={16} />
             </span>
-            <input value={campos.nsut} onChange={(e) => actualizarCampo("nsut", e.target.value)} />
+            <input
+              value={campos.nsut}
+              onChange={(e) => actualizarConLargoMaximo("nsut", e.target.value, 17)}
+            />
             <BotonCopiar valor={campos.nsut} />
           </div>
         </label>
         <label>
-          Contraseña UTD
+          {t("datosSitio.contrasenaUtd")}
           <div className="campo-contrasena campo-icono">
             <span className="icono-campo-izq">
               <IconoSeccion id="candado-icon" size={16} />
             </span>
             <input
               type={mostrarContrasena ? "text" : "password"}
+              inputMode="numeric"
               value={campos.contrasenaUtd}
-              onChange={(e) => actualizarCampo("contrasenaUtd", e.target.value)}
+              onChange={(e) => actualizarContrasenaUtd(e.target.value)}
             />
             <div className="acciones-campo">
               <button
                 type="button"
                 className="boton-ojo"
                 onClick={() => setMostrarContrasena((v) => !v)}
-                aria-label={mostrarContrasena ? "Ocultar contraseña" : "Mostrar contraseña"}
+                aria-label={mostrarContrasena ? t("comun.ocultarContrasena") : t("comun.mostrarContrasena")}
               >
                 {mostrarContrasena ? (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -142,7 +198,7 @@ export function FichaSitio({ dispositivo }) {
           </div>
         </label>
         <label>
-          Latitud
+          {t("datosSitio.latitud")}
           <div className="campo-con-copiar campo-icono">
             <span className="icono-campo-izq">
               <IconoSeccion id="pin-icon" size={16} />
@@ -150,14 +206,18 @@ export function FichaSitio({ dispositivo }) {
             <input
               type="number"
               step="any"
+              min={-90}
+              max={90}
+              className={latitudInvalida ? "campo-invalido" : undefined}
               value={campos.latitud}
               onChange={(e) => actualizarCampo("latitud", e.target.value)}
             />
             <BotonCopiar valor={campos.latitud} />
           </div>
+          {latitudInvalida && <span className="campo-error">{t("datosSitio.latitudInvalida")}</span>}
         </label>
         <label>
-          Longitud
+          {t("datosSitio.longitud")}
           <div className="campo-con-copiar campo-icono">
             <span className="icono-campo-izq">
               <IconoSeccion id="pin-icon" size={16} />
@@ -165,27 +225,31 @@ export function FichaSitio({ dispositivo }) {
             <input
               type="number"
               step="any"
+              min={-180}
+              max={180}
+              className={longitudInvalida ? "campo-invalido" : undefined}
               value={campos.longitud}
               onChange={(e) => actualizarCampo("longitud", e.target.value)}
             />
             <BotonCopiar valor={campos.longitud} />
           </div>
+          {longitudInvalida && <span className="campo-error">{t("datosSitio.longitudInvalida")}</span>}
         </label>
       </div>
 
       <div className="ficha-sitio-acciones">
-        <button type="submit" className="ficha-sitio-guardar" disabled={guardando}>
+        <button type="submit" className="ficha-sitio-guardar" disabled={guardando || hayErrores}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M20 6 9 17l-5-5" />
           </svg>
-          {guardando ? "Guardando…" : "Guardar"}
+          {guardando ? t("comun.guardando") : t("comun.guardar")}
         </button>
       </div>
 
       {estado && (
         <Toast
           tipo={estado}
-          mensaje={estado === "ok" ? "Datos del sitio guardados correctamente." : "No se pudo guardar. Intentá de nuevo."}
+          mensaje={estado === "ok" ? t("datosSitio.toastOk") : t("datosSitio.toastError")}
           onCerrar={() => setEstado(null)}
         />
       )}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { validarPin } from "../api";
 import "./ModalVerificacion.css";
 
@@ -8,6 +9,7 @@ import "./ModalVerificacion.css";
 // nada, volviendo a la pantalla principal de solo lectura. El PIN se
 // tipea con el teclado físico (sistema pensado para notebook, no touch).
 export function ModalVerificacion({ onClose, onSuccess }) {
+  const { t } = useTranslation();
   const [valor, setValor] = useState("");
   const [error, setError] = useState(null);
   const [verificando, setVerificando] = useState(false);
@@ -30,8 +32,8 @@ export function ModalVerificacion({ onClose, onSuccess }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-verificacion" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <span>Contraseña Unidad de Verificación</span>
-          <button className="modal-close" onClick={onClose} aria-label="Cerrar">
+          <span>{t("modal.titulo")}</span>
+          <button className="modal-close" onClick={onClose} aria-label={t("comun.cerrar")}>
             ✕
           </button>
         </div>
@@ -40,7 +42,7 @@ export function ModalVerificacion({ onClose, onSuccess }) {
           <input
             type="password"
             className={`modal-input ${error ? "error" : ""}`}
-            placeholder="Ingresá el PIN"
+            placeholder={t("modal.placeholder")}
             value={valor}
             onChange={(e) => {
               setError(null);
@@ -49,13 +51,11 @@ export function ModalVerificacion({ onClose, onSuccess }) {
             disabled={verificando}
             autoFocus
           />
-          {error === "incorrecto" && <p className="modal-error-msg">PIN incorrecto</p>}
-          {error === "conexion" && (
-            <p className="modal-error-msg">No se pudo conectar con el backend. ¿Está corriendo?</p>
-          )}
+          {error === "incorrecto" && <p className="modal-error-msg">{t("modal.pinIncorrecto")}</p>}
+          {error === "conexion" && <p className="modal-error-msg">{t("modal.sinConexion")}</p>}
 
           <button type="submit" className="modal-validar" disabled={verificando || !valor}>
-            Validar
+            {t("modal.validar")}
           </button>
         </form>
       </div>

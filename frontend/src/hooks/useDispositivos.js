@@ -24,7 +24,9 @@ export function useDispositivos() {
         setError(null);
       })
       .catch(() => {
-        setError("No se pudo conectar con el backend.");
+        // Guarda solo un flag (no el texto) para que la pantalla lo
+        // traduzca en el idioma vigente al momento de renderizar.
+        setError(true);
         timerRef.current = setTimeout(cargar, REINTENTO_MS);
       })
       .finally(() => setCargando(false));

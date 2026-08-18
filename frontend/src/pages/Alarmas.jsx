@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useDispositivos } from "../hooks/useDispositivos";
 import { IconoSeccion } from "../components/icons/IconoSeccion";
 import { InsigniaDispositivo } from "../components/InsigniaDispositivo";
@@ -10,27 +11,32 @@ import { CardTextura } from "../components/layout/CardTextura";
 // "neutral" es el LED rosa pálido/apagado que se ve en la unidad de pruebas
 // para las alarmas que todavía no tienen sensor conectado.
 const ALARMAS = [
-  { nombre: "Alimentación", estado: "neutral", icono: "enchufe-icon" },
-  { nombre: "Batería", estado: "ok", icono: "bateria-icon" },
-  { nombre: "Comunicación Tx Caudal", estado: "neutral", icono: "enlace-icon" },
-  { nombre: "GSM conectado", estado: "mal", icono: "antena-icon" },
-  { nombre: "GPRS conectado", estado: "mal", icono: "senal-icon" },
-  { nombre: "IHM", estado: "ok", icono: "chip-icon" },
+  { clave: "alimentacion", estado: "neutral", icono: "enchufe-icon" },
+  { clave: "bateria", estado: "ok", icono: "bateria-icon" },
+  { clave: "comunicacionTxCaudal", estado: "neutral", icono: "enlace-icon" },
+  { clave: "gsmConectado", estado: "mal", icono: "antena-icon" },
+  { clave: "gprsConectado", estado: "mal", icono: "senal-icon" },
+  { clave: "ihm", estado: "ok", icono: "chip-icon" },
 ];
 
-const TEXTO_ESTADO = { ok: "Conectado", mal: "Desconectado", neutral: "Sin dato" };
+const CLAVE_TEXTO_ESTADO = { ok: "comun.conectado", mal: "comun.estadoDesconectado", neutral: "comun.sinDato" };
 
 export function Alarmas() {
+  const { t } = useTranslation();
   const { dispositivos, error, cargando } = useDispositivos();
 
   return (
     <div>
-      <h2>Estados / Alarmas</h2>
+      <h2>{t("alarmas.titulo")}</h2>
 
-      {cargando && <p className="pendiente">Cargando…</p>}
-      {error && <p className="error">{error} Reintentando…</p>}
+      {cargando && <p className="pendiente">{t("comun.cargando")}</p>}
+      {error && (
+        <p className="error">
+          {t("comun.noSeConectoBackend")} {t("comun.reintentando")}
+        </p>
+      )}
       {!cargando && !error && dispositivos.length === 0 && (
-        <p className="pendiente">No hay dispositivos configurados todavía.</p>
+        <p className="pendiente">{t("comun.noHayDispositivos")}</p>
       )}
 
       <div className="dispositivos">
@@ -50,15 +56,15 @@ export function Alarmas() {
             <div className="card-body">
               <div className="estado-tarjetas">
                 {ALARMAS.map((alarma) => (
-                  <div key={alarma.nombre} className={`estado-tarjeta ${alarma.estado}`}>
+                  <div key={alarma.clave} className={`estado-tarjeta ${alarma.estado}`}>
                     <div className="estado-tarjeta-icono">
                       <IconoSeccion id={alarma.icono} size={19} />
                     </div>
                     <div className="estado-tarjeta-texto">
-                      <span className="estado-tarjeta-label">{alarma.nombre}</span>
-                      <span className="estado-tarjeta-sub">Estado de conexión</span>
+                      <span className="estado-tarjeta-label">{t(`alarmas.${alarma.clave}`)}</span>
+                      <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
                       <span className="estado-tarjeta-pill">
-                        <span className="estado-dot" /> {TEXTO_ESTADO[alarma.estado]}
+                        <span className="estado-dot" /> {t(CLAVE_TEXTO_ESTADO[alarma.estado])}
                       </span>
                     </div>
                   </div>

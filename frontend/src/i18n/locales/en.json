@@ -1,0 +1,154 @@
+{
+  "comun": {
+    "guardar": "Save",
+    "guardando": "Saving…",
+    "modificar": "Modify",
+    "cargando": "Loading…",
+    "reintentando": "Retrying…",
+    "copiar": "Copy",
+    "copiado": "Copied",
+    "enLinea": "Online",
+    "desconectado": "Offline",
+    "volverSitio": "← Site screen",
+    "panelControl": "Control panel",
+    "slave": "slave",
+    "noHayDispositivos": "No devices configured yet.",
+    "noSeConectoBackend": "Could not connect to the backend.",
+    "cerrar": "Close",
+    "mostrarContrasena": "Show password",
+    "ocultarContrasena": "Hide password",
+    "estadoConexion": "Connection status",
+    "conectado": "Connected",
+    "estadoDesconectado": "Disconnected",
+    "sinDato": "No data",
+    "seleccionaTipo": "Select the type",
+    "tipoUv": "1 · UV message",
+    "tipoPrueba": "3 · Test message",
+    "leyendaTipoMensaje": "1 = UV message · 3 = Test message",
+    "hrs": "hrs",
+    "guardadoOk": "Saved successfully.",
+    "guardadoError": "Could not save. Try again.",
+    "tema": "Theme",
+    "temaClaro": "Switch to light theme",
+    "temaOscuro": "Switch to dark theme",
+    "idioma": "Language"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "datosSitio": "Site data",
+    "mensajeSms": "Message (SMS)",
+    "ftp": "FTP",
+    "fechaHora": "Date / Time",
+    "alarmas": "Alarms",
+    "medidores": "Meters"
+  },
+  "dashboard": {
+    "titulo": "Dashboard",
+    "conexionTiempoReal": "Real-time connection",
+    "sitiosConfigurados": "Configured sites",
+    "sitioPrincipal": "Main site",
+    "lecturasEnVivo": "Live readings",
+    "encendido": "On",
+    "apagado": "Off"
+  },
+  "datosSitio": {
+    "titulo": "Site data",
+    "nsm": "NSM",
+    "rfc": "RFC",
+    "nsue": "NSUE",
+    "unidadVerificacion": "Verification unit",
+    "nsut": "NSUT",
+    "contrasenaUtd": "UTD password",
+    "latitud": "Latitude",
+    "longitud": "Longitude",
+    "toastOk": "Site data saved successfully.",
+    "toastError": "Could not save. Try again.",
+    "rfcInvalido": "The RFC must be in a valid format (12-13 characters: letters, date and check digits).",
+    "latitudInvalida": "Latitude must be between -90 and 90.",
+    "longitudInvalida": "Longitude must be between -180 and 180."
+  },
+  "sms": {
+    "titulo": "Message (SMS)",
+    "enviarMensajeA": "Send message to",
+    "numeroTelefono": "Phone number",
+    "horaEnvioAutomatico": "Automatic send time",
+    "tipoMensaje": "Message type",
+    "numeroInvalido": "The phone number must have 10 digits.",
+    "enviarBoton": "Send message",
+    "enviando": "Sending",
+    "completaCampos": "Fill in the number and the automatic send time to be able to send.",
+    "toastGuardadoOk": "SMS configuration saved successfully.",
+    "toastEnviado": "Message sent successfully.",
+    "toastError": "Could not save. Try again.",
+    "gsm": "GSM",
+    "gprs": "GPRS",
+    "ihm": "HMI"
+  },
+  "ftp": {
+    "titulo": "FTP",
+    "ipServidor": "Server IP",
+    "usuario": "User",
+    "contrasena": "Password",
+    "carpeta": "Storage folder",
+    "horaEnvioAutomatico": "Automatic send time",
+    "tipoMensaje": "Message type",
+    "ipInvalida": "Enter a valid IP (four numbers 0-255 separated by dots).",
+    "completaCampos": "Fill in the IP, user, password and folder to be able to save.",
+    "toastOk": "FTP configuration saved successfully.",
+    "toastError": "Could not save. Try again.",
+    "gsm": "GSM",
+    "gprs": "GPRS",
+    "ihm": "HMI"
+  },
+  "fechaHora": {
+    "titulo": "Date / Time",
+    "anio": "Year",
+    "mes": "Month",
+    "dia": "Day",
+    "hora": "Hour",
+    "minutos": "Minutes",
+    "segundos": "Seconds",
+    "toastOk": "Date and time updated successfully.",
+    "toastError": "Could not write the date/time. Try again."
+  },
+  "alarmas": {
+    "titulo": "Status / Alarms",
+    "alimentacion": "Power",
+    "bateria": "Battery",
+    "comunicacionTxCaudal": "Flow Tx communication",
+    "gsmConectado": "GSM connected",
+    "gprsConectado": "GPRS connected",
+    "ihm": "HMI"
+  },
+  "medidores": {
+    "titulo": "Meters"
+  },
+  "registros": {
+    "nivelTanque": "Tank level",
+    "bomba": "Pump",
+    "caudalInstantaneo": "Instant flow",
+    "totalizado": "Totalized"
+  },
+  "modal": {
+    "titulo": "Verification Unit Password",
+    "placeholder": "Enter the PIN",
+    "pinIncorrecto": "Incorrect PIN",
+    "sinConexion": "Could not connect to the backend. Is it running?",
+    "validar": "Validate"
+  },
+  "errorBoundary": {
+    "titulo": "An error occurred while showing this section",
+    "mensaje": "Try again. If the problem persists, reload the page.",
+    "reintentar": "Retry"
+  },
+  "seccionPendiente": {
+    "mensaje": "Section not defined in detail yet."
+  },
+  "pantallaSitio": {
+    "unidadVerificacion": "Verification Unit",
+    "ingresar": "Enter",
+    "cargando": "Loading…",
+    "sinDispositivos": "No devices configured yet.",
+    "noSeCargoSitio": "Could not load the site."
+  }
+}

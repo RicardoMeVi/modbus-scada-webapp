@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useDispositivos } from "../hooks/useDispositivos";
 import { IconoSeccion } from "../components/icons/IconoSeccion";
 import { InsigniaDispositivo } from "../components/InsigniaDispositivo";
@@ -7,16 +8,21 @@ import { FichaFtp } from "../components/FichaFtp";
 // Configuración de FTP, igual a la pantalla "FTP" del HMI físico
 // (Kinco/ICH). Ver CONTEXTONuevo.md, sección 3.4.
 export function Ftp() {
+  const { t } = useTranslation();
   const { dispositivos, error, cargando } = useDispositivos();
 
   return (
     <div>
-      <h2>FTP</h2>
+      <h2>{t("ftp.titulo")}</h2>
 
-      {cargando && <p className="pendiente">Cargando…</p>}
-      {error && <p className="error">{error} Reintentando…</p>}
+      {cargando && <p className="pendiente">{t("comun.cargando")}</p>}
+      {error && (
+        <p className="error">
+          {t("comun.noSeConectoBackend")} {t("comun.reintentando")}
+        </p>
+      )}
       {!cargando && !error && dispositivos.length === 0 && (
-        <p className="pendiente">No hay dispositivos configurados todavía.</p>
+        <p className="pendiente">{t("comun.noHayDispositivos")}</p>
       )}
 
       <div className="dispositivos">

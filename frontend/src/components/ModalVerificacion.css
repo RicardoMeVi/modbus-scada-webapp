@@ -12,7 +12,9 @@
 .modal-verificacion {
   width: 100%;
   max-width: 320px;
-  background: var(--bg);
+  /* --card-bg (no --bg): en oscuro --bg es casi igual al overlay de atrás
+     y el modal se perdía contra el fondo en vez de "flotar" sobre él. */
+  background: var(--card-bg);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: var(--shadow);
@@ -59,9 +61,12 @@
   box-sizing: border-box;
   height: 42px;
   padding: 0 0.9rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 0.375rem;
-  background: #fff;
+  /* --card-bg (no #fff fijo): con fondo blanco fijo, el texto tipeado
+     (var(--text-h)) se volvía casi invisible en tema oscuro porque esa
+     variable pasa a ser un color claro. Acá fondo y texto cambian juntos. */
+  background: var(--card-bg);
   color: var(--text-h);
   font: inherit;
   font-size: 1.1rem;

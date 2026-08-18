@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import "./Toast.css";
 
 const DURACION_MS = 4000;
@@ -7,6 +8,7 @@ const FADE_MS = 220;
 // Banner de confirmación flotante (esquina inferior derecha). Se cierra
 // solo a los 4s (con un desvanecimiento antes de desmontar), o al tocar la X.
 export function Toast({ tipo, mensaje, onCerrar }) {
+  const { t } = useTranslation();
   const [saliendo, setSaliendo] = useState(false);
 
   // onCerrar suele ser un closure nuevo en cada render del padre (acá,
@@ -45,7 +47,7 @@ export function Toast({ tipo, mensaje, onCerrar }) {
         )}
       </span>
       <span>{mensaje}</span>
-      <button className="toast-cerrar" onClick={cerrar} aria-label="Cerrar">
+      <button className="toast-cerrar" onClick={cerrar} aria-label={t("comun.cerrar")}>
         ✕
       </button>
     </div>

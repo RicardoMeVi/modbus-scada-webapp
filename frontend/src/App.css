@@ -109,6 +109,44 @@
   letter-spacing: -0.01em;
 }
 
+.acciones-topbar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: none;
+}
+
+.boton-tema,
+.boton-idioma {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.boton-idioma {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.boton-tema:hover,
+.boton-idioma:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+
 .estado-pill {
   position: relative;
   z-index: 1;
@@ -195,7 +233,7 @@
 }
 
 .sidebar button.activo {
-  background: linear-gradient(135deg, var(--accent), #6672e0);
+  background: linear-gradient(135deg, var(--accent), #4b5bee);
   color: #fff;
   box-shadow: 0 6px 14px -4px rgba(79, 95, 217, 0.55);
 }
@@ -279,7 +317,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1.1rem 1.25rem;
-  background: linear-gradient(135deg, #f4f5fc 0%, #fbfbfe 65%);
+  background: linear-gradient(135deg, var(--card-header-1) 0%, var(--card-header-2) 65%);
   border-radius: 20px 20px 0 0;
 }
 
@@ -649,7 +687,7 @@
   border-style: solid;
   box-sizing: border-box;
   border-width: 30px 45px 23px 45px;
-  border-color: var(--accent) #c7ccf5 #c7ccf5 #6672e0;
+  border-color: #3760c9 #96ddfc #96ddfc #36bbf7;
   animation: envFloating 1s ease-in infinite alternate;
 }
 
@@ -736,6 +774,19 @@
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.65);
   color: var(--neutral-text);
+}
+
+/* En oscuro, --neutral-text/--ok-text/--mal-text son colores claros: sobre
+   el chip blanco fijo de arriba el ícono casi desaparecía. Con el chip
+   oscuro acá, el mismo texto claro vuelve a contrastar bien. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .estado-tarjeta-icono {
+    background: rgba(0, 0, 0, 0.28);
+  }
+}
+
+:root[data-theme="dark"] .estado-tarjeta-icono {
+  background: rgba(0, 0, 0, 0.28);
 }
 
 .estado-tarjeta.ok .estado-tarjeta-icono {

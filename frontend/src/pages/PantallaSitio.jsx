@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getDispositivo, getDispositivos } from "../api";
 import { useModbusHub } from "../hooks/useModbusHub";
 import { ModalVerificacion } from "../components/ModalVerificacion";
+import { BotonTema } from "../components/layout/BotonTema";
+import { SelectorIdioma } from "../components/layout/SelectorIdioma";
 import logo from "../assets/Logo.png";
 import "./PantallaSitio.css";
 
@@ -16,6 +19,7 @@ import "./PantallaSitio.css";
 const NOMBRES_HERO = ["Caudal instantáneo", "Totalizado"];
 
 export function PantallaSitio() {
+  const { t } = useTranslation();
   const { dispositivoId } = useParams();
   const navigate = useNavigate();
   const [dispositivo, setDispositivo] = useState(null);
@@ -27,29 +31,33 @@ export function PantallaSitio() {
     if (dispositivoId) {
       getDispositivo(dispositivoId)
         .then(setDispositivo)
-        .catch(() => setError("No se pudo cargar el sitio."));
+        .catch(() => setError(t("pantallaSitio.noSeCargoSitio")));
       return;
     }
 
     getDispositivos()
       .then((lista) => {
         if (lista.length === 0) {
-          setError("No hay dispositivos configurados todavía.");
+          setError(t("pantallaSitio.sinDispositivos"));
         } else {
           setDispositivo(lista[0]);
         }
       })
-      .catch(() => setError("No se pudo cargar el sitio."));
-  }, [dispositivoId]);
+      .catch(() => setError(t("pantallaSitio.noSeCargoSitio")));
+  }, [dispositivoId, t]);
 
   const registrosHero = dispositivo?.registros.filter((r) => NOMBRES_HERO.includes(r.nombre)) ?? [];
 
   return (
     <div className="pantalla-sitio">
       <div className="pantalla-sitio-verificacion">
-        <span className="etiqueta-verificacion">Unidad de Verificación</span>
+        <div className="acciones-topbar">
+          <SelectorIdioma />
+          <BotonTema />
+        </div>
+        <span className="etiqueta-verificacion">{t("pantallaSitio.unidadVerificacion")}</span>
         <button className="boton-skew" onClick={() => setModalAbierto(true)}>
-          <span>Ingresar</span>
+          <span>{t("pantallaSitio.ingresar")}</span>
         </button>
       </div>
 
@@ -57,7 +65,7 @@ export function PantallaSitio() {
         <img src={logo} alt="ICH" className="brand-mark" />
         <div className="pantalla-sitio-marca">
           <span className="brand-nombre">ICH</span>
-          <h1>{dispositivo?.nombre ?? "Cargando…"}</h1>
+          <h1>{dispositivo?.nombre ?? t("pantallaSitio.cargando")}</h1>
         </div>
       </div>
 

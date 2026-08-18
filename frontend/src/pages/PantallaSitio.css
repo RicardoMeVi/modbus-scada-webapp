@@ -1,3 +1,9 @@
+/* Esta pantalla replica el HMI físico (un kiosco siempre con la misma
+   apariencia clara) — el fondo y las tarjetas quedan fijos a propósito, así
+   que el texto también usa colores fijos en vez de var(--text)/var(--text-h):
+   esas variables sí cambian con el tema oscuro y sobre un fondo blanco fijo
+   quedaban casi invisibles. Los botones de tema/idioma sí siguen el tema
+   (tienen su propio color explícito, ver App.css .boton-tema/.boton-idioma). */
 .pantalla-sitio {
   min-height: 100svh;
   display: flex;
@@ -7,7 +13,7 @@
   gap: 2.5rem;
   padding: 2rem 1.5rem;
   background: linear-gradient(135deg, #e9ebea 0%, #e9ebea 42%, var(--accent) 72%, #123464 100%);
-  color: var(--text-h);
+  color: #1c2444;
   position: relative;
 }
 
@@ -30,7 +36,7 @@
 
 .pantalla-sitio-marca h1 {
   margin: 0;
-  color: var(--text-h);
+  color: #1c2444;
   font-size: 1.3rem;
 }
 
@@ -50,10 +56,10 @@
 
 .etiqueta-verificacion {
   position: absolute;
-  left: 0; 
+  left: 0;
   font-size: 1.15rem;
   font-weight: 500;
-  color: var(--text-h);
+  color: #1c2444;
 }
 
 .boton-skew {
@@ -69,7 +75,7 @@
   text-transform: uppercase;
   cursor: pointer;
   transform: skew(-21deg);
-  color: var(--text-h);
+  color: #1c2444;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
@@ -123,15 +129,15 @@
 
 .pantalla-sitio-stats .stat-label {
   font-size: 0.9rem;
-  color: var(--text);
+  color: #667085;
 }
 
 .pantalla-sitio-stats .stat-valor {
   font-size: 2.75rem;
   justify-content: center;
-  color: var(--text-h);
+  color: #1c2444;
 }
 
 .pantalla-sitio-error {
-  color: var(--text-h);
+  color: #1c2444;
 }

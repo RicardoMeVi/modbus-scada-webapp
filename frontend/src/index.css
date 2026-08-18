@@ -21,6 +21,8 @@
   --neutral-text: #4b5565;
   --shadow:
     rgba(31, 41, 89, 0.08) 0 10px 15px -3px, rgba(31, 41, 89, 0.04) 0 4px 6px -2px;
+  --card-header-1: #f4f5fc;
+  --card-header-2: #fbfbfe;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -41,8 +43,12 @@
   }
 }
 
+/* Paleta oscura: se aplica automáticamente si el sistema prefiere oscuro
+   Y el usuario no eligió nada a mano (:not([data-theme="light"])), o de
+   forma explícita cuando el botón de tema fija data-theme="dark" —
+   independiente de lo que diga el sistema operativo. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --text: #9aa7b5;
     --text-h: #f0f4f8;
     --bg: #12181f;
@@ -60,16 +66,49 @@
     --mal-bg: rgba(220, 38, 38, 0.14);
     --mal-border: rgba(220, 38, 38, 0.35);
     --mal-text: #f87171;
-    --neutral-bg: rgba(124, 136, 234, 0.12);
+    --neutral-bg: rgba(124, 136, 234, 0.22);
     --neutral-border: rgba(124, 136, 234, 0.3);
     --neutral-text: #b7bef0;
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    --card-header-1: #1c2636;
+    --card-header-2: #182029;
   }
 
   #social .button-icon {
     filter: invert(1) brightness(2);
   }
+}
+
+:root[data-theme="dark"] {
+  --text: #9aa7b5;
+  --text-h: #f0f4f8;
+  --bg: #12181f;
+  --border: #263340;
+  --code-bg: #1b2530;
+  --accent: #7c88ea;
+  --accent-2: #7fd8e8;
+  --accent-bg: rgba(124, 136, 234, 0.18);
+  --accent-border: rgba(124, 136, 234, 0.5);
+  --social-bg: rgba(47, 48, 58, 0.5);
+  --card-bg: #182029;
+  --ok-bg: rgba(22, 163, 74, 0.14);
+  --ok-border: rgba(22, 163, 74, 0.35);
+  --ok-text: #4ade80;
+  --mal-bg: rgba(220, 38, 38, 0.14);
+  --mal-border: rgba(220, 38, 38, 0.35);
+  --mal-text: #f87171;
+  --neutral-bg: rgba(124, 136, 234, 0.22);
+  --neutral-border: rgba(124, 136, 234, 0.3);
+  --neutral-text: #b7bef0;
+  --shadow:
+    rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  --card-header-1: #1c2636;
+  --card-header-2: #182029;
+}
+
+:root[data-theme="dark"] #social .button-icon {
+  filter: invert(1) brightness(2);
 }
 
 body {

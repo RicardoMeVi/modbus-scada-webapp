@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useDispositivos } from "../hooks/useDispositivos";
 import { IconoSeccion } from "../components/icons/IconoSeccion";
 import { InsigniaDispositivo } from "../components/InsigniaDispositivo";
@@ -9,16 +10,21 @@ import { FichaSitio } from "../components/FichaSitio";
 // Contraseña UTD y coordenadas. No incluye lecturas Modbus en vivo — esas
 // viven en el Dashboard y en la pantalla completa del sitio.
 export function DatosDelSitio() {
+  const { t } = useTranslation();
   const { dispositivos, error, cargando } = useDispositivos();
 
   return (
     <div>
-      <h2>Datos del sitio</h2>
+      <h2>{t("datosSitio.titulo")}</h2>
 
-      {cargando && <p className="pendiente">Cargando…</p>}
-      {error && <p className="error">{error} Reintentando…</p>}
+      {cargando && <p className="pendiente">{t("comun.cargando")}</p>}
+      {error && (
+        <p className="error">
+          {t("comun.noSeConectoBackend")} {t("comun.reintentando")}
+        </p>
+      )}
       {!cargando && !error && dispositivos.length === 0 && (
-        <p className="pendiente">No hay dispositivos configurados todavía.</p>
+        <p className="pendiente">{t("comun.noHayDispositivos")}</p>
       )}
 
       <div className="dispositivos">

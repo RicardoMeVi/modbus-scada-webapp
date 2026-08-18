@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { actualizarSms } from "../api";
 import { Toast } from "./Toast";
 import { IconoSeccion } from "./icons/IconoSeccion";
@@ -10,6 +11,7 @@ import { IconoSeccion } from "./icons/IconoSeccion";
 // se muestran de solo lectura, con el estado real de la unidad de pruebas
 // (sin antena/chip GSM conectados todavía).
 export function FichaSms({ dispositivo }) {
+  const { t } = useTranslation();
   const [campos, setCampos] = useState({
     numero: dispositivo.smsNumero ?? "",
     horaEnvio: dispositivo.smsHoraEnvio ?? "",
@@ -91,7 +93,7 @@ export function FichaSms({ dispositivo }) {
     <form className="ficha-sitio" onSubmit={guardar}>
       <div className="ficha-sitio-grid">
         <label className="campo-ancho">
-          Enviar mensaje a
+          {t("sms.enviarMensajeA")}
           <div className="campo-icono">
             <span className="icono-campo-izq">
               <IconoSeccion id="telefono-icon" size={16} />
@@ -99,19 +101,17 @@ export function FichaSms({ dispositivo }) {
             <input
               value={campos.numero}
               inputMode="numeric"
-              placeholder="Número de teléfono"
+              placeholder={t("sms.numeroTelefono")}
               className={numeroInvalido ? "campo-invalido" : undefined}
               disabled={enviando}
               onChange={(e) => actualizarNumero(e.target.value)}
             />
           </div>
-          {numeroInvalido && (
-            <span className="campo-error">El número de teléfono debe tener 10 dígitos.</span>
-          )}
+          {numeroInvalido && <span className="campo-error">{t("sms.numeroInvalido")}</span>}
         </label>
 
         <label className="campo-ancho">
-          Hora de envío automático
+          {t("sms.horaEnvioAutomatico")}
           <div className="hora-envio">
             <div className="campo-icono campo-icono-chico">
               <span className="icono-campo-izq">
@@ -144,40 +144,40 @@ export function FichaSms({ dispositivo }) {
                 onBlur={(e) => formatearDosDigitos("minutoEnvio", e.target.value)}
               />
             </div>
-            <span>hrs</span>
+            <span>{t("comun.hrs")}</span>
           </div>
         </label>
 
         <label className="campo-ancho">
-          Tipo de mensaje
+          {t("sms.tipoMensaje")}
           <select
             value={campos.tipoMensaje}
             disabled={enviando}
             onChange={(e) => actualizarCampo("tipoMensaje", e.target.value)}
           >
-            <option value="">Selecciona el tipo</option>
-            <option value="1">1 · Mensaje de UV</option>
-            <option value="3">3 · Mensaje de prueba</option>
+            <option value="">{t("comun.seleccionaTipo")}</option>
+            <option value="1">{t("comun.tipoUv")}</option>
+            <option value="3">{t("comun.tipoPrueba")}</option>
           </select>
         </label>
       </div>
 
       <div className="ficha-pie">
-        <p className="ficha-sms-leyenda">1 = Mensaje de UV &middot; 3 = Mensaje de prueba</p>
+        <p className="ficha-sms-leyenda">{t("comun.leyendaTipoMensaje")}</p>
 
         {!enviando && tipoMensajeValido && (
           <button
             type="button"
             className="ficha-sitio-guardar"
             disabled={!envioCompleto}
-            title={envioCompleto ? undefined : "Completá el número y la hora de envío automático para poder enviar."}
+            title={envioCompleto ? undefined : t("sms.completaCampos")}
             onClick={enviarSms}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="m22 2-7 20-4-9-9-4Z" />
               <path d="M22 2 11 13" />
             </svg>
-            Enviar mensaje
+            {t("sms.enviarBoton")}
           </button>
         )}
       </div>
@@ -186,7 +186,7 @@ export function FichaSms({ dispositivo }) {
         <div className="envio-sms-centrado">
           <div className="envio-sms-cargando">
             <div className="sms-envio-loader" />
-            <span>Enviando</span>
+            <span>{t("sms.enviando")}</span>
           </div>
         </div>
       )}
@@ -197,10 +197,10 @@ export function FichaSms({ dispositivo }) {
             <IconoSeccion id="antena-icon" size={19} />
           </div>
           <div className="estado-tarjeta-texto">
-            <span className="estado-tarjeta-label">GSM</span>
-            <span className="estado-tarjeta-sub">Estado de conexión</span>
+            <span className="estado-tarjeta-label">{t("sms.gsm")}</span>
+            <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
             <span className="estado-tarjeta-pill">
-              <span className="estado-dot" /> Desconectado
+              <span className="estado-dot" /> {t("comun.estadoDesconectado")}
             </span>
           </div>
         </div>
@@ -209,10 +209,10 @@ export function FichaSms({ dispositivo }) {
             <IconoSeccion id="senal-icon" size={19} />
           </div>
           <div className="estado-tarjeta-texto">
-            <span className="estado-tarjeta-label">GPRS</span>
-            <span className="estado-tarjeta-sub">Estado de conexión</span>
+            <span className="estado-tarjeta-label">{t("sms.gprs")}</span>
+            <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
             <span className="estado-tarjeta-pill">
-              <span className="estado-dot" /> Desconectado
+              <span className="estado-dot" /> {t("comun.estadoDesconectado")}
             </span>
           </div>
         </div>
@@ -221,10 +221,10 @@ export function FichaSms({ dispositivo }) {
             <IconoSeccion id="chip-icon" size={19} />
           </div>
           <div className="estado-tarjeta-texto">
-            <span className="estado-tarjeta-label">IHM</span>
-            <span className="estado-tarjeta-sub">Estado de conexión</span>
+            <span className="estado-tarjeta-label">{t("sms.ihm")}</span>
+            <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
             <span className="estado-tarjeta-pill">
-              <span className="estado-dot" /> Conectado
+              <span className="estado-dot" /> {t("comun.conectado")}
             </span>
           </div>
         </div>
@@ -235,10 +235,10 @@ export function FichaSms({ dispositivo }) {
           tipo={estado === "error" ? "error" : "ok"}
           mensaje={
             estado === "ok"
-              ? "Configuración de SMS guardada correctamente."
+              ? t("sms.toastGuardadoOk")
               : estado === "enviado"
-                ? "Mensaje enviado correctamente."
-                : "No se pudo guardar. Intentá de nuevo."
+                ? t("sms.toastEnviado")
+                : t("sms.toastError")
           }
           onCerrar={() => setEstado(null)}
         />
