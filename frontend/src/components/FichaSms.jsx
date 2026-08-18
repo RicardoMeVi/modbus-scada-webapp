@@ -3,15 +3,19 @@ import { useTranslation } from "react-i18next";
 import { actualizarSms } from "../api";
 import { Toast } from "./Toast";
 import { IconoSeccion } from "./icons/IconoSeccion";
+import { EstadoTarjeta } from "./EstadoTarjeta";
+import { useAlarmas } from "../hooks/useAlarmas";
 
 // Configuración de SMS, igual a la pantalla "SMS" del HMI físico
 // (Kinco/ICH): número de teléfono, hora/minuto de envío automático y tipo
 // de mensaje (1 = Mensaje de UV, 3 = Mensaje de prueba). GSM/GPRS/IHM son
-// los mismos bits de "Alarmas" (ver CONTEXTONuevo.md, sección 3.5) — acá
-// se muestran de solo lectura, con el estado real de la unidad de pruebas
-// (sin antena/chip GSM conectados todavía).
+// los mismos bits de "Alarmas" (especificación del Interrogador portátil,
+// sección 5) — se muestran de solo lectura, leídos del mismo
+// GET .../alarmas que usa la pantalla Alarmas, para que las dos digan lo
+// mismo.
 export function FichaSms({ dispositivo }) {
   const { t } = useTranslation();
+  const alarmas = useAlarmas(dispositivo.id);
   const [campos, setCampos] = useState({
     numero: dispositivo.smsNumero ?? "",
     horaEnvio: dispositivo.smsHoraEnvio ?? "",
@@ -192,42 +196,9 @@ export function FichaSms({ dispositivo }) {
       )}
 
       <div className="estado-tarjetas">
-        <div className="estado-tarjeta mal">
-          <div className="estado-tarjeta-icono">
-            <IconoSeccion id="antena-icon" size={19} />
-          </div>
-          <div className="estado-tarjeta-texto">
-            <span className="estado-tarjeta-label">{t("sms.gsm")}</span>
-            <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
-            <span className="estado-tarjeta-pill">
-              <span className="estado-dot" /> {t("comun.estadoDesconectado")}
-            </span>
-          </div>
-        </div>
-        <div className="estado-tarjeta mal">
-          <div className="estado-tarjeta-icono">
-            <IconoSeccion id="senal-icon" size={19} />
-          </div>
-          <div className="estado-tarjeta-texto">
-            <span className="estado-tarjeta-label">{t("sms.gprs")}</span>
-            <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
-            <span className="estado-tarjeta-pill">
-              <span className="estado-dot" /> {t("comun.estadoDesconectado")}
-            </span>
-          </div>
-        </div>
-        <div className="estado-tarjeta ok">
-          <div className="estado-tarjeta-icono">
-            <IconoSeccion id="chip-icon" size={19} />
-          </div>
-          <div className="estado-tarjeta-texto">
-            <span className="estado-tarjeta-label">{t("sms.ihm")}</span>
-            <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
-            <span className="estado-tarjeta-pill">
-              <span className="estado-dot" /> {t("comun.conectado")}
-            </span>
-          </div>
-        </div>
+        <EstadoTarjeta clave="gsmConectado" icono="antena-icon" alarmas={alarmas} label={t("sms.gsm")} />
+        <EstadoTarjeta clave="gprsConectado" icono="senal-icon" alarmas={alarmas} label={t("sms.gprs")} />
+        <EstadoTarjeta clave="ihm" icono="chip-icon" alarmas={alarmas} label={t("sms.ihm")} />
       </div>
 
       {estado && (

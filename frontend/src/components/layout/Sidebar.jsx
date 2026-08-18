@@ -23,6 +23,7 @@ export function Sidebar({ activo, onSeleccionar }) {
           </li>
         ))}
       </ul>
+      <span className="sidebar-version">v{__APP_VERSION__}</span>
     </nav>
   );
 }

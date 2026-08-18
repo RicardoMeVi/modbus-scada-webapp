@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispositivos } from "../hooks/useDispositivos";
-import { getAlarmas } from "../api";
+import { useAlarmas } from "../hooks/useAlarmas";
 import { IconoSeccion } from "../components/icons/IconoSeccion";
 import { InsigniaDispositivo } from "../components/InsigniaDispositivo";
 import { CardTextura } from "../components/layout/CardTextura";
+import { EstadoTarjeta } from "../components/EstadoTarjeta";
 
 // Claves de la pantalla "Estados / Alarmas" del HMI físico (Kinco/ICH). Ver
 // especificación del Interrogador portátil, sección 5: todas comparten el
@@ -18,18 +18,6 @@ const CLAVES_ALARMAS = [
   { clave: "gprsConectado", icono: "senal-icon" },
   { clave: "ihm", icono: "chip-icon" },
 ];
-
-const CLAVE_TEXTO_ESTADO = { ok: "comun.conectado", mal: "comun.estadoDesconectado", neutral: "comun.sinDato" };
-
-// "neutral" ahora es el estado de carga/error (todavía no llegó respuesta
-// del backend), no un LED apagado permanente como en la versión anterior
-// con datos fijos.
-function estadoDesde(alarmas, clave) {
-  if (!alarmas) {
-    return "neutral";
-  }
-  return alarmas[clave] ? "mal" : "ok";
-}
 
 export function Alarmas() {
   const { t } = useTranslation();
@@ -60,27 +48,7 @@ export function Alarmas() {
 
 function TarjetaAlarmas({ dispositivo }) {
   const { t } = useTranslation();
-  const [alarmas, setAlarmas] = useState(null);
-
-  useEffect(() => {
-    let cancelado = false;
-
-    getAlarmas(dispositivo.id)
-      .then((datos) => {
-        if (!cancelado) {
-          setAlarmas(datos);
-        }
-      })
-      .catch(() => {
-        if (!cancelado) {
-          setAlarmas(null);
-        }
-      });
-
-    return () => {
-      cancelado = true;
-    };
-  }, [dispositivo.id]);
+  const alarmas = useAlarmas(dispositivo.id);
 
   return (
     <div className="card">
@@ -97,23 +65,9 @@ function TarjetaAlarmas({ dispositivo }) {
 
       <div className="card-body">
         <div className="estado-tarjetas">
-          {CLAVES_ALARMAS.map(({ clave, icono }) => {
-            const estado = estadoDesde(alarmas, clave);
-            return (
-              <div key={clave} className={`estado-tarjeta ${estado}`}>
-                <div className="estado-tarjeta-icono">
-                  <IconoSeccion id={icono} size={19} />
-                </div>
-                <div className="estado-tarjeta-texto">
-                  <span className="estado-tarjeta-label">{t(`alarmas.${clave}`)}</span>
-                  <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
-                  <span className="estado-tarjeta-pill">
-                    <span className="estado-dot" /> {t(CLAVE_TEXTO_ESTADO[estado])}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+          {CLAVES_ALARMAS.map(({ clave, icono }) => (
+            <EstadoTarjeta key={clave} clave={clave} icono={icono} alarmas={alarmas} label={t(`alarmas.${clave}`)} />
+          ))}
         </div>
       </div>
     </div>

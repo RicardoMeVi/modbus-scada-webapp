@@ -8,9 +8,11 @@ pensado para ser escalable a múltiples pozos/sitios sin modificar código
 para cada uno nuevo.
 
 Ver [CONTEXTO.md](./CONTEXTO.md) para el detalle completo de arquitectura,
-decisiones técnicas y aprendizajes de Modbus, y
+decisiones técnicas y aprendizajes de Modbus,
 [PENDIENTES_INSTALACION.md](./PENDIENTES_INSTALACION.md) para lo que falta
-instalar/configurar manualmente.
+instalar/configurar manualmente, y
+[EJECUTABLE-CAMPO.md](./EJECUTABLE-CAMPO.md) para el modo sin nube
+(ejecutable de escritorio con Tauri + SQLite, para trabajo de campo).
 
 ## Estructura del repositorio
 

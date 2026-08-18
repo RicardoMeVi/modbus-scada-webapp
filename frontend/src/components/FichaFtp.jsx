@@ -4,6 +4,8 @@ import { actualizarFtp } from "../api";
 import { Toast } from "./Toast";
 import { BotonCopiar } from "./BotonCopiar";
 import { IconoSeccion } from "./icons/IconoSeccion";
+import { EstadoTarjeta } from "./EstadoTarjeta";
+import { useAlarmas } from "../hooks/useAlarmas";
 
 // IPv4: cuatro octetos 0-255 separados por punto.
 const IP_REGEX = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
@@ -13,9 +15,13 @@ const IP_REGEX = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[
 // almacenamiento, hora/minuto de envío automático y tipo de mensaje
 // (1 = Mensaje de UV, 3 = Mensaje de prueba). No son registros Modbus. Los
 // largos máximos vienen de la especificación real del equipo
-// (CONTEXTONuevo.md, sección 3.3: "String N car." por campo).
+// (especificación del Interrogador portátil, sección 3: "String N car."
+// por campo). Las tarjetas de GSM/GPRS/IHM sí leen del mismo
+// GET .../alarmas que usa la pantalla Alarmas, para que las dos digan lo
+// mismo.
 export function FichaFtp({ dispositivo }) {
   const { t } = useTranslation();
+  const alarmas = useAlarmas(dispositivo.id);
   const [campos, setCampos] = useState({
     ipServidor: dispositivo.ftpIpServidor ?? "",
     usuario: dispositivo.ftpUsuario ?? "",
@@ -237,42 +243,9 @@ export function FichaFtp({ dispositivo }) {
       <p className="ficha-sms-leyenda">{t("comun.leyendaTipoMensaje")}</p>
 
       <div className="estado-tarjetas">
-        <div className="estado-tarjeta mal">
-          <div className="estado-tarjeta-icono">
-            <IconoSeccion id="antena-icon" size={19} />
-          </div>
-          <div className="estado-tarjeta-texto">
-            <span className="estado-tarjeta-label">{t("ftp.gsm")}</span>
-            <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
-            <span className="estado-tarjeta-pill">
-              <span className="estado-dot" /> {t("comun.estadoDesconectado")}
-            </span>
-          </div>
-        </div>
-        <div className="estado-tarjeta mal">
-          <div className="estado-tarjeta-icono">
-            <IconoSeccion id="senal-icon" size={19} />
-          </div>
-          <div className="estado-tarjeta-texto">
-            <span className="estado-tarjeta-label">{t("ftp.gprs")}</span>
-            <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
-            <span className="estado-tarjeta-pill">
-              <span className="estado-dot" /> {t("comun.estadoDesconectado")}
-            </span>
-          </div>
-        </div>
-        <div className="estado-tarjeta ok">
-          <div className="estado-tarjeta-icono">
-            <IconoSeccion id="chip-icon" size={19} />
-          </div>
-          <div className="estado-tarjeta-texto">
-            <span className="estado-tarjeta-label">{t("ftp.ihm")}</span>
-            <span className="estado-tarjeta-sub">{t("comun.estadoConexion")}</span>
-            <span className="estado-tarjeta-pill">
-              <span className="estado-dot" /> {t("comun.conectado")}
-            </span>
-          </div>
-        </div>
+        <EstadoTarjeta clave="gsmConectado" icono="antena-icon" alarmas={alarmas} label={t("ftp.gsm")} />
+        <EstadoTarjeta clave="gprsConectado" icono="senal-icon" alarmas={alarmas} label={t("ftp.gprs")} />
+        <EstadoTarjeta clave="ihm" icono="chip-icon" alarmas={alarmas} label={t("ftp.ihm")} />
       </div>
 
       <div className="ficha-sitio-acciones">

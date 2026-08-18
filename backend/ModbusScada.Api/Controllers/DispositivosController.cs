@@ -164,23 +164,31 @@ public class DispositivosController : ControllerBase
         var registroAlarmas = dispositivo.Registros.FirstOrDefault(r => r.Nombre == "Alarmas");
         var registroIhm = dispositivo.Registros.FirstOrDefault(r => r.Nombre == "Alarma IHM");
 
-        ushort valorAlarmas = (ushort)await UltimoValorAsync(registroAlarmas);
-        ushort valorIhm = (ushort)await UltimoValorAsync(registroIhm);
+        double? valorAlarmas = await UltimoValorAsync(registroAlarmas);
+        double? valorIhm = await UltimoValorAsync(registroIhm);
 
         return new AlarmasResponse(
-            Alimentacion: ModbusStringCodec.GetBit(valorAlarmas, 0),
-            Bateria: ModbusStringCodec.GetBit(valorAlarmas, 1),
-            ComunicacionTxCaudal: ModbusStringCodec.GetBit(valorAlarmas, 2),
-            GsmConectado: ModbusStringCodec.GetBit(valorAlarmas, 3),
-            GprsConectado: ModbusStringCodec.GetBit(valorAlarmas, 4),
-            Ihm: ModbusStringCodec.GetBit(valorIhm, 0));
+            Alimentacion: BitOSinDato(valorAlarmas, 0),
+            Bateria: BitOSinDato(valorAlarmas, 1),
+            ComunicacionTxCaudal: BitOSinDato(valorAlarmas, 2),
+            GsmConectado: BitOSinDato(valorAlarmas, 3),
+            GprsConectado: BitOSinDato(valorAlarmas, 4),
+            Ihm: BitOSinDato(valorIhm, 0));
     }
 
-    private async Task<double> UltimoValorAsync(RegistroModbus? registro)
+    // null explícito cuando todavía no hay ninguna lectura (equipo recién
+    // configurado, o inalcanzable) -- distinto de "bit en 0". Sin esto, "sin
+    // dato" y "sin alarma" se veían idénticos (ambos en verde), que es
+    // justo la inconsistencia que se vio al probar contra RTU sin equipo
+    // conectado: todo aparecía "Conectado" en vez de "sin dato".
+    private static bool? BitOSinDato(double? valorRegistro, int bit) =>
+        valorRegistro is null ? null : ModbusStringCodec.GetBit((ushort)valorRegistro.Value, bit);
+
+    private async Task<double?> UltimoValorAsync(RegistroModbus? registro)
     {
         if (registro is null)
         {
-            return 0;
+            return null;
         }
 
         var lectura = await _db.LecturasHistoricas
@@ -188,7 +196,7 @@ public class DispositivosController : ControllerBase
             .OrderByDescending(l => l.Timestamp)
             .FirstOrDefaultAsync();
 
-        return lectura?.Valor ?? 0;
+        return lectura?.Valor;
     }
 
     [HttpGet("{id:int}/lecturas")]
@@ -254,12 +262,12 @@ public record FtpRequest(
     int? TipoMensaje);
 
 public record AlarmasResponse(
-    bool Alimentacion,
-    bool Bateria,
-    bool ComunicacionTxCaudal,
-    bool GsmConectado,
-    bool GprsConectado,
-    bool Ihm);
+    bool? Alimentacion,
+    bool? Bateria,
+    bool? ComunicacionTxCaudal,
+    bool? GsmConectado,
+    bool? GprsConectado,
+    bool? Ihm);
 
 public record ConexionRequest(
     string Nombre,
