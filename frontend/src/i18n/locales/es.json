@@ -108,6 +108,10 @@
     "hora": "Hora",
     "minutos": "Minutos",
     "segundos": "Segundos",
+    "diaInvalido": "Ese día no existe para el mes/año elegido.",
+    "anioInvalido": "El año debe estar entre 2000 y 2099.",
+    "usarCalendario": "Calendario",
+    "abrirCalendario": "Abrir selector de fecha",
     "toastOk": "Fecha y hora actualizadas correctamente.",
     "toastError": "No se pudo escribir la fecha/hora. Intentá de nuevo."
   },

@@ -5,10 +5,11 @@ namespace ModbusScada.Api.Services;
 
 // Para el ejecutable de campo (SQLite, hardware real): a diferencia de
 // MockDataSeeder, este no simula datos -- crea el dispositivo con el mismo
-// mapa Modbus real del equipo (UTD ICH PSI) pero con una IP de ejemplo, para
-// que la pantalla no aparezca vacía la primera vez que se instala en un
-// sitio. Quien instale el equipo corrige la IP real via PUT
-// /api/Dispositivos/{id}/conexion (expuesto en Swagger en este modo).
+// mapa Modbus real del equipo (UTD ICH PSI) pero con un puerto serial de
+// ejemplo ("COM3"), para que la pantalla no aparezca vacía la primera vez
+// que se instala en un sitio. Quien instale el equipo corrige el puerto
+// real via PUT /api/Dispositivos/{id}/conexion (expuesto en Swagger en
+// este modo).
 public static class PlaceholderDeviceSeeder
 {
     public static void EnsureDispositivoExiste(AppDbContext db)
@@ -20,7 +21,7 @@ public static class PlaceholderDeviceSeeder
 
         db.Dispositivos.Add(new Dispositivo
         {
-            Nombre = "Pozo (configurar conexión)",
+            Nombre = "UTD ICH PSI",
             // El equipo real (UTD/MOBICON) solo habla Modbus RTU sobre
             // RS-485 -- ver especificación del Interrogador portátil.
             // "COM3" es un placeholder; se corrige al instalar en un sitio

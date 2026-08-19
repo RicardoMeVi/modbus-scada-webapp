@@ -951,6 +951,45 @@
   border-color: var(--accent);
 }
 
+.ficha-fecha-acciones-top {
+  margin-bottom: 1rem;
+}
+
+.boton-calendario {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  background: var(--card-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.boton-calendario:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* El input de fecha nativo nunca se ve -- solo existe para que el botón de
+   arriba dispare su selector (showPicker) y volcar la fecha elegida en
+   Día/Mes/Año. display:none rompe showPicker() en algunos navegadores, por
+   eso se oculta así en vez de con display:none. */
+.input-fecha-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .registros {
   list-style: none;
   padding: 0;

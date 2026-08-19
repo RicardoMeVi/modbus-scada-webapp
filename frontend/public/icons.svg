@@ -24,6 +24,11 @@
     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.35" d="M3 8h14M7 2.5v3M13 2.5v3"/>
     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="m7.3 12.5 1.8 1.8 3.6-3.8"/>
   </symbol>
+  <symbol id="calendar-icon" viewBox="0 0 20 20">
+    <rect x="3" y="4" width="14" height="13" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.35"/>
+    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.35" d="M3 8h14M7 2.5v3M13 2.5v3"/>
+    <path fill="currentColor" d="M6.4 10.6h1.7v1.7H6.4zM9.15 10.6h1.7v1.7h-1.7zM11.9 10.6h1.7v1.7h-1.7zM6.4 13.3h1.7V15H6.4z"/>
+  </symbol>
   <symbol id="alarm-icon" viewBox="0 0 20 20">
     <path fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.35" d="M10 3.333 17.5 16.667H2.5Z"/>
     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.35" d="M10 8.75v3.333"/>

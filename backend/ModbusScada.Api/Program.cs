@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using ModbusScada.Api.Data;
 using ModbusScada.Api.Hubs;
@@ -122,8 +123,30 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Campo"))
 
 // El ejecutable de campo embebe el build de React en wwwroot y lo sirve
 // desde el mismo proceso. Inocuo en Render/Docker (ahí no existe wwwroot).
+//
+// Todo archivo SIN hash de contenido en el nombre (index.html, icons.svg,
+// favicon.svg -- cualquier cosa fuera de /assets/) nunca debe cachearse:
+// solo los archivos de /assets/ que genera Vite llevan un hash que cambia
+// solo si el contenido cambia, así que esos sí son seguros de cachear para
+// siempre. El WebView2 que usa Tauri mantiene una caché en disco que
+// sobrevive entre una ejecución de la app y la siguiente (no es como
+// refrescar una pestaña) -- sin este header, después de generar una
+// versión nueva del .exe la ventana puede seguir mostrando cualquiera de
+// estos archivos sin hash tal como estaban en una ejecución anterior,
+// aunque los archivos en disco ya estén actualizados (esto pasó de verdad
+// con icons.svg: index.html apuntaba bien al bundle nuevo, pero el ícono
+// nuevo agregado a icons.svg no aparecía porque ese archivo específico
+// seguía cacheado).
+void NoCachearSinHash(StaticFileResponseContext ctx)
+{
+    if (!ctx.Context.Request.Path.StartsWithSegments("/assets"))
+    {
+        ctx.Context.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+    }
+}
+
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions { OnPrepareResponse = NoCachearSinHash });
 
 // Sin certificado TLS en el sidecar local -- forzar HTTPS rompería todas
 // las llamadas.
@@ -143,6 +166,6 @@ app.MapGet("/health", async (AppDbContext db) =>
 
 app.MapControllers();
 app.MapHub<ModbusHub>("/hubs/modbus");
-app.MapFallbackToFile("index.html");
+app.MapFallbackToFile("index.html", new StaticFileOptions { OnPrepareResponse = NoCachearSinHash });
 
 app.Run();

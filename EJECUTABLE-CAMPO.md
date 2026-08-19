@@ -163,6 +163,16 @@ nuevo.
 - **Cambié código pero la app instalada sigue igual**: hay que desinstalar
   la versión vieja (o instalar la nueva encima, el instalador la reemplaza)
   y generar un `.exe`/instalador nuevo — ver arriba, no se actualiza sola.
+- **Reinstalé la versión nueva, la app ya estaba cerrada, y AUN ASÍ sigue
+  mostrando lo viejo**: esto pasó una vez y la causa fue caché del
+  navegador interno (WebView2), no un archivo desactualizado. A diferencia
+  de una pestaña de navegador normal, el perfil de WebView2 de Tauri **sí
+  persiste en disco entre una apertura de la app y la siguiente** — carpeta
+  `%LOCALAPPDATA%\<identifier del tauri.conf.json>\` (ej.
+  `C:\Users\<usuario>\AppData\Local\mx.ich.modbusscada.campo\`). El backend
+  ya manda `Cache-Control: no-cache` para `index.html` (ver `Program.cs`)
+  para que esto no vuelva a pasar, pero si alguna vez reaparece, borrar esa
+  carpeta a mano con la app cerrada fuerza que arranque de cero.
 
 ## Configurar la conexión real del equipo (RTU)
 
