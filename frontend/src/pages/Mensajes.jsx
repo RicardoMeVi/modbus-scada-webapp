@@ -4,6 +4,7 @@ import { IconoSeccion } from "../components/icons/IconoSeccion";
 import { InsigniaDispositivo } from "../components/InsigniaDispositivo";
 import { CardTextura } from "../components/layout/CardTextura";
 import { FichaSms } from "../components/FichaSms";
+import { EncabezadoPagina } from "../components/EncabezadoPagina";
 
 // Configuración de SMS, igual a la pantalla "SMS" del HMI físico
 // (Kinco/ICH). Ver CONTEXTONuevo.md, sección 3.4.
@@ -13,7 +14,7 @@ export function Mensajes() {
 
   return (
     <div>
-      <h2>{t("sms.titulo")}</h2>
+      <EncabezadoPagina titulo={t("sms.titulo")} dispositivo={dispositivos[0]} />
 
       {cargando && <p className="pendiente">{t("comun.cargando")}</p>}
       {error && (

@@ -4,6 +4,7 @@ import { IconoSeccion } from "../components/icons/IconoSeccion";
 import { InsigniaDispositivo } from "../components/InsigniaDispositivo";
 import { CardTextura } from "../components/layout/CardTextura";
 import { FichaFechaHora, NOMBRES_FECHA_HORA } from "../components/FichaFechaHora";
+import { EncabezadoPagina } from "../components/EncabezadoPagina";
 
 // Configuración de fecha/hora, igual a la pantalla "Configuración Fecha /
 // Hora" del HMI físico (Kinco/ICH). Ver CONTEXTONuevo.md, sección 3.1.
@@ -13,7 +14,7 @@ export function FechaHora({ lecturas }) {
 
   return (
     <div>
-      <h2>{t("fechaHora.titulo")}</h2>
+      <EncabezadoPagina titulo={t("fechaHora.titulo")} dispositivo={dispositivos[0]} />
 
       {cargando && <p className="pendiente">{t("comun.cargando")}</p>}
       {error && (

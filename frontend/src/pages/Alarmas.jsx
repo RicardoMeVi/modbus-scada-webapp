@@ -5,6 +5,7 @@ import { IconoSeccion } from "../components/icons/IconoSeccion";
 import { InsigniaDispositivo } from "../components/InsigniaDispositivo";
 import { CardTextura } from "../components/layout/CardTextura";
 import { EstadoTarjeta } from "../components/EstadoTarjeta";
+import { EncabezadoPagina } from "../components/EncabezadoPagina";
 
 // Claves de la pantalla "Estados / Alarmas" del HMI físico (Kinco/ICH). Ver
 // especificación del Interrogador portátil, sección 5: todas comparten el
@@ -25,7 +26,7 @@ export function Alarmas() {
 
   return (
     <div>
-      <h2>{t("alarmas.titulo")}</h2>
+      <EncabezadoPagina titulo={t("alarmas.titulo")} dispositivo={dispositivos[0]} />
 
       {cargando && <p className="pendiente">{t("comun.cargando")}</p>}
       {error && (

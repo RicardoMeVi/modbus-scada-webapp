@@ -31,7 +31,11 @@
     "tema": "Tema",
     "temaClaro": "Cambiar a tema claro",
     "temaOscuro": "Cambiar a tema oscuro",
-    "idioma": "Idioma"
+    "idioma": "Idioma",
+    "exportarReporte": "Exportar reporte",
+    "exportando": "Exportando…",
+    "exportarError": "No se pudo generar el reporte. Intentá de nuevo.",
+    "exportarListo": "Reporte descargado en la carpeta de Descargas."
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -154,5 +158,26 @@
     "cargando": "Cargando…",
     "sinDispositivos": "No hay dispositivos configurados todavía.",
     "noSeCargoSitio": "No se pudo cargar el sitio."
+  },
+  "reporte": {
+    "hojaConfiguracion": "Configuración",
+    "hojaAlarmas": "Alarmas",
+    "hojaLecturas": "Últimas lecturas",
+    "campo": "Campo",
+    "valor": "Valor",
+    "nombre": "Nombre",
+    "generadoEn": "Generado el",
+    "tipoConexion": "Tipo de conexión",
+    "ipAddress": "IP",
+    "puerto": "Puerto",
+    "puertoSerial": "Puerto serial",
+    "slaveId": "Slave ID",
+    "smsEnvio": "SMS - Hora de envío automático",
+    "ftpEnvio": "FTP - Hora de envío automático",
+    "alarma": "Alarma",
+    "estado": "Estado",
+    "registro": "Registro",
+    "unidad": "Unidad",
+    "fechaHora": "Fecha / hora"
   }
 }

@@ -4,6 +4,7 @@ import { IconoSeccion } from "../components/icons/IconoSeccion";
 import { InsigniaDispositivo } from "../components/InsigniaDispositivo";
 import { CardTextura } from "../components/layout/CardTextura";
 import { FichaSitio } from "../components/FichaSitio";
+import { EncabezadoPagina } from "../components/EncabezadoPagina";
 
 // Identificación del sitio, igual a la pantalla "Datos del sitio" del HMI
 // físico (Kinco/ICH): NSM, NSUE, NSUT, RFC, Unidad de verificación,
@@ -15,7 +16,7 @@ export function DatosDelSitio() {
 
   return (
     <div>
-      <h2>{t("datosSitio.titulo")}</h2>
+      <EncabezadoPagina titulo={t("datosSitio.titulo")} dispositivo={dispositivos[0]} />
 
       {cargando && <p className="pendiente">{t("comun.cargando")}</p>}
       {error && (

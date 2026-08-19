@@ -24,6 +24,12 @@
   --card-header-1: #f4f5fc;
   --card-header-2: #fbfbfe;
 
+  /* Verde suave para el botón "Exportar reporte" -- deliberadamente no
+     varía entre tema claro/oscuro (siempre texto blanco sobre relleno
+     sólido), a diferencia de --accent/--ok-* que sí se ajustan por tema. */
+  --export-bg: #3f8a68;
+  --export-bg-hover: #5aab84;
+
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;

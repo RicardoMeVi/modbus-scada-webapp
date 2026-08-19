@@ -161,6 +161,11 @@ public class DispositivosController : ControllerBase
             return NotFound();
         }
 
+        return await ObtenerAlarmasAsync(dispositivo);
+    }
+
+    private async Task<AlarmasResponse> ObtenerAlarmasAsync(Dispositivo dispositivo)
+    {
         var registroAlarmas = dispositivo.Registros.FirstOrDefault(r => r.Nombre == "Alarmas");
         var registroIhm = dispositivo.Registros.FirstOrDefault(r => r.Nombre == "Alarma IHM");
 
@@ -174,6 +179,66 @@ public class DispositivosController : ControllerBase
             GsmConectado: BitOSinDato(valorAlarmas, 3),
             GprsConectado: BitOSinDato(valorAlarmas, 4),
             Ihm: BitOSinDato(valorIhm, 0));
+    }
+
+    // "Foto" del sitio al momento de la visita: configuración actual +
+    // últimas lecturas + estado de alarmas, para que un técnico se la lleve
+    // como constancia sin depender de que otra notebook tenga la misma base
+    // de datos local (cada notebook guarda su propio historial, no se
+    // comparte entre equipos -- ver EJECUTABLE-CAMPO.md). Deliberadamente
+    // NO incluye contraseñas (ContrasenaUtd, FtpContrasena): es un reporte
+    // pensado para compartirse (correo, WhatsApp), no debe llevar
+    // credenciales en texto plano.
+    [HttpGet("{id:int}/reporte")]
+    public async Task<ActionResult<ReporteSitioResponse>> GetReporte(int id)
+    {
+        var dispositivo = await _db.Dispositivos.Include(d => d.Registros).FirstOrDefaultAsync(d => d.Id == id);
+        if (dispositivo is null)
+        {
+            return NotFound();
+        }
+
+        var alarmas = await ObtenerAlarmasAsync(dispositivo);
+
+        var ultimasLecturas = new List<LecturaRegistroReporte>();
+        foreach (var registro in dispositivo.Registros)
+        {
+            var lectura = await _db.LecturasHistoricas
+                .Where(l => l.RegistroModbusId == registro.Id)
+                .OrderByDescending(l => l.Timestamp)
+                .FirstOrDefaultAsync();
+
+            ultimasLecturas.Add(new LecturaRegistroReporte(
+                registro.Nombre, lectura?.Valor, registro.Unidad, lectura?.Timestamp));
+        }
+
+        return new ReporteSitioResponse(
+            dispositivo.Nombre,
+            DateTime.UtcNow,
+            dispositivo.IpAddress,
+            dispositivo.Puerto,
+            dispositivo.SlaveId,
+            dispositivo.Conexion,
+            dispositivo.PuertoSerial,
+            dispositivo.Nsm,
+            dispositivo.Nsue,
+            dispositivo.Nsut,
+            dispositivo.Rfc,
+            dispositivo.UnidadVerificacion,
+            dispositivo.Latitud,
+            dispositivo.Longitud,
+            dispositivo.SmsNumero,
+            dispositivo.SmsHoraEnvio,
+            dispositivo.SmsMinutoEnvio,
+            dispositivo.SmsTipoMensaje,
+            dispositivo.FtpIpServidor,
+            dispositivo.FtpUsuario,
+            dispositivo.FtpCarpeta,
+            dispositivo.FtpHoraEnvio,
+            dispositivo.FtpMinutoEnvio,
+            dispositivo.FtpTipoMensaje,
+            alarmas,
+            ultimasLecturas);
     }
 
     // null explícito cuando todavía no hay ninguna lectura (equipo recién
@@ -276,3 +341,33 @@ public record ConexionRequest(
     byte SlaveId,
     TipoConexion Conexion,
     string? PuertoSerial);
+
+public record LecturaRegistroReporte(string Nombre, double? Valor, string? Unidad, DateTime? Timestamp);
+
+public record ReporteSitioResponse(
+    string Nombre,
+    DateTime GeneradoEn,
+    string? IpAddress,
+    int Puerto,
+    byte SlaveId,
+    TipoConexion Conexion,
+    string? PuertoSerial,
+    string? Nsm,
+    string? Nsue,
+    string? Nsut,
+    string? Rfc,
+    string? UnidadVerificacion,
+    string? Latitud,
+    string? Longitud,
+    string? SmsNumero,
+    int? SmsHoraEnvio,
+    int? SmsMinutoEnvio,
+    int? SmsTipoMensaje,
+    string? FtpIpServidor,
+    string? FtpUsuario,
+    string? FtpCarpeta,
+    string? FtpHoraEnvio,
+    string? FtpMinutoEnvio,
+    int? FtpTipoMensaje,
+    AlarmasResponse Alarmas,
+    List<LecturaRegistroReporte> UltimasLecturas);

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getDispositivos } from "../api";
 import { traducirNombreRegistro } from "../i18n/registros";
+import { EncabezadoPagina } from "../components/EncabezadoPagina";
 
 // Pantalla de bienvenida del Panel de control: resumen del estado del
 // sistema y accesos directos a las demás secciones. Es la primera sección
@@ -24,7 +25,7 @@ export function Dashboard({ lecturas, conectado, onNavegar }) {
 
   return (
     <div>
-      <h2>{t("dashboard.titulo")}</h2>
+      <EncabezadoPagina titulo={t("dashboard.titulo")} dispositivo={dispositivo} />
 
       {error && <p className="error">{error}</p>}
 

@@ -4,6 +4,7 @@ import { IconoSeccion } from "../components/icons/IconoSeccion";
 import { InsigniaDispositivo } from "../components/InsigniaDispositivo";
 import { CardTextura } from "../components/layout/CardTextura";
 import { FichaFtp } from "../components/FichaFtp";
+import { EncabezadoPagina } from "../components/EncabezadoPagina";
 
 // Configuración de FTP, igual a la pantalla "FTP" del HMI físico
 // (Kinco/ICH). Ver CONTEXTONuevo.md, sección 3.4.
@@ -13,7 +14,7 @@ export function Ftp() {
 
   return (
     <div>
-      <h2>{t("ftp.titulo")}</h2>
+      <EncabezadoPagina titulo={t("ftp.titulo")} dispositivo={dispositivos[0]} />
 
       {cargando && <p className="pendiente">{t("comun.cargando")}</p>}
       {error && (

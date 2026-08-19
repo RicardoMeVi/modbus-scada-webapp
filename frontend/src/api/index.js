@@ -45,6 +45,12 @@ export function getAlarmas(dispositivoId) {
   return api.get(`/api/dispositivos/${dispositivoId}/alarmas`).then((res) => res.data);
 }
 
+// "Foto" del sitio (configuración + últimas lecturas + alarmas) para
+// exportar como constancia -- ver GetReporte en DispositivosController.
+export function getReporte(dispositivoId) {
+  return api.get(`/api/dispositivos/${dispositivoId}/reporte`).then((res) => res.data);
+}
+
 // Devuelve { ok: true } si el PIN es correcto. Si no, distingue { ok:
 // false, motivo: "incorrecto" } (el backend respondió que el PIN está mal)
 // de { ok: false, motivo: "conexion" } (no hubo respuesta: backend caído,

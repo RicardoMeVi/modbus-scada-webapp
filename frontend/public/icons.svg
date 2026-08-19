@@ -29,6 +29,10 @@
     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.35" d="M3 8h14M7 2.5v3M13 2.5v3"/>
     <path fill="currentColor" d="M6.4 10.6h1.7v1.7H6.4zM9.15 10.6h1.7v1.7h-1.7zM11.9 10.6h1.7v1.7h-1.7zM6.4 13.3h1.7V15H6.4z"/>
   </symbol>
+  <symbol id="descargar-icon" viewBox="0 0 20 20">
+    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="M10 2.5v10M6.2 9.2 10 13l3.8-3.8"/>
+    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.35" d="M3.5 14v1.8a1.7 1.7 0 0 0 1.7 1.7h9.6a1.7 1.7 0 0 0 1.7-1.7V14"/>
+  </symbol>
   <symbol id="alarm-icon" viewBox="0 0 20 20">
     <path fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.35" d="M10 3.333 17.5 16.667H2.5Z"/>
     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.35" d="M10 8.75v3.333"/>

@@ -4,6 +4,7 @@ import { IconoSeccion } from "../components/icons/IconoSeccion";
 import { InsigniaDispositivo } from "../components/InsigniaDispositivo";
 import { CardTextura } from "../components/layout/CardTextura";
 import { traducirNombreRegistro } from "../i18n/registros";
+import { EncabezadoPagina } from "../components/EncabezadoPagina";
 
 // Sección "Medidores": Caudal instantáneo y Totalizado, solo lectura.
 // Es el caso más simple del mapa de registros real (ver CONTEXTONuevo.md,
@@ -17,7 +18,7 @@ export function Medidores({ lecturas }) {
 
   return (
     <div>
-      <h2>{t("medidores.titulo")}</h2>
+      <EncabezadoPagina titulo={t("medidores.titulo")} dispositivo={dispositivos[0]} />
 
       {cargando && <p className="pendiente">{t("comun.cargando")}</p>}
       {error && (
