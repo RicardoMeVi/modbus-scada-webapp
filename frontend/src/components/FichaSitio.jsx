@@ -32,7 +32,7 @@ export function FichaSitio({ dispositivo }) {
     longitud: dispositivo.longitud ?? "",
   });
   const [guardando, setGuardando] = useState(false);
-  const [estado, setEstado] = useState(null); // "ok" | "error" | null
+  const [estado, setEstado] = useState(null); // "ok" | "aviso" | "error" | null
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
   const rfcInvalido = campos.rfc !== "" && !RFC_REGEX.test(campos.rfc);
@@ -84,7 +84,7 @@ export function FichaSitio({ dispositivo }) {
     if (hayErrores) return;
     setGuardando(true);
     try {
-      await actualizarDatosSitio(dispositivo.id, {
+      const resultado = await actualizarDatosSitio(dispositivo.id, {
         nsm: campos.nsm || null,
         nsue: campos.nsue || null,
         nsut: campos.nsut || null,
@@ -94,7 +94,7 @@ export function FichaSitio({ dispositivo }) {
         latitud: campos.latitud || null,
         longitud: campos.longitud || null,
       });
-      setEstado("ok");
+      setEstado(resultado.escritoEnEquipo ? "ok" : "aviso");
     } catch {
       setEstado("error");
     } finally {
@@ -256,7 +256,13 @@ export function FichaSitio({ dispositivo }) {
       {estado && (
         <Toast
           tipo={estado}
-          mensaje={estado === "ok" ? t("datosSitio.toastOk") : t("datosSitio.toastError")}
+          mensaje={
+            estado === "ok"
+              ? t("datosSitio.toastOk")
+              : estado === "aviso"
+                ? t("datosSitio.toastAviso")
+                : t("datosSitio.toastError")
+          }
           onCerrar={() => setEstado(null)}
         />
       )}

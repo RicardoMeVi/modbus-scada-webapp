@@ -16,6 +16,9 @@
   --mal-bg: #fdedef;
   --mal-border: rgba(220, 38, 38, 0.2);
   --mal-text: #dc2626;
+  --aviso-bg: #fef6e7;
+  --aviso-border: rgba(217, 119, 6, 0.25);
+  --aviso-text: #b45309;
   --neutral-bg: #f2f3fb;
   --neutral-border: rgba(79, 95, 217, 0.18);
   --neutral-text: #4b5565;
@@ -72,6 +75,9 @@
     --mal-bg: rgba(220, 38, 38, 0.14);
     --mal-border: rgba(220, 38, 38, 0.35);
     --mal-text: #f87171;
+    --aviso-bg: rgba(217, 119, 6, 0.16);
+    --aviso-border: rgba(217, 119, 6, 0.4);
+    --aviso-text: #fbbf24;
     --neutral-bg: rgba(124, 136, 234, 0.22);
     --neutral-border: rgba(124, 136, 234, 0.3);
     --neutral-text: #b7bef0;
@@ -104,6 +110,9 @@
   --mal-bg: rgba(220, 38, 38, 0.14);
   --mal-border: rgba(220, 38, 38, 0.35);
   --mal-text: #f87171;
+  --aviso-bg: rgba(217, 119, 6, 0.16);
+  --aviso-border: rgba(217, 119, 6, 0.4);
+  --aviso-text: #fbbf24;
   --neutral-bg: rgba(124, 136, 234, 0.22);
   --neutral-border: rgba(124, 136, 234, 0.3);
   --neutral-text: #b7bef0;

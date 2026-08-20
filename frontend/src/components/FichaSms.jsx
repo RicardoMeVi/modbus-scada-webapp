@@ -79,13 +79,13 @@ export function FichaSms({ dispositivo }) {
     e.preventDefault();
     setGuardando(true);
     try {
-      await actualizarSms(dispositivo.id, {
+      const resultado = await actualizarSms(dispositivo.id, {
         numero: campos.numero || null,
         horaEnvio: campos.horaEnvio === "" ? null : Number(campos.horaEnvio),
         minutoEnvio: campos.minutoEnvio === "" ? null : Number(campos.minutoEnvio),
         tipoMensaje: campos.tipoMensaje === "" ? null : Number(campos.tipoMensaje),
       });
-      setEstado("ok");
+      setEstado(resultado.escritoEnEquipo ? "ok" : "aviso");
     } catch {
       setEstado("error");
     } finally {
@@ -203,13 +203,15 @@ export function FichaSms({ dispositivo }) {
 
       {estado && (
         <Toast
-          tipo={estado === "error" ? "error" : "ok"}
+          tipo={estado === "error" ? "error" : estado === "aviso" ? "aviso" : "ok"}
           mensaje={
             estado === "ok"
               ? t("sms.toastGuardadoOk")
-              : estado === "enviado"
-                ? t("sms.toastEnviado")
-                : t("sms.toastError")
+              : estado === "aviso"
+                ? t("sms.toastGuardadoAviso")
+                : estado === "enviado"
+                  ? t("sms.toastEnviado")
+                  : t("sms.toastError")
           }
           onCerrar={() => setEstado(null)}
         />

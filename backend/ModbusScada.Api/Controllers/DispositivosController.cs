@@ -53,9 +53,14 @@ public class DispositivosController : ControllerBase
 
     // Actualiza los datos de identificación del sitio (pantalla "Datos del
     // sitio" del HMI físico): NSM, NSUE, NSUT, RFC, Unidad de verificación,
-    // Contraseña UTD y coordenadas. No son registros Modbus.
+    // Contraseña UTD y coordenadas. Estos campos SÍ tienen registros Modbus
+    // reales (ver SiteRegisterMap) -- se guardan siempre local, y además se
+    // intenta escribirlos en el equipo. EscritoEnEquipo=false no es un
+    // error de la petición (el guardado local ya ocurrió) -- le dice al
+    // frontend que lo guardado todavía no está confirmado en el equipo real
+    // (apagado, desconectado, etc.), para que no lo dé por hecho en silencio.
     [HttpPut("{id:int}/datos-sitio")]
-    public async Task<IActionResult> ActualizarDatosSitio(int id, [FromBody] DatosSitioRequest request)
+    public async Task<ActionResult<EscrituraSitioResponse>> ActualizarDatosSitio(int id, [FromBody] DatosSitioRequest request)
     {
         var dispositivo = await _db.Dispositivos.FindAsync(id);
         if (dispositivo is null)
@@ -73,15 +78,16 @@ public class DispositivosController : ControllerBase
         dispositivo.Longitud = request.Longitud;
 
         await _db.SaveChangesAsync();
-        await _siteConfigWriter.EscribirAsync(dispositivo);
-        return NoContent();
+        var escritoEnEquipo = await _siteConfigWriter.EscribirAsync(dispositivo);
+        return new EscrituraSitioResponse(escritoEnEquipo);
     }
 
     // Actualiza la configuración de SMS (pantalla "SMS" del HMI físico):
     // número de teléfono, hora/minuto de envío automático y tipo de
-    // mensaje (1 = UV, 3 = prueba). No son registros Modbus.
+    // mensaje (1 = UV, 3 = prueba). Mismo patrón guardado-local +
+    // intento-de-escritura-real que ActualizarDatosSitio.
     [HttpPut("{id:int}/sms")]
-    public async Task<IActionResult> ActualizarSms(int id, [FromBody] SmsRequest request)
+    public async Task<ActionResult<EscrituraSitioResponse>> ActualizarSms(int id, [FromBody] SmsRequest request)
     {
         var dispositivo = await _db.Dispositivos.FindAsync(id);
         if (dispositivo is null)
@@ -95,15 +101,15 @@ public class DispositivosController : ControllerBase
         dispositivo.SmsTipoMensaje = request.TipoMensaje;
 
         await _db.SaveChangesAsync();
-        await _siteConfigWriter.EscribirAsync(dispositivo);
-        return NoContent();
+        var escritoEnEquipo = await _siteConfigWriter.EscribirAsync(dispositivo);
+        return new EscrituraSitioResponse(escritoEnEquipo);
     }
 
     // Actualiza la configuración de FTP (pantalla "FTP" del HMI físico):
     // IP servidor, usuario, contraseña, carpeta, hora/minuto de envío
-    // automático y tipo de mensaje. No son registros Modbus.
+    // automático y tipo de mensaje. Mismo patrón que los dos anteriores.
     [HttpPut("{id:int}/ftp")]
-    public async Task<IActionResult> ActualizarFtp(int id, [FromBody] FtpRequest request)
+    public async Task<ActionResult<EscrituraSitioResponse>> ActualizarFtp(int id, [FromBody] FtpRequest request)
     {
         var dispositivo = await _db.Dispositivos.FindAsync(id);
         if (dispositivo is null)
@@ -120,8 +126,8 @@ public class DispositivosController : ControllerBase
         dispositivo.FtpTipoMensaje = request.TipoMensaje;
 
         await _db.SaveChangesAsync();
-        await _siteConfigWriter.EscribirAsync(dispositivo);
-        return NoContent();
+        var escritoEnEquipo = await _siteConfigWriter.EscribirAsync(dispositivo);
+        return new EscrituraSitioResponse(escritoEnEquipo);
     }
 
     // Actualiza los datos de conexión Modbus (IP, puerto, slave id, TCP/RTU,
@@ -373,6 +379,10 @@ public record ConexionRequest(
     string? PuertoSerial);
 
 public record DetectarPuertoResponse(bool Encontrado, string? PuertoSerial);
+
+// Ver ISiteConfigWriter -- distingue "se guardó localmente" (siempre, si
+// llegamos hasta acá) de "y además el equipo real lo confirmó".
+public record EscrituraSitioResponse(bool EscritoEnEquipo);
 
 public record LecturaRegistroReporte(string Nombre, double? Valor, string? Unidad, DateTime? Timestamp);
 

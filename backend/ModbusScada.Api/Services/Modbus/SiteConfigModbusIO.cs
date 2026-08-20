@@ -13,8 +13,15 @@ namespace ModbusScada.Api.Services.Modbus;
 // los demás en vez de abortar todo.
 public static class SiteConfigModbusIO
 {
-    public static async Task EscribirCamposAsync(IModbusMaster master, Dispositivo dispositivo, ILogger logger)
+    // Devuelve false si al menos un campo falló al escribirse -- best-effort
+    // por campo (uno que falle no aborta los demás), pero el llamador
+    // necesita saber si TODO se reflejó en el equipo o no, para que la UI
+    // pueda avisarle al usuario en vez de asumir que "guardado" significa
+    // "confirmado en el equipo".
+    public static async Task<bool> EscribirCamposAsync(IModbusMaster master, Dispositivo dispositivo, ILogger logger)
     {
+        bool huboError = false;
+
         foreach (var campo in SiteRegisterMap.Campos)
         {
             try
@@ -23,10 +30,13 @@ public static class SiteConfigModbusIO
             }
             catch (Exception ex)
             {
+                huboError = true;
                 logger.LogWarning(ex, "No se pudo escribir '{Campo}' (dirección {Direccion}) en el dispositivo {Nombre}",
                     campo.Propiedad, campo.Direccion, dispositivo.Nombre);
             }
         }
+
+        return !huboError;
     }
 
     public static async Task LeerCamposAsync(IModbusMaster master, Dispositivo dispositivo, ILogger logger)

@@ -61,6 +61,14 @@ builder.Services.AddSignalR();
 // del sistema operativo, no depende de si el sondeo de fondo es simulado.
 builder.Services.AddSingleton<IPuertoSerialDetector, PuertoSerialDetector>();
 
+// Purga periódica de LecturasHistoricas (ver HistorialPurgaService) -- solo
+// tiene sentido con persistencia real (Sqlite/Postgres); con InMemory la
+// base entera desaparece al cerrar la app, no hay nada que purgar.
+if (usarSqlite || usarPostgres)
+{
+    builder.Services.AddHostedService<HistorialPurgaService>();
+}
+
 if (useMockData)
 {
     builder.Services.AddSingleton<MockModbusPollingService>();
