@@ -913,6 +913,52 @@
   cursor: default;
 }
 
+.ficha-conexion-detectar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
+}
+
+.boton-detectar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  padding: 0.55rem 1.3rem;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.boton-detectar:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.boton-detectar:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.conexion-mensaje {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.conexion-mensaje.ok {
+  color: var(--ok-text);
+}
+
+.conexion-mensaje.mal {
+  color: var(--mal-text);
+}
+
 @media (max-width: 420px) {
   .ficha-sitio-grid {
     grid-template-columns: 1fr;

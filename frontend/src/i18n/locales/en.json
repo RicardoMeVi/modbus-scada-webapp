@@ -71,6 +71,16 @@
     "latitudInvalida": "Latitude must be between -90 and 90.",
     "longitudInvalida": "Longitude must be between -180 and 180."
   },
+  "conexion": {
+    "titulo": "Device connection",
+    "puertoSerial": "Serial port",
+    "detectarAutomaticamente": "Detect automatically",
+    "detectando": "Detecting…",
+    "encontrado": "Device found on {{puerto}}.",
+    "noEncontrado": "No device responded. Pick the port from the list or type it in.",
+    "toastOk": "Connection saved successfully.",
+    "toastError": "Could not save. Try again."
+  },
   "sms": {
     "titulo": "Message (SMS)",
     "enviarMensajeA": "Send message to",

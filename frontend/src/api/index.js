@@ -51,6 +51,26 @@ export function getReporte(dispositivoId) {
   return api.get(`/api/dispositivos/${dispositivoId}/reporte`).then((res) => res.data);
 }
 
+// Configuración de conexión Modbus RTU del equipo real (puerto serial).
+export function actualizarConexion(dispositivoId, datos) {
+  return api.put(`/api/dispositivos/${dispositivoId}/conexion`, datos);
+}
+
+// Puertos COM que Windows ve conectados ahora -- respaldo manual si la
+// detección automática no encuentra el equipo.
+export function getPuertosDisponibles() {
+  return api.get("/api/dispositivos/puertos-disponibles").then((res) => res.data);
+}
+
+// Prueba cada puerto COM disponible con una lectura Modbus real hasta
+// encontrar el equipo -- puede tardar varios segundos, de ahí el timeout
+// mayor al del cliente axios por defecto.
+export function detectarPuerto(dispositivoId) {
+  return api
+    .post(`/api/dispositivos/${dispositivoId}/detectar-puerto`, null, { timeout: 20000 })
+    .then((res) => res.data);
+}
+
 // Devuelve { ok: true } si el PIN es correcto. Si no, distingue { ok:
 // false, motivo: "incorrecto" } (el backend respondió que el PIN está mal)
 // de { ok: false, motivo: "conexion" } (no hubo respuesta: backend caído,

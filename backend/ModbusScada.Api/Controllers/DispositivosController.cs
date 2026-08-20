@@ -14,12 +14,18 @@ public class DispositivosController : ControllerBase
     private readonly AppDbContext _db;
     private readonly IModbusWriter _modbusWriter;
     private readonly ISiteConfigWriter _siteConfigWriter;
+    private readonly IPuertoSerialDetector _puertoDetector;
 
-    public DispositivosController(AppDbContext db, IModbusWriter modbusWriter, ISiteConfigWriter siteConfigWriter)
+    public DispositivosController(
+        AppDbContext db,
+        IModbusWriter modbusWriter,
+        ISiteConfigWriter siteConfigWriter,
+        IPuertoSerialDetector puertoDetector)
     {
         _db = db;
         _modbusWriter = modbusWriter;
         _siteConfigWriter = siteConfigWriter;
+        _puertoDetector = puertoDetector;
     }
 
     [HttpGet]
@@ -140,6 +146,30 @@ public class DispositivosController : ControllerBase
 
         await _db.SaveChangesAsync();
         return NoContent();
+    }
+
+    // Puertos COM que Windows ve conectados ahora mismo -- respaldo manual
+    // para cuando la detección automática (abajo) no encuentra nada.
+    [HttpGet("puertos-disponibles")]
+    public ActionResult<IReadOnlyList<string>> GetPuertosDisponibles()
+    {
+        return Ok(_puertoDetector.ListarPuertosDisponibles());
+    }
+
+    // Prueba cada puerto COM disponible con una lectura Modbus real hasta
+    // encontrar el que responde -- ver PuertoSerialDetector. Puede tardar
+    // unos segundos si hay varios puertos para probar.
+    [HttpPost("{id:int}/detectar-puerto")]
+    public async Task<ActionResult<DetectarPuertoResponse>> DetectarPuerto(int id, CancellationToken ct)
+    {
+        var dispositivo = await _db.Dispositivos.FindAsync([id], ct);
+        if (dispositivo is null)
+        {
+            return NotFound();
+        }
+
+        var puertoEncontrado = await _puertoDetector.DetectarAsync(dispositivo.SlaveId, ct);
+        return new DetectarPuertoResponse(puertoEncontrado is not null, puertoEncontrado);
     }
 
     // Estado de alarmas (pantalla "Alarmas" del HMI físico): registro 15
@@ -341,6 +371,8 @@ public record ConexionRequest(
     byte SlaveId,
     TipoConexion Conexion,
     string? PuertoSerial);
+
+public record DetectarPuertoResponse(bool Encontrado, string? PuertoSerial);
 
 public record LecturaRegistroReporte(string Nombre, double? Valor, string? Unidad, DateTime? Timestamp);
 

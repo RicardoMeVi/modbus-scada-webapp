@@ -57,6 +57,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddSignalR();
 
+// Disponible en ambos modos (mock y real): solo lista/prueba puertos COM
+// del sistema operativo, no depende de si el sondeo de fondo es simulado.
+builder.Services.AddSingleton<IPuertoSerialDetector, PuertoSerialDetector>();
+
 if (useMockData)
 {
     builder.Services.AddSingleton<MockModbusPollingService>();

@@ -176,8 +176,11 @@ nuevo.
 
 ## Configurar la conexión real del equipo (RTU)
 
-No hay pantalla en la app para poner la IP/puerto serial del equipo real
-todavía — se hace una sola vez por sitio, vía Swagger (habilitado en modo
-Campo): abrir `http://127.0.0.1:5136/swagger` mientras la app está
-corriendo, y usar `PUT /api/Dispositivos/{id}/conexion` con el puerto COM
-real (ej. `COM4`) y el resto de los datos del equipo.
+Desde "Datos del sitio" → tarjeta "Conexión del equipo": el botón "Detectar
+automáticamente" prueba cada puerto COM que Windows ve conectado con una
+lectura Modbus real (registro 15, confirmado contra la especificación del
+Interrogador portátil) hasta encontrar el que responde, y llena el campo
+solo. Si no encuentra nada (cable no conectado, equipo apagado, adaptador
+no reconocido), el campo de puerto serial sigue editable a mano, con los
+puertos que ve Windows como sugerencia. En ambos casos hay que tocar
+"Guardar" para persistirlo — la detección sola no guarda nada.

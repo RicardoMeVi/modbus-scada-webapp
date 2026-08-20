@@ -71,6 +71,16 @@
     "latitudInvalida": "La latitud debe estar entre -90 y 90.",
     "longitudInvalida": "La longitud debe estar entre -180 y 180."
   },
+  "conexion": {
+    "titulo": "Conexión del equipo",
+    "puertoSerial": "Puerto serial",
+    "detectarAutomaticamente": "Detectar automáticamente",
+    "detectando": "Detectando…",
+    "encontrado": "Equipo encontrado en {{puerto}}.",
+    "noEncontrado": "No se encontró ningún equipo respondiendo. Elegí el puerto de la lista o escribilo a mano.",
+    "toastOk": "Conexión guardada correctamente.",
+    "toastError": "No se pudo guardar. Intentá de nuevo."
+  },
   "sms": {
     "titulo": "Mensaje (SMS)",
     "enviarMensajeA": "Enviar mensaje a",

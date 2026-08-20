@@ -4,6 +4,7 @@ import { IconoSeccion } from "../components/icons/IconoSeccion";
 import { InsigniaDispositivo } from "../components/InsigniaDispositivo";
 import { CardTextura } from "../components/layout/CardTextura";
 import { FichaSitio } from "../components/FichaSitio";
+import { FichaConexion } from "../components/FichaConexion";
 import { EncabezadoPagina } from "../components/EncabezadoPagina";
 
 // Identificación del sitio, igual a la pantalla "Datos del sitio" del HMI
@@ -44,6 +45,24 @@ export function DatosDelSitio() {
 
             <div className="card-body">
               <FichaSitio dispositivo={dispositivo} />
+            </div>
+          </div>
+        ))}
+
+        {dispositivos.map((dispositivo) => (
+          <div key={`conexion-${dispositivo.id}`} className="card">
+            <div className="card-header">
+              <CardTextura />
+              <div className="icono-tarjeta">
+                <IconoSeccion id="enchufe-icon" size={24} />
+              </div>
+              <div>
+                <h3>{t("conexion.titulo")}</h3>
+              </div>
+            </div>
+
+            <div className="card-body">
+              <FichaConexion dispositivo={dispositivo} />
             </div>
           </div>
         ))}
