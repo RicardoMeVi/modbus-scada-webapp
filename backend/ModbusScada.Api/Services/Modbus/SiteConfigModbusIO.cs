@@ -55,6 +55,15 @@ public static class SiteConfigModbusIO
         }
     }
 
+    // Escribe y relee el mismo campo para confirmar -- una escritura Modbus
+    // puede recibir ACK a nivel protocolo (sin excepción) sin que el valor
+    // haya quedado realmente grabado del otro lado (interferencia en el
+    // bus, el equipo se queda sin resolver justo en ese instante, etc.).
+    // Si lo releído no coincide con lo que se mandó, se trata como fallo de
+    // este campo (tira, el llamador ya lo cuenta como error) en vez de
+    // darlo por bueno solo porque el maestro no vio una excepción. Mismo
+    // patrón que ya documenta la especificación para Fecha/Hora
+    // ("modificar → OK → escritura → lectura de confirmación").
     private static async Task EscribirCampoAsync(IModbusMaster master, Dispositivo dispositivo, CampoSitio campo)
     {
         var propiedad = typeof(Dispositivo).GetProperty(campo.Propiedad)!;
@@ -66,15 +75,34 @@ public static class SiteConfigModbusIO
 
         if (campo.Tipo == TipoRegistroSitio.String)
         {
-            var registros = ModbusStringCodec.PackAscii((string)valorActual, campo.LongitudRegistros);
+            var valorEsperado = (string)valorActual;
+            var registros = ModbusStringCodec.PackAscii(valorEsperado, campo.LongitudRegistros);
             await master.WriteMultipleRegistersAsync(dispositivo.SlaveId, (ushort)campo.Direccion, registros);
+
+            var registrosLeidos = await master.ReadHoldingRegistersAsync(
+                dispositivo.SlaveId, (ushort)campo.Direccion, (ushort)campo.LongitudRegistros);
+            var valorConfirmado = ModbusStringCodec.UnpackAscii(registrosLeidos);
+
+            if (valorConfirmado != valorEsperado)
+            {
+                throw new InvalidOperationException(
+                    $"No se confirmó la escritura: se mandó '{valorEsperado}' pero el equipo tiene '{valorConfirmado}'.");
+            }
         }
         else
         {
-            ushort valorRegistro = propiedad.PropertyType == typeof(string)
+            ushort valorEsperado = propiedad.PropertyType == typeof(string)
                 ? ushort.Parse((string)valorActual)
                 : Convert.ToUInt16(valorActual);
-            await master.WriteSingleRegisterAsync(dispositivo.SlaveId, (ushort)campo.Direccion, valorRegistro);
+            await master.WriteSingleRegisterAsync(dispositivo.SlaveId, (ushort)campo.Direccion, valorEsperado);
+
+            var registrosLeidos = await master.ReadHoldingRegistersAsync(dispositivo.SlaveId, (ushort)campo.Direccion, 1);
+
+            if (registrosLeidos[0] != valorEsperado)
+            {
+                throw new InvalidOperationException(
+                    $"No se confirmó la escritura: se mandó {valorEsperado} pero el equipo tiene {registrosLeidos[0]}.");
+            }
         }
     }
 
