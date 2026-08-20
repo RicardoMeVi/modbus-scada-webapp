@@ -33,35 +33,6 @@ public static class PlaceholderDeviceSeeder
             SlaveId = 1,
             Registros = new List<RegistroModbus>
             {
-                // Nivel del tanque/Bomba/Setpoint: NO están en la
-                // especificación del Interrogador portátil que se usó para
-                // corregir el resto de este mapa -- direcciones heredadas
-                // del simulador original, sin verificar contra el equipo
-                // real. No asumir la misma confianza que el resto.
-                new()
-                {
-                    Nombre = "Nivel del tanque",
-                    Tabla = TipoTablaModbus.InputRegister,
-                    Direccion = 0,
-                    TipoDato = TipoDatoModbus.UInt16,
-                    Unidad = "%"
-                },
-                new()
-                {
-                    Nombre = "Bomba",
-                    Tabla = TipoTablaModbus.Coil,
-                    Direccion = 0,
-                    TipoDato = TipoDatoModbus.UInt16,
-                    Unidad = "ON/OFF"
-                },
-                new()
-                {
-                    Nombre = "Setpoint",
-                    Tabla = TipoTablaModbus.HoldingRegister,
-                    Direccion = 0,
-                    TipoDato = TipoDatoModbus.UInt16,
-                    Unidad = "%"
-                },
                 // Caudal instantáneo/Totalizado: direcciones 9/11 según la
                 // especificación (sección "Medidores"), no 1/3 como en el
                 // simulador original. La tabla (HoldingRegister) es una
