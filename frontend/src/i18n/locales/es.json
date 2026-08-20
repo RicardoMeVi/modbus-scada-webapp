@@ -54,7 +54,9 @@
     "sitioPrincipal": "Sitio principal",
     "lecturasEnVivo": "Lecturas en vivo",
     "encendido": "Encendido",
-    "apagado": "Apagado"
+    "apagado": "Apagado",
+    "sinConexionAviso": "No se están recibiendo datos del equipo todavía.",
+    "sinConexionBoton": "Configurar conexión"
   },
   "datosSitio": {
     "titulo": "Datos del sitio",

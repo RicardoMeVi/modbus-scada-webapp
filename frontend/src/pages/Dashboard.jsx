@@ -23,11 +23,28 @@ export function Dashboard({ lecturas, conectado, onNavegar }) {
     ["Caudal instantáneo", "Totalizado", "Nivel del tanque", "Bomba"].includes(r.nombre)
   );
 
+  // "conectado" (de useModbusHub) solo dice si el navegador tiene abierto el
+  // websocket con ESTE backend local -- eso es casi siempre true, incluso
+  // con el equipo Modbus totalmente desenchufado. Lo que de verdad importa
+  // para el técnico es si hay lecturas reales entrando; si nunca llegó
+  // ninguna, mostramos un aviso con acceso directo a "Conexión" en vez de
+  // dejarlo adivinar por qué todo dice "0.00".
+  const hayLecturasReales = dispositivo?.registros.some((r) => lecturas[r.id] != null);
+
   return (
     <div>
       <EncabezadoPagina titulo={t("dashboard.titulo")} dispositivo={dispositivo} />
 
       {error && <p className="error">{error}</p>}
+
+      {dispositivo && !hayLecturasReales && (
+        <div className="banner-sin-conexion">
+          <span>{t("dashboard.sinConexionAviso")}</span>
+          <button type="button" className="banner-cta" onClick={() => onNavegar("conexion")}>
+            {t("dashboard.sinConexionBoton")}
+          </button>
+        </div>
+      )}
 
       <div className="resumen-grid">
         <div className={`resumen-card ${conectado ? "ok" : "mal"}`}>
