@@ -40,6 +40,7 @@
   "sidebar": {
     "dashboard": "Dashboard",
     "datosSitio": "Datos del sitio",
+    "conexion": "Conexión",
     "mensajeSms": "Mensaje (SMS)",
     "ftp": "FTP",
     "fechaHora": "Fecha / Hora",

@@ -8,6 +8,7 @@ import { BotonTema } from "./components/layout/BotonTema";
 import { SelectorIdioma } from "./components/layout/SelectorIdioma";
 import { Dashboard } from "./pages/Dashboard";
 import { DatosDelSitio } from "./pages/DatosDelSitio";
+import { Conexion } from "./pages/Conexion";
 import { Medidores } from "./pages/Medidores";
 import { Mensajes } from "./pages/Mensajes";
 import { Ftp } from "./pages/Ftp";
@@ -63,12 +64,13 @@ function App() {
               <Dashboard lecturas={lecturas} conectado={conectado} onNavegar={setSeccionActiva} />
             )}
             {seccionActiva === "datos-sitio" && <DatosDelSitio />}
+            {seccionActiva === "conexion" && <Conexion />}
             {seccionActiva === "medidores" && <Medidores lecturas={lecturas} />}
             {seccionActiva === "mensajes" && <Mensajes />}
             {seccionActiva === "ftp" && <Ftp />}
             {seccionActiva === "fecha-hora" && <FechaHora lecturas={lecturas} />}
             {seccionActiva === "alarmas" && <Alarmas />}
-            {!["dashboard", "datos-sitio", "medidores", "mensajes", "ftp", "fecha-hora", "alarmas"].includes(seccionActiva) && (
+            {!["dashboard", "datos-sitio", "conexion", "medidores", "mensajes", "ftp", "fecha-hora", "alarmas"].includes(seccionActiva) && (
               <SeccionPendiente id={seccion?.id} titulo={seccion ? t(seccion.labelKey) : ""} icono={seccion?.icon} />
             )}
           </ErrorBoundary>

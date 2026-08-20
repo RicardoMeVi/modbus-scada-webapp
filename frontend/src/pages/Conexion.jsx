@@ -1,25 +1,21 @@
 import { useTranslation } from "react-i18next";
 import { useDispositivos } from "../hooks/useDispositivos";
 import { IconoSeccion } from "../components/icons/IconoSeccion";
-import { InsigniaDispositivo } from "../components/InsigniaDispositivo";
 import { CardTextura } from "../components/layout/CardTextura";
-import { FichaSitio } from "../components/FichaSitio";
+import { FichaConexion } from "../components/FichaConexion";
 import { EncabezadoPagina } from "../components/EncabezadoPagina";
 
-// Identificación del sitio, igual a la pantalla "Datos del sitio" del HMI
-// físico (Kinco/ICH): NSM, NSUE, NSUT, RFC, Unidad de verificación,
-// Contraseña UTD y coordenadas. No incluye lecturas Modbus en vivo — esas
-// viven en el Dashboard y en la pantalla completa del sitio. La conexión
-// Modbus (puerto COM) vive en su propia sección ("Conexión") -- no es un
-// dato de identidad del sitio, es una configuración técnica que ni existía
-// en el HMI físico.
-export function DatosDelSitio() {
+// Configuración de conexión Modbus RTU (puerto COM). Sección propia, aparte
+// de "Datos del sitio" -- no es un dato de identidad del sitio, es
+// configuración técnica que ni existía en el HMI físico (el Kinco tenía un
+// solo cable fijo, nunca necesitó elegir puerto).
+export function Conexion() {
   const { t } = useTranslation();
   const { dispositivos, error, cargando } = useDispositivos();
 
   return (
     <div>
-      <EncabezadoPagina titulo={t("datosSitio.titulo")} dispositivo={dispositivos[0]} />
+      <EncabezadoPagina titulo={t("conexion.titulo")} dispositivo={dispositivos[0]} />
 
       {cargando && <p className="pendiente">{t("comun.cargando")}</p>}
       {error && (
@@ -37,16 +33,15 @@ export function DatosDelSitio() {
             <div className="card-header">
               <CardTextura />
               <div className="icono-tarjeta">
-                <IconoSeccion id="site-icon" size={24} />
+                <IconoSeccion id="enchufe-icon" size={24} />
               </div>
               <div>
                 <h3>{dispositivo.nombre}</h3>
-                <InsigniaDispositivo dispositivo={dispositivo} />
               </div>
             </div>
 
             <div className="card-body">
-              <FichaSitio dispositivo={dispositivo} />
+              <FichaConexion dispositivo={dispositivo} />
             </div>
           </div>
         ))}
