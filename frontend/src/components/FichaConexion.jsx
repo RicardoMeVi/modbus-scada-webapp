@@ -9,9 +9,10 @@ import { IconoSeccion } from "./icons/IconoSeccion";
 // solo existe para el simulador interno de desarrollo). En vez de pedirle
 // al técnico que use Swagger o el Administrador de dispositivos, "Detectar
 // automáticamente" prueba cada puerto COM disponible con una lectura Modbus
-// real (ver PuertoSerialDetector) y llena el campo solo. Si no encuentra
-// nada, el campo sigue siendo editable a mano, con los puertos que ve
-// Windows como sugerencia (datalist).
+// real (ver PuertoSerialDetector) y lo selecciona solo. El campo es un
+// select real (no un input con sugerencias) -- así el técnico ve de una
+// los puertos que Windows tiene conectados ahora mismo, no tiene que
+// escribir "COM4" de memoria.
 export function FichaConexion({ dispositivo }) {
   const { t } = useTranslation();
   const [puertoSerial, setPuertoSerial] = useState(dispositivo.puertoSerial ?? "");
@@ -21,11 +22,23 @@ export function FichaConexion({ dispositivo }) {
   const [guardando, setGuardando] = useState(false);
   const [estado, setEstado] = useState(null); // "ok" | "error" | null
 
-  useEffect(() => {
-    getPuertosDisponibles()
+  function refrescarPuertos() {
+    return getPuertosDisponibles()
       .then(setPuertosDisponibles)
       .catch(() => {});
+  }
+
+  useEffect(() => {
+    refrescarPuertos();
   }, []);
+
+  // El puerto ya guardado puede no estar conectado ahora mismo (equipo
+  // apagado, cable suelto) -- se lo deja en la lista igual para no hacerlo
+  // "desaparecer" del select y que el guardado previo siga siendo visible.
+  const opcionesPuerto =
+    puertoSerial && !puertosDisponibles.includes(puertoSerial)
+      ? [puertoSerial, ...puertosDisponibles]
+      : puertosDisponibles;
 
   async function detectar() {
     setDetectando(true);
@@ -42,9 +55,7 @@ export function FichaConexion({ dispositivo }) {
       setMensajeDeteccion("noEncontrado");
     } finally {
       setDetectando(false);
-      getPuertosDisponibles()
-        .then(setPuertosDisponibles)
-        .catch(() => {});
+      refrescarPuertos();
     }
   }
 
@@ -86,25 +97,44 @@ export function FichaConexion({ dispositivo }) {
       <div className="ficha-sitio-grid">
         <label>
           {t("conexion.puertoSerial")}
-          <div className="campo-icono">
-            <span className="icono-campo-izq">
-              <IconoSeccion id="enchufe-icon" size={16} />
-            </span>
-            <input
-              value={puertoSerial}
-              list="puertos-disponibles"
-              placeholder="COM4"
-              onChange={(e) => {
-                setEstado(null);
-                setPuertoSerial(e.target.value);
-              }}
-            />
+          <div className="campo-conexion-fila">
+            <div className="campo-icono campo-conexion-select">
+              <span className="icono-campo-izq">
+                <IconoSeccion id="enchufe-icon" size={16} />
+              </span>
+              <select
+                value={puertoSerial}
+                onChange={(e) => {
+                  setEstado(null);
+                  setPuertoSerial(e.target.value);
+                }}
+              >
+                <option value="" disabled>
+                  {t("conexion.seleccionarPuerto")}
+                </option>
+                {opcionesPuerto.map((puerto) => (
+                  <option key={puerto} value={puerto}>
+                    {puerto}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="button"
+              className="boton-refrescar"
+              onClick={refrescarPuertos}
+              aria-label={t("conexion.actualizarLista")}
+              title={t("conexion.actualizarLista")}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 12a9 9 0 0 1 15.36-6.36L21 8M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-15.36 6.36L3 16M3 21v-5h5" />
+              </svg>
+            </button>
           </div>
-          <datalist id="puertos-disponibles">
-            {puertosDisponibles.map((puerto) => (
-              <option key={puerto} value={puerto} />
-            ))}
-          </datalist>
+          {puertosDisponibles.length === 0 && (
+            <span className="conexion-mensaje mal">{t("conexion.sinPuertos")}</span>
+          )}
         </label>
       </div>
 

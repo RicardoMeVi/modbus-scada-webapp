@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useModbusHub } from "./hooks/useModbusHub";
+import { useDispositivos } from "./hooks/useDispositivos";
 import { Sidebar } from "./components/layout/Sidebar";
 import { TopbarLines } from "./components/layout/TopbarLines";
 import { BotonTema } from "./components/layout/BotonTema";
@@ -24,7 +25,15 @@ function App() {
   const { t } = useTranslation();
   const [seccionActiva, setSeccionActiva] = useState(SECCIONES[0].id);
   const { lecturas, conectado } = useModbusHub();
+  const { dispositivos } = useDispositivos();
   const seccion = SECCIONES.find((s) => s.id === seccionActiva);
+
+  // "conectado" (websocket con el backend local) es casi siempre true, aun
+  // con el equipo Modbus totalmente desconectado -- no sirve para el
+  // indicador que ve el técnico. Acá se exige además que haya llegado
+  // alguna lectura real de algún registro configurado.
+  const hayDatosReales = dispositivos.some((d) => d.registros.some((r) => lecturas[r.id] != null));
+  const equipoConectado = conectado && hayDatosReales;
 
   return (
     <div className="app">
@@ -45,9 +54,9 @@ function App() {
         <div className="acciones-topbar">
           <SelectorIdioma />
           <BotonTema />
-          <span className={`estado-pill ${conectado ? "en-linea" : "desconectado"}`}>
+          <span className={`estado-pill ${equipoConectado ? "en-linea" : "desconectado"}`}>
             <span className="estado-dot" />
-            {conectado ? t("comun.enLinea") : t("comun.desconectado")}
+            {equipoConectado ? t("comun.enLinea") : t("comun.desconectado")}
           </span>
         </div>
       </header>
@@ -61,7 +70,7 @@ function App() {
               nuevo en vez de arrastrar el error a la siguiente pantalla. */}
           <ErrorBoundary key={seccionActiva}>
             {seccionActiva === "dashboard" && (
-              <Dashboard lecturas={lecturas} conectado={conectado} onNavegar={setSeccionActiva} />
+              <Dashboard lecturas={lecturas} conectado={equipoConectado} onNavegar={setSeccionActiva} />
             )}
             {seccionActiva === "datos-sitio" && <DatosDelSitio />}
             {seccionActiva === "conexion" && <Conexion />}

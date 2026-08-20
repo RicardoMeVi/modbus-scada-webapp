@@ -80,7 +80,10 @@
     "detectarAutomaticamente": "Detect automatically",
     "detectando": "Detecting…",
     "encontrado": "Device found on {{puerto}}.",
-    "noEncontrado": "No device responded. Pick the port from the list or type it in.",
+    "noEncontrado": "No device responded. Pick the port from the list.",
+    "seleccionarPuerto": "Select a port",
+    "actualizarLista": "Refresh port list",
+    "sinPuertos": "Windows doesn't see any COM port connected right now.",
     "toastOk": "Connection saved successfully.",
     "toastError": "Could not save. Try again."
   },

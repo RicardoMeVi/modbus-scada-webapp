@@ -959,6 +959,35 @@
   color: var(--mal-text);
 }
 
+.campo-conexion-fila {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.campo-conexion-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.boton-refrescar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.55rem;
+  background: var(--card-bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.boton-refrescar:hover {
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+
 @media (max-width: 420px) {
   .ficha-sitio-grid {
     grid-template-columns: 1fr;
