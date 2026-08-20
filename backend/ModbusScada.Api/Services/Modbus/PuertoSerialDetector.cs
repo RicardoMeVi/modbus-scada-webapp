@@ -1,4 +1,5 @@
 using System.IO.Ports;
+using System.Text.RegularExpressions;
 using NModbus;
 
 namespace ModbusScada.Api.Services.Modbus;
@@ -28,9 +29,20 @@ public class PuertoSerialDetector : IPuertoSerialDetector
     private const int TimeoutPorPuertoMs = 500;
     private const int RegistroSonda = 15;
 
+    // "COM" + número, sin nada más -- SerialPort.GetPortNames() lee del
+    // registro de Windows (HKLM\HARDWARE\DEVICEMAP\SERIALCOMM) y puede
+    // devolver entradas huérfanas/corruptas de drivers mal desinstalados
+    // (ej. "3COM3" en vez de "COM3"). Se descartan en vez de ofrecérselas
+    // al técnico como si fueran puertos reales.
+    private static readonly Regex NombrePuertoValido = new(@"^COM\d+$", RegexOptions.IgnoreCase);
+
     public IReadOnlyList<string> ListarPuertosDisponibles()
     {
-        return SerialPort.GetPortNames().Distinct().OrderBy(p => p).ToList();
+        return SerialPort.GetPortNames()
+            .Where(p => NombrePuertoValido.IsMatch(p))
+            .Distinct()
+            .OrderBy(p => int.Parse(p[3..]))
+            .ToList();
     }
 
     public async Task<string?> DetectarAsync(byte slaveId, CancellationToken ct)

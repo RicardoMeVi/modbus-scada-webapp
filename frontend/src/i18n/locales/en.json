@@ -84,6 +84,8 @@
     "seleccionarPuerto": "Select a port",
     "actualizarLista": "Refresh port list",
     "sinPuertos": "Windows doesn't see any COM port connected right now.",
+    "listaActualizada": "Port list refreshed.",
+    "listaError": "Could not refresh the port list.",
     "toastOk": "Connection saved successfully.",
     "toastError": "Could not save. Try again."
   },

@@ -84,6 +84,8 @@
     "seleccionarPuerto": "Seleccionar puerto",
     "actualizarLista": "Actualizar lista de puertos",
     "sinPuertos": "Windows no detecta ningún puerto COM conectado ahora mismo.",
+    "listaActualizada": "Lista de puertos actualizada.",
+    "listaError": "No se pudo actualizar la lista de puertos.",
     "toastOk": "Conexión guardada correctamente.",
     "toastError": "No se pudo guardar. Intentá de nuevo."
   },

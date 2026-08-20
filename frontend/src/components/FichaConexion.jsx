@@ -13,19 +13,41 @@ import { IconoSeccion } from "./icons/IconoSeccion";
 // select real (no un input con sugerencias) -- así el técnico ve de una
 // los puertos que Windows tiene conectados ahora mismo, no tiene que
 // escribir "COM4" de memoria.
+const NOMBRE_PUERTO_VALIDO = /^COM\d+$/i;
+
 export function FichaConexion({ dispositivo }) {
   const { t } = useTranslation();
-  const [puertoSerial, setPuertoSerial] = useState(dispositivo.puertoSerial ?? "");
+  // Si lo que quedó guardado no es un nombre de puerto válido (ej. "3COM3",
+  // de una detección vieja antes de filtrar esto en el backend), no tiene
+  // sentido arrancar el formulario con eso seleccionado -- mejor forzar a
+  // elegir uno real.
+  const [puertoSerial, setPuertoSerial] = useState(() => {
+    const guardado = dispositivo.puertoSerial ?? "";
+    return NOMBRE_PUERTO_VALIDO.test(guardado) ? guardado : "";
+  });
   const [puertosDisponibles, setPuertosDisponibles] = useState([]);
   const [detectando, setDetectando] = useState(false);
   const [mensajeDeteccion, setMensajeDeteccion] = useState(null); // "encontrado" | "noEncontrado" | null
   const [guardando, setGuardando] = useState(false);
   const [estado, setEstado] = useState(null); // "ok" | "error" | null
+  const [refrescando, setRefrescando] = useState(false);
+  const [mensajeLista, setMensajeLista] = useState(null); // "ok" | "error" | null
 
-  function refrescarPuertos() {
+  // notificar=true solo para el click manual del botón -- el refresco
+  // automático (al montar, o después de "Detectar") no debe mostrar un
+  // toast cada vez, solo cuando el técnico pidió explícitamente actualizar
+  // y quiere una confirmación de que sí pasó algo.
+  function refrescarPuertos({ notificar = false } = {}) {
+    setRefrescando(true);
     return getPuertosDisponibles()
-      .then(setPuertosDisponibles)
-      .catch(() => {});
+      .then((puertos) => {
+        setPuertosDisponibles(puertos);
+        if (notificar) setMensajeLista("ok");
+      })
+      .catch(() => {
+        if (notificar) setMensajeLista("error");
+      })
+      .finally(() => setRefrescando(false));
   }
 
   useEffect(() => {
@@ -122,11 +144,23 @@ export function FichaConexion({ dispositivo }) {
             <button
               type="button"
               className="boton-refrescar"
-              onClick={refrescarPuertos}
+              onClick={() => refrescarPuertos({ notificar: true })}
+              disabled={refrescando}
               aria-label={t("conexion.actualizarLista")}
               title={t("conexion.actualizarLista")}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                className={refrescando ? "girando" : undefined}
+              >
                 <path d="M3 12a9 9 0 0 1 15.36-6.36L21 8M21 3v5h-5" />
                 <path d="M21 12a9 9 0 0 1-15.36 6.36L3 16M3 21v-5h5" />
               </svg>
@@ -152,6 +186,13 @@ export function FichaConexion({ dispositivo }) {
           tipo={estado}
           mensaje={estado === "ok" ? t("conexion.toastOk") : t("conexion.toastError")}
           onCerrar={() => setEstado(null)}
+        />
+      )}
+      {mensajeLista && (
+        <Toast
+          tipo={mensajeLista}
+          mensaje={mensajeLista === "ok" ? t("conexion.listaActualizada") : t("conexion.listaError")}
+          onCerrar={() => setMensajeLista(null)}
         />
       )}
     </form>
