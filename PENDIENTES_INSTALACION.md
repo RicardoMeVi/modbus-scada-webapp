@@ -14,15 +14,23 @@ el equipo y que los datos empiezan a fluir.
 
 ## 2. Supuestos del mapa de registros sin confirmar
 
-Solo se pueden probar con el equipo real respondiendo:
+El manual trae capturas de modscan (sección 3 de `CONTEXTONuevo.md`) que
+ya confirman función 03 (Holding Register) y que las direcciones se usan
+sin ajuste de offset para Fecha/hora, Datos del sitio, SMS y FTP. Lo que
+sigue sin confirmar, solo con el equipo real respondiendo:
 
-- Si todo se lee como Holding Register (función 03), o si alguna sección
-  es Coil/Input Register de verdad — el manual no lo aclara.
+- Tabla Modbus de **Alarmas y Medidores** específicamente — sin captura
+  de modscan para estas dos secciones. Ojo: el código asume Holding
+  Register para ambas, pero el manual originalmente sugería Input
+  Register para Medidores -- ninguna confirmada.
 - Polaridad de los bits de alarma (asumida 1 = alarma activa).
 - Si "EnvioFTP"/"EnvioSMS" son un bit específico dentro de un registro o
   el registro completo tratado como bandera.
 - Orden de bytes (ABCD/DCBA/BADC/CDAB) de Caudal instantáneo y Totalizado
   (32 bits) — se asume ABCD + float32, sin confirmar.
+- Si el handshake de control de escritura (menú secreto de la UTD, ver
+  `CONTEXTONuevo.md` sección 4) hace falta de verdad o alcanza con dejar
+  la UTD configurada una vez.
 
 ## 3. Nivel del tanque / Bomba / Setpoint
 
@@ -33,6 +41,10 @@ equivalentes (si es que existen), agregarlos ahí.
 
 ## Ya resuelto (no repetir)
 
+- Offset de direcciones (base-0 vs base-1): confirmado sin ajuste, ver
+  capturas de modscan en `CONTEXTONuevo.md` sección 3.
+- Función Modbus de Fecha/hora, Datos del sitio, SMS y FTP: confirmada
+  Holding Register (03) por las mismas capturas.
 - Relación Mobicon MT-151 / UTD: en la práctica, el software se conecta
   directo a los terminales PORT1/PORT2 del MOBICON — no hace falta seguir
   aclarando la terminología del manual para que esto funcione.

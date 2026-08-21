@@ -92,12 +92,13 @@ Fuente: "Especificaciones Interrogador Portátil — ICH PSI". Estas son las
 direcciones reales que el backend .NET debe usar con NModbus para
 leer/escribir en la UTD (Slave ID 1).
 
-**Importante sobre offsets:** el manual no aclara explícitamente si estas
-direcciones ya están en base-0 (PDU) o si requieren el ajuste -1 (regla de
-offset documentada en sección 6.3). Se recomienda **validar empíricamente**
-con las primeras pruebas de lectura (comparar el valor devuelto contra el
-valor mostrado en la pantalla física del sistema) antes de asumir cuál es
-el caso.
+**Offset: CONFIRMADO, sin ajuste.** El manual incluye capturas de modscan
+(secciones 3.1 y 3.2) que muestran la dirección de la tabla usada
+directamente como dirección de consulta -- ej. `Address: 0699` devuelve
+`40700: <12>` para "Día" (dirección 700 en la tabla), un valor de día
+plausible, sin ningún +1/-1. Confirmado también con RFC (`Address: 0031`
+→ decodifica a un RFC con formato válido). Las direcciones de la sección
+3 se usan tal cual, ya así está implementado en `SiteRegisterMap.cs`.
 
 ### 3.1 Fecha y hora
 | Variable | Dir. Modbus | Dir. HMI UTD | Tipo | Observación |
@@ -187,14 +188,21 @@ arriba ya da la dirección Modbus correcta a usar, no la interna.
 
 ## 4. Mecanismo de control de escritura — descrito en el manual, NO implementado
 
-**Esto es lo que dice el manual que hace el Interrogador Portátil actual —
-el backend .NET todavía NO lo implementa** (no hay ningún código que
-escriba `LB9154` ni maneje este handshake). Lo que sí está implementado es
-más simple: escribir el valor y releer para confirmar (ver
-`SiteConfigModbusIO.EscribirCampoAsync`), sin el paso previo de "tomar el
-control". Falta confirmar con hardware real si ese paso previo es
-necesario para que las escrituras funcionen, o si el equipo las acepta
-igual sin él — pendiente de la primera prueba real.
+**El backend .NET todavía NO lo implementa** (no hay ningún código que
+escriba `LB9154`). Lo que sí está implementado es más simple: escribir el
+valor y releer para confirmar (ver `SiteConfigModbusIO.EscribirCampoAsync`),
+sin el paso previo de "tomar el control".
+
+**Relectura del manual (páginas 10-11): esto probablemente pesa menos de
+lo que parecía.** El toggle 0/1 vive en el **menú secreto de la HMI de la
+UTD** — una pantalla física en el equipo mismo, no algo que el
+Interrogador escriba por Modbus antes de cada parámetro. La "señal de
+habilitación" que sí manda el Interrogador al entrar a "Unidad de
+Verificación" parece ser interna de su propio software (equivalente a
+nuestro modal de PIN, ya implementado), no una escritura Modbus aparte.
+Hipótesis: si la UTD queda configurada una vez (físicamente, al instalar)
+con "Interrogador tiene el control", nuestro backend no necesitaría tocar
+este handshake nunca. Sigue pendiente confirmarlo con hardware real.
 
 El sistema (manual) implementa un **handshake de control** que define quién tiene
 permiso de escribir en un momento dado, para evitar conflictos de
@@ -331,16 +339,19 @@ práctica** con un servidor Python simulado + Ignition + mbpoll:
 ### 8.1 Las 4 tablas de datos
 | Tabla | Tamaño | Acceso | Ejemplo real (proyecto) |
 |---|---|---|---|
-| Coil | 1 bit | Lectura/Escritura | (no identificado aún en el mapa real de la UTD) |
-| Discrete Input | 1 bit | Solo lectura | (no identificado aún en el mapa real de la UTD) |
-| Holding Register | 16 bits | Lectura/Escritura | Fecha, hora, datos de sitio, SMS, FTP |
-| Input Register | 16 bits | Solo lectura | Caudal instantáneo, Totalizado (32 bits = 2 registros) |
+| Coil | 1 bit | Lectura/Escritura | No identificado en el mapa real |
+| Discrete Input | 1 bit | Solo lectura | No identificado en el mapa real |
+| Holding Register | 16 bits | Lectura/Escritura | **Confirmado por modscan** (manual, secciones 3.1-3.4): Fecha/hora, Datos del sitio, SMS, FTP |
+| Input Register | 16 bits | Solo lectura | Caudal instantáneo, Totalizado -- sin capturas de modscan, sigue sin confirmar |
 
-**Nota:** el manual no distingue explícitamente en qué tabla Modbus (Coil/
-Holding/Input/Discrete) cae cada variable — solo da direcciones y tipos de
-dato. Esto debe confirmarse empíricamente al conectar (probando función 03
-vs 04 contra la misma dirección, por ejemplo) o preguntando directamente
-a quien tenga más detalle técnico del sistema.
+**Nota:** el manual trae capturas de modscan que confirman función 03
+(Holding Register) para Fecha/hora, Datos del sitio, SMS y FTP -- ya
+coincide con lo implementado. Para Alarmas y Medidores (Caudal/
+Totalizado) no hay captura -- **ojo:** el código (`PlaceholderDeviceSeeder`)
+asume Holding Register para ambos, pero este documento originalmente
+apuntaba a Input Register para Medidores; ninguna de las dos está
+confirmada, hay que probarlo con hardware real antes de confiar en
+cualquiera de las dos suposiciones.
 
 ### 8.2 Funciones Modbus principales
 | Función | Código | Uso |
@@ -358,9 +369,9 @@ a quien tenga más detalle técnico del sistema.
 > Un dato Modbus numerado como **X** (numeración de aplicación/manual del
 > fabricante, base 1) se direcciona en el **PDU real como X-1** (base 0).
 
-**Aplicar esta regla con cautela al mapa de la sección 3** — no está
-confirmado si esas direcciones ya son PDU o requieren el ajuste. Validar
-con la primera prueba de lectura real.
+**Ya confirmado para el mapa de la sección 3** (ver esa sección): las
+direcciones documentadas se usan directo, sin el ajuste -1 -- las
+capturas de modscan del manual lo demuestran.
 
 ### 8.4 Big-endian y tipos de dato de 32 bits
 - Modbus transmite en **big-endian**: byte más significativo primero.
@@ -452,11 +463,12 @@ tiempo):
 
 1. La prueba real: conectar el adaptador USB-RS485 y confirmar que
    "Detectar automáticamente" (pantalla Conexión) encuentra el equipo.
-2. Confirmar en qué tabla Modbus (Coil/Discrete/Holding/Input) cae cada
-   variable, polaridad de alarmas, y orden de bytes de los valores de 32
-   bits — todo asumido, nada probado contra hardware real todavía.
+2. Tabla Modbus de Alarmas y Medidores (Coil/Holding/Input) y polaridad de
+   alarmas — sin capturas de modscan en el manual, sigue sin confirmar
+   (a diferencia de Fecha/hora/Datos del sitio/SMS/FTP, ya confirmados
+   por las capturas del propio manual, sección 3).
 3. Confirmar si el handshake de control de escritura (sección 4) hace
-   falta de verdad, o si el equipo acepta escrituras directas.
+   falta de verdad, o si alcanza con dejar la UTD configurada una vez.
 
 ## 13. Estado de la implementación
 

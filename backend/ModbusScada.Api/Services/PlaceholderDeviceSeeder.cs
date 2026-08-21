@@ -33,11 +33,12 @@ public static class PlaceholderDeviceSeeder
             {
                 // Caudal instantáneo/Totalizado: direcciones 9/11 según la
                 // especificación (sección "Medidores"), no 1/3 como en el
-                // simulador original. La tabla (HoldingRegister) es una
-                // suposición -- el documento no lo aclara para estos dos
-                // específicamente, pero todos los demás ejemplos modscan del
-                // documento (fecha/hora, RFC, IP de FTP) usan función 03
-                // (Holding Register); a confirmar con hardware real.
+                // simulador original. HoldingRegister es una suposición sin
+                // captura de modscan que la respalde (a diferencia de Fecha/
+                // hora, Datos del sitio, SMS y FTP, ya confirmados así) --
+                // ojo que las notas iniciales del proyecto apuntaban a Input
+                // Register para esto, justo lo contrario. A confirmar con
+                // hardware real.
                 new()
                 {
                     Nombre = "Caudal instantáneo",
