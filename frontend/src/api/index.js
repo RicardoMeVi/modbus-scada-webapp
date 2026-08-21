@@ -87,13 +87,6 @@ export function validarPin(pin) {
     }));
 }
 
-// { pinPorDefecto: bool } -- nunca devuelve el PIN real, solo si sigue
-// siendo el de fábrica (1234), para avisar antes de dejar el equipo en
-// un sitio real sin que nadie lo haya cambiado.
-export function getEstadoVerificacion() {
-  return api.get("/api/verificacion/estado").then((res) => res.data);
-}
-
 // Coincide con el orden del enum TipoTablaModbus en el backend.
 export const TABLA_MODBUS = {
   COIL: 0,

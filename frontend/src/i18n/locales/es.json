@@ -56,8 +56,7 @@
     "encendido": "Encendido",
     "apagado": "Apagado",
     "sinConexionAviso": "No se están recibiendo datos del equipo todavía.",
-    "sinConexionBoton": "Configurar conexión",
-    "pinPorDefectoAviso": "El PIN de acceso sigue siendo el de fábrica (1234). Cambialo en appsettings.Campo.json antes de instalar en un sitio real."
+    "sinConexionBoton": "Configurar conexión"
   },
   "datosSitio": {
     "titulo": "Datos del sitio",
