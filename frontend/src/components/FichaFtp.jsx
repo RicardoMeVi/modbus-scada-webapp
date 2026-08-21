@@ -13,12 +13,11 @@ const IP_REGEX = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[
 // Configuración de FTP, igual a la pantalla "FTP" del HMI físico
 // (Kinco/ICH): IP del servidor, usuario, contraseña, carpeta de
 // almacenamiento, hora/minuto de envío automático y tipo de mensaje
-// (1 = Mensaje de UV, 3 = Mensaje de prueba). No son registros Modbus. Los
-// largos máximos vienen de la especificación real del equipo
-// (especificación del Interrogador portátil, sección 3: "String N car."
-// por campo). Las tarjetas de GSM/GPRS/IHM sí leen del mismo
-// GET .../alarmas que usa la pantalla Alarmas, para que las dos digan lo
-// mismo.
+// (1 = Mensaje de UV, 3 = Mensaje de prueba). Todos menos tipo de mensaje
+// tienen registro Modbus real (ver SiteRegisterMap) y se escriben al
+// equipo al guardar. Largos máximos según la especificación del
+// Interrogador portátil (sección 3: "String N car." por campo). Las
+// tarjetas de GSM/GPRS/IHM leen del mismo GET .../alarmas que Alarmas.
 export function FichaFtp({ dispositivo }) {
   const { t } = useTranslation();
   const alarmas = useAlarmas(dispositivo.id);

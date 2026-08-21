@@ -41,9 +41,8 @@ public class RealSiteConfigWriter : ISiteConfigWriter
         }
         catch (Exception ex)
         {
-            // No debe tumbar el PUT que llamó a esto -- el usuario tiene que
-            // poder guardar su configuración aunque el equipo esté apagado.
-            // Ni siquiera se pudo abrir la conexión, así que nada se escribió.
+            // No tira -- el controller decide qué hacer con el false
+            // (ver DispositivosController: si esto es false, no persiste nada).
             _logger.LogWarning(ex, "No se pudo escribir la configuración de sitio en el dispositivo {Nombre}", dispositivo.Nombre);
             return false;
         }

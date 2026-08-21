@@ -53,12 +53,9 @@ public class DispositivosController : ControllerBase
 
     // Actualiza los datos de identificación del sitio (pantalla "Datos del
     // sitio" del HMI físico): NSM, NSUE, NSUT, RFC, Unidad de verificación,
-    // Contraseña UTD y coordenadas. Estos campos SÍ tienen registros Modbus
-    // reales (ver SiteRegisterMap) -- todo o nada: se intenta escribir en el
-    // equipo ANTES de persistir local, y solo se guarda si el equipo lo
-    // confirmó. Si falla, no se guarda nada (ni local) -- se prefiere un
-    // error claro y final a un estado intermedio de "guardado a medias"
-    // que el usuario tendría que interpretar.
+    // Contraseña UTD y coordenadas -- tienen registros Modbus reales (ver
+    // SiteRegisterMap). Todo o nada: se escribe en el equipo ANTES de
+    // persistir local; si el equipo no confirma, no se guarda nada.
     [HttpPut("{id:int}/datos-sitio")]
     public async Task<IActionResult> ActualizarDatosSitio(int id, [FromBody] DatosSitioRequest request)
     {
@@ -144,9 +141,9 @@ public class DispositivosController : ControllerBase
     }
 
     // Actualiza los datos de conexión Modbus (IP, puerto, slave id, TCP/RTU,
-    // puerto serial). No hay pantalla dedicada en la app para esto -- se usa
-    // vía Swagger la primera vez que se instala el equipo en un sitio real
-    // (en modo "Campo", Swagger queda habilitado justo para este fin).
+    // puerto serial) -- pantalla "Conexión" del sidebar. Sin escritura real
+    // (a diferencia de los tres de arriba): esto es transporte, no algo que
+    // el equipo pueda confirmar.
     [HttpPut("{id:int}/conexion")]
     public async Task<IActionResult> ActualizarConexion(int id, [FromBody] ConexionRequest request)
     {
@@ -191,16 +188,11 @@ public class DispositivosController : ControllerBase
         return new DetectarPuertoResponse(puertoEncontrado is not null, puertoEncontrado);
     }
 
-    // Estado de alarmas (pantalla "Alarmas" del HMI físico): registro 15
-    // (bits 0-4) + registro 29 (bit 0, IHM), según la especificación del
-    // Interrogador portátil. En vez de abrir una conexión Modbus aparte,
-    // reutiliza el último valor ya leído por el ciclo de sondeo normal
-    // (real o simulado) -- así funciona igual en modo mock y con hardware
-    // real, sin duplicar la lógica de conexión. Requiere que el dispositivo
-    // tenga registros llamados "Alarmas" (dirección 15) y "Alarma IHM"
-    // (dirección 29) -- ver PlaceholderDeviceSeeder/MockDataSeeder.
-    // Polaridad de los bits (1 = alarma activa) asumida, sin confirmar
-    // contra hardware real todavía.
+    // Estado de alarmas: registro 15 (bits 0-4) + registro 29 (bit 0, IHM).
+    // Reutiliza el último valor ya leído por el sondeo normal en vez de abrir
+    // una conexión aparte -- requiere registros "Alarmas"/"Alarma IHM" (ver
+    // PlaceholderDeviceSeeder/MockDataSeeder). Polaridad (1 = activa) asumida,
+    // sin confirmar contra hardware real.
     [HttpGet("{id:int}/alarmas")]
     public async Task<ActionResult<AlarmasResponse>> GetAlarmas(int id)
     {

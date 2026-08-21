@@ -23,12 +23,11 @@ export function Dashboard({ lecturas, conectado, onNavegar }) {
     ["Caudal instantáneo", "Totalizado", "Nivel del tanque", "Bomba"].includes(r.nombre)
   );
 
-  // "conectado" (de useModbusHub) solo dice si el navegador tiene abierto el
-  // websocket con ESTE backend local -- eso es casi siempre true, incluso
-  // con el equipo Modbus totalmente desenchufado. Lo que de verdad importa
-  // para el técnico es si hay lecturas reales entrando; si nunca llegó
-  // ninguna, mostramos un aviso con acceso directo a "Conexión" en vez de
-  // dejarlo adivinar por qué todo dice "0.00".
+  // Si nunca llegó ninguna lectura real, mostramos un aviso con acceso
+  // directo a "Conexión" en vez de dejar que el técnico adivine por qué
+  // todo dice "0.00" (ver App.jsx: "conectado" ya viene corregido con esta
+  // misma lógica para el pill del topbar; acá se recalcula porque hace
+  // falta de todos modos "dispositivo" para el resto del render).
   const hayLecturasReales = dispositivo?.registros.some((r) => lecturas[r.id] != null);
 
   return (

@@ -4,15 +4,11 @@ import { actualizarConexion, detectarPuerto, getPuertosDisponibles } from "../ap
 import { Toast } from "./Toast";
 import { IconoSeccion } from "./icons/IconoSeccion";
 
-// Configuración de conexión Modbus RTU del equipo real: solo el puerto COM
-// (el equipo real siempre es RTU/RS-485 -- no hay selector Tcp/Rtu, eso
-// solo existe para el simulador interno de desarrollo). En vez de pedirle
-// al técnico que use Swagger o el Administrador de dispositivos, "Detectar
-// automáticamente" prueba cada puerto COM disponible con una lectura Modbus
-// real (ver PuertoSerialDetector) y lo selecciona solo. El campo es un
-// select real (no un input con sugerencias) -- así el técnico ve de una
-// los puertos que Windows tiene conectados ahora mismo, no tiene que
-// escribir "COM4" de memoria.
+// Configuración de conexión Modbus RTU: solo el puerto COM (el equipo real
+// siempre es RTU -- el selector Tcp/Rtu solo existiría para el simulador
+// interno, no se expone acá). "Detectar automáticamente" prueba cada
+// puerto COM con una lectura Modbus real (ver PuertoSerialDetector) y lo
+// selecciona solo; el campo es un select real, no un input a mano.
 const NOMBRE_PUERTO_VALIDO = /^COM\d+$/i;
 
 export function FichaConexion({ dispositivo }) {

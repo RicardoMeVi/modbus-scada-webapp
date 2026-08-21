@@ -11,14 +11,12 @@ const RFC_REGEX = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/;
 
 // Datos de identificación del sitio, igual a la pantalla "Datos del sitio"
 // del HMI físico (Kinco/ICH): NSM, NSUE, NSUT, RFC, Unidad de verificación,
-// Contraseña UTD y coordenadas. No son registros Modbus — son metadatos
-// fijos del sitio que se guardan directo en el dispositivo. Los largos
-// máximos de NSM/NSUE/NSUT/RFC/Latitud/Longitud vienen de la especificación
-// real del equipo ("Interrogador portátil", sección 3.2: "String N car.").
-// Latitud/Longitud son texto (igual que en el equipo real, String 11/15
-// caracteres) — se valida el rango numérico igual que antes por usabilidad,
-// pero lo que se guarda y se envía es el string tal cual lo escribió el
-// usuario, no un número parseado.
+// Contraseña UTD y coordenadas. Todos menos Contraseña UTD tienen registro
+// Modbus real (ver SiteRegisterMap) y se escriben al equipo al guardar. Los
+// largos máximos vienen de la especificación real ("Interrogador portátil",
+// sección 3.2: "String N car."). Latitud/Longitud son texto (String 11/15
+// en el equipo real) -- se valida el rango numérico por usabilidad, pero
+// se guarda y envía el string tal cual, no un número parseado.
 export function FichaSitio({ dispositivo }) {
   const { t } = useTranslation();
   const [campos, setCampos] = useState({

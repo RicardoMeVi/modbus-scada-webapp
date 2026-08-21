@@ -8,11 +8,11 @@ import { useAlarmas } from "../hooks/useAlarmas";
 
 // Configuración de SMS, igual a la pantalla "SMS" del HMI físico
 // (Kinco/ICH): número de teléfono, hora/minuto de envío automático y tipo
-// de mensaje (1 = Mensaje de UV, 3 = Mensaje de prueba). GSM/GPRS/IHM son
-// los mismos bits de "Alarmas" (especificación del Interrogador portátil,
-// sección 5) — se muestran de solo lectura, leídos del mismo
-// GET .../alarmas que usa la pantalla Alarmas, para que las dos digan lo
-// mismo.
+// de mensaje (1 = Mensaje de UV, 3 = Mensaje de prueba). Todos menos tipo
+// de mensaje tienen registro Modbus real (ver SiteRegisterMap) y se
+// escriben al equipo al guardar. GSM/GPRS/IHM son los mismos bits de
+// "Alarmas" -- solo lectura, del mismo GET .../alarmas que la pantalla
+// Alarmas, para que las dos digan lo mismo.
 export function FichaSms({ dispositivo }) {
   const { t } = useTranslation();
   const alarmas = useAlarmas(dispositivo.id);

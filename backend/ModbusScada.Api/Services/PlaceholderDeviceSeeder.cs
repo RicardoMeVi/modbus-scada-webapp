@@ -7,9 +7,8 @@ namespace ModbusScada.Api.Services;
 // MockDataSeeder, este no simula datos -- crea el dispositivo con el mismo
 // mapa Modbus real del equipo (UTD ICH PSI) pero con un puerto serial de
 // ejemplo ("COM3"), para que la pantalla no aparezca vacía la primera vez
-// que se instala en un sitio. Quien instale el equipo corrige el puerto
-// real via PUT /api/Dispositivos/{id}/conexion (expuesto en Swagger en
-// este modo).
+// que se instala en un sitio. Quien instale el equipo lo corrige desde la
+// pantalla "Conexión" (detección automática o selección manual).
 public static class PlaceholderDeviceSeeder
 {
     public static void EnsureDispositivoExiste(AppDbContext db)
@@ -25,8 +24,7 @@ public static class PlaceholderDeviceSeeder
             // El equipo real (UTD/MOBICON) solo habla Modbus RTU sobre
             // RS-485 -- ver especificación del Interrogador portátil.
             // "COM3" es un placeholder; se corrige al instalar en un sitio
-            // real vía PUT /api/Dispositivos/{id}/conexion (Swagger, modo
-            // Campo).
+            // real desde la pantalla "Conexión".
             Conexion = TipoConexion.Rtu,
             PuertoSerial = "COM3",
             Puerto = 502,

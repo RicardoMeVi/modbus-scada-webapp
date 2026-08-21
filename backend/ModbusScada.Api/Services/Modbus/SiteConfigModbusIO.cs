@@ -6,18 +6,13 @@ namespace ModbusScada.Api.Services.Modbus;
 
 // Traduce entre las columnas fijas de Dispositivo (Rfc, Nsm, SmsNumero,
 // etc.) y los registros Modbus reales del UTD, usando SiteRegisterMap. La
-// lectura alimenta la base de datos como caché (la usa ModbusPollingService
-// en su ciclo); la escritura intenta reflejar en el equipo real lo que el
-// usuario guardó desde la app. Ambas son "best effort" por campo: si uno
-// falla (equipo apagado, cable desconectado), se registra y se sigue con
-// los demás en vez de abortar todo.
+// lectura alimenta la base de datos como caché; la escritura escribe y
+// relee cada campo para confirmar (ver EscribirCampoAsync). Best-effort
+// por campo -- uno que falle no aborta los demás, pero el bool que
+// devuelve EscribirCamposAsync es lo que el controller usa para decidir
+// si persiste algo (ver DispositivosController: todo o nada).
 public static class SiteConfigModbusIO
 {
-    // Devuelve false si al menos un campo falló al escribirse -- best-effort
-    // por campo (uno que falle no aborta los demás), pero el llamador
-    // necesita saber si TODO se reflejó en el equipo o no, para que la UI
-    // pueda avisarle al usuario en vez de asumir que "guardado" significa
-    // "confirmado en el equipo".
     public static async Task<bool> EscribirCamposAsync(IModbusMaster master, Dispositivo dispositivo, ILogger logger)
     {
         bool huboError = false;
@@ -55,15 +50,10 @@ public static class SiteConfigModbusIO
         }
     }
 
-    // Escribe y relee el mismo campo para confirmar -- una escritura Modbus
-    // puede recibir ACK a nivel protocolo (sin excepción) sin que el valor
-    // haya quedado realmente grabado del otro lado (interferencia en el
-    // bus, el equipo se queda sin resolver justo en ese instante, etc.).
-    // Si lo releído no coincide con lo que se mandó, se trata como fallo de
-    // este campo (tira, el llamador ya lo cuenta como error) en vez de
-    // darlo por bueno solo porque el maestro no vio una excepción. Mismo
-    // patrón que ya documenta la especificación para Fecha/Hora
-    // ("modificar → OK → escritura → lectura de confirmación").
+    // Escribe y relee para confirmar -- un ACK a nivel protocolo no
+    // garantiza que el valor haya quedado grabado del otro lado. Si lo
+    // releído no coincide, tira (el llamador lo cuenta como fallo de este
+    // campo). Mismo patrón que documenta la especificación para Fecha/Hora.
     private static async Task EscribirCampoAsync(IModbusMaster master, Dispositivo dispositivo, CampoSitio campo)
     {
         var propiedad = typeof(Dispositivo).GetProperty(campo.Propiedad)!;

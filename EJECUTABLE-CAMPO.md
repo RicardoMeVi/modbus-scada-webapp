@@ -176,11 +176,15 @@ nuevo.
 
 ## Configurar la conexión real del equipo (RTU)
 
-Desde "Datos del sitio" → tarjeta "Conexión del equipo": el botón "Detectar
-automáticamente" prueba cada puerto COM que Windows ve conectado con una
-lectura Modbus real (registro 15, confirmado contra la especificación del
-Interrogador portátil) hasta encontrar el que responde, y llena el campo
-solo. Si no encuentra nada (cable no conectado, equipo apagado, adaptador
-no reconocido), el campo de puerto serial sigue editable a mano, con los
-puertos que ve Windows como sugerencia. En ambos casos hay que tocar
-"Guardar" para persistirlo — la detección sola no guarda nada.
+Sección propia del sidebar, "Conexión" (no vive dentro de "Datos del
+sitio" — son cosas distintas: identidad del sitio vs. transporte). El
+botón "Detectar automáticamente" prueba cada puerto COM que Windows ve
+conectado con una lectura Modbus real (registro 15) hasta encontrar el
+que responde, y lo selecciona solo. Si no encuentra nada, el campo sigue
+siendo un `<select>` editable con los puertos que ve Windows (nombres que
+no matchean `COM<número>` se descartan — ver `PuertoSerialDetector`). En
+ambos casos hay que tocar "Guardar" para persistirlo.
+
+Guardar Datos del sitio/SMS/FTP es todo o nada: si el equipo no confirma
+la escritura (apagado, desconectado), no se guarda nada, ni siquiera
+local — mejor un error claro que un estado a medias.

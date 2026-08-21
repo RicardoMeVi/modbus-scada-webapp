@@ -9,6 +9,12 @@
 > obtenido del "Manual de Especificaciones — Interrogador Portátil ICH PSI".
 > Ya no son suposiciones: son direcciones confirmadas por documentación
 > oficial del sistema actual.
+>
+> **Estado actual:** el sistema descrito acá ya está implementado y
+> compila/corre (ver `EJECUTABLE-CAMPO.md` para el ejecutable de campo).
+> Las secciones 12 y 13 de abajo describían el plan *antes* de programar
+> nada — quedan como referencia histórica; lo que realmente falta hoy está
+> en `PENDIENTES_INSTALACION.md`.
 
 ## 1. Objetivo del proyecto
 
@@ -74,10 +80,11 @@ USB-RS485 (o el puerto serial nativo si el servidor corre en el mismo
 sitio) para conectarse físicamente a la UTD.
 
 **Nota sobre el Mobicon MT-151:** su relación exacta con la "UTD" descrita
-en este manual aún no está 100% confirmada — es posible que el Mobicon
-actúe como el "cerebro" central del sitio y la UTD (HMI Kinco) sea su
-interfaz local que expone los datos vía Modbus RTU, o que sean el mismo
-concepto nombrado distinto en cada documento. **Pendiente de aclarar.**
+en este manual (¿son el mismo concepto nombrado distinto, o el Mobicon es
+el "cerebro" y la UTD su interfaz?) nunca se terminó de aclarar a nivel
+de terminología — pero en la práctica no bloquea nada: el software se
+conecta directo a los terminales **PORT1/PORT2** del MOBICON (ver fotos
+del equipo real), que es lo único que importa para que funcione.
 
 ## 3. Mapa de variables Modbus — CONFIRMADO (fuente: manual oficial)
 
@@ -178,9 +185,18 @@ visibles vía Modbus. Esto explica por qué las direcciones Modbus y las
 direcciones internas de HMI (`LW`, `RW`, `LB`) son distintas — el mapa de
 arriba ya da la dirección Modbus correcta a usar, no la interna.
 
-## 4. Mecanismo de control de escritura — CRÍTICO para el backend
+## 4. Mecanismo de control de escritura — descrito en el manual, NO implementado
 
-El sistema implementa un **handshake de control** que define quién tiene
+**Esto es lo que dice el manual que hace el Interrogador Portátil actual —
+el backend .NET todavía NO lo implementa** (no hay ningún código que
+escriba `LB9154` ni maneje este handshake). Lo que sí está implementado es
+más simple: escribir el valor y releer para confirmar (ver
+`SiteConfigModbusIO.EscribirCampoAsync`), sin el paso previo de "tomar el
+control". Falta confirmar con hardware real si ese paso previo es
+necesario para que las escrituras funcionen, o si el equipo las acepta
+igual sin él — pendiente de la primera prueba real.
+
+El sistema (manual) implementa un **handshake de control** que define quién tiene
 permiso de escribir en un momento dado, para evitar conflictos de
 escritura simultánea entre la UTD y quien se conecta como maestro
 (actualmente el Interrogador Portátil; en el futuro, el backend .NET).
@@ -201,11 +217,10 @@ parámetro (fecha/hora, configuración de sitio, etc.), el backend debe:
    fecha/hora: escribe, luego relee para confirmar).
 
 Además, existe una capa adicional de control de acceso en el flujo humano
-actual (menú "Unidad de Verificación" + contraseña) — al automatizar esto
-en el backend, hay que decidir cómo se traduce ese control de acceso
-humano a un mecanismo de autenticación/autorización propio del nuevo
-sistema (pendiente de definir, no confundir con el handshake Modbus de
-arriba, que es un mecanismo distinto a nivel de protocolo).
+actual (menú "Unidad de Verificación" + contraseña) — **ya implementada**:
+el modal "Unidad de Verificación" con PIN (`POST /api/verificacion/validar`)
+replica ese mismo gate, sin relación con el handshake Modbus de arriba
+(protocolos distintos, no confundir uno con otro).
 
 ## 5. Referencia visual para el Front (React) — estructura a replicar
 
@@ -253,6 +268,11 @@ El mapa de registros Modbus **NO debe hardcodearse en código**. Debe vivir
 en la base de datos, para que agregar un nuevo pozo/sitio/dispositivo sea
 solo insertar filas, no tocar código. La tabla `RegistroModbus` de abajo
 puede poblarse directamente con los valores confirmados en la sección 3.
+
+**El código real (`Models/Dispositivo.cs`) terminó con más campos que
+esto** (Rfc/Nsm/Nsue/Nsut/Ftp*/Sms* directo en `Dispositivo`, no solo en
+`RegistroModbus`) — el esqueleto de abajo sigue siendo válido como idea
+general, no como definición exacta de las clases actuales.
 
 ```csharp
 public class Dispositivo
@@ -426,36 +446,22 @@ MAX485 para RTU).
 
 ## 12. Pendientes
 
-1. Aclarar la relación exacta entre el Mobicon MT-151 y la "UTD" descrita
-   en el manual del Interrogador (¿son el mismo sitio/concepto, o
-   dispositivos distintos que conviven?).
-2. Confirmar en qué tabla Modbus (Coil/Discrete/Holding/Input) cae
-   exactamente cada variable del mapa (sección 3) — el manual da
-   direcciones y tipos, no la tabla específica.
-3. Validar empíricamente offset de direcciones (base-0 vs base-1) y orden
-   de bytes de los valores de 32 bits (Caudal, Totalizado).
-4. Conseguir/confirmar acceso físico (adaptador USB-RS485) para conectar
-   una PC de desarrollo a la UTD real y hacer las primeras pruebas de
-   lectura.
-5. Definir cómo se traduce el control de acceso humano actual (menú +
-   contraseña) a un mecanismo de autenticación propio en el nuevo sistema.
-6. Definir modelo exacto de Arduino/sensor de humedad para las pruebas de
-   hardware propio (proyecto de práctica aparte, sección 10.6).
-7. Resolver bloqueo de Kaspersky en Windows para mbpoll.exe (aplica sobre
-   todo a pruebas Modbus TCP, ver nota en sección 11).
+Lista corta acá; el detalle vive en `PENDIENTES_INSTALACION.md` (se
+actualiza ahí, no acá, para no tener dos fuentes divergiendo con el
+tiempo):
 
-## 13. Próximos pasos técnicos sugeridos (implementación)
+1. La prueba real: conectar el adaptador USB-RS485 y confirmar que
+   "Detectar automáticamente" (pantalla Conexión) encuentra el equipo.
+2. Confirmar en qué tabla Modbus (Coil/Discrete/Holding/Input) cae cada
+   variable, polaridad de alarmas, y orden de bytes de los valores de 32
+   bits — todo asumido, nada probado contra hardware real todavía.
+3. Confirmar si el handshake de control de escritura (sección 4) hace
+   falta de verdad, o si el equipo acepta escrituras directas.
 
-1. Crear el backend .NET (ASP.NET Core Web API + SignalR Hub).
-2. Implementar el `BackgroundService` de polling Modbus RTU con NModbus,
-   usando los parámetros de comunicación confirmados (sección 2) y el
-   mapa de registros real (sección 3), leyendo la configuración desde la
-   base de datos (no hardcodeado).
-3. Implementar el mecanismo de handshake de control de escritura descrito
-   en la sección 4 antes de permitir cualquier escritura hacia la UTD.
-4. Levantar el esqueleto de React con las 6 secciones de navegación de la
-   sección 5, empezando por una (ej. "Medidores", que ya tiene el caso de
-   uso más simple: solo lectura, 2 variables) antes de abordar las demás.
-5. Conseguir acceso físico a la UTD real (adaptador USB-RS485) para
-   reemplazar el simulador Python/TCP por pruebas contra hardware real
-   vía RTU serial.
+## 13. Estado de la implementación
+
+El plan de esta sección (crear el backend, el polling, el front, etc.)
+ya se ejecutó por completo — ver `EJECUTABLE-CAMPO.md` para cómo correr y
+empaquetar el resultado. Lo único que ese plan original no logró prever
+(porque dependía de tener el equipo real) es todo lo que quedó en la
+sección 12 de arriba.

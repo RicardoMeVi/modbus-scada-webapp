@@ -1,62 +1,43 @@
-# Pendientes de instalación / configuración manual
+# Pendientes
 
-Este entorno no tiene acceso a internet, así que no pude correr instalaciones.
-Nada de lo que hice agregó dependencias nuevas (ni en `package.json` ni en el
-`.csproj`), pero como el checkout no tiene `node_modules` ni se restauraron
-los paquetes de NuGet, hace falta correr esto manualmente antes de levantar
-el proyecto.
+Lo que falta no es instalación de software (eso ya está resuelto — ver
+`EJECUTABLE-CAMPO.md` para el ejecutable de campo, o `npm install` +
+`dotnet restore` para desarrollo normal). Lo que queda son cosas que solo
+se pueden confirmar con el MOBICON real conectado.
 
-## 1. Frontend
+## 1. La prueba real
 
-```bash
-cd frontend
-npm install
-cp .env.example .env   # si todavía no existe .env
-npm run dev
-```
+Conectar el adaptador USB-RS485, cablear el MOBICON por **PORT1/PORT2**
+(RS-485, no por su puerto USB — ver `CONTEXTONuevo.md` sección 2) y
+confirmar que "Detectar automáticamente" (pantalla "Conexión") encuentra
+el equipo y que los datos empiezan a fluir.
 
-Cambios hechos en esta sesión (sin dependencias nuevas): se agregó un
-esqueleto de navegación lateral con las 5 secciones del HMI Kinco original
-(Datos del sitio, Mensaje/SMS, FTP, Fecha/Hora, Alarmas) — ver
-`frontend/src/sections.js`, `frontend/src/components/`. Solo "Datos del
-sitio" tiene contenido real (el dashboard de dispositivos/registros que ya
-existía); las otras 4 secciones son placeholders a definir en conversaciones
-futuras (ver `CONTEXTO.md`, sección 3).
+## 2. Supuestos del mapa de registros sin confirmar
 
-## 2. Backend
+Solo se pueden probar con el equipo real respondiendo:
 
-```bash
-cd backend/ModbusScada.Api
-dotnet restore
-dotnet build
-dotnet run
-```
+- Si todo se lee como Holding Register (función 03), o si alguna sección
+  es Coil/Input Register de verdad — el manual no lo aclara.
+- Polaridad de los bits de alarma (asumida 1 = alarma activa).
+- Si "EnvioFTP"/"EnvioSMS" son un bit específico dentro de un registro o
+  el registro completo tratado como bandera.
+- Orden de bytes (ABCD/DCBA/BADC/CDAB) de Caudal instantáneo y Totalizado
+  (32 bits) — se asume ABCD + float32, sin confirmar.
 
-Por defecto corre en **modo mock** (`Mocking:Enabled: true` en
-`appsettings.json`): usa una base en memoria y un simulador de tanque, no
-necesita PostgreSQL ni el Mobicon real. No se tocó nada del backend en esta
-sesión.
+## 3. Nivel del tanque / Bomba / Setpoint
 
-### Cuando se quiera conectar contra PostgreSQL real (modo no-mock)
+No están en la especificación del Interrogador portátil — se sacaron del
+dispositivo real (commit `2973dfd`), quedan solo en el simulador de
+desarrollo. Si en algún momento se identifican los registros reales
+equivalentes (si es que existen), agregarlos ahí.
 
-1. Tener PostgreSQL corriendo y ajustar `ConnectionStrings:DefaultConnection`
-   en `appsettings.json`.
-2. Poner `Mocking:Enabled` en `false`.
-3. Generar las migraciones de EF Core (todavía no existen):
-   ```bash
-   dotnet tool install --global dotnet-ef   # si no está instalado
-   dotnet ef migrations add InitialCreate
-   dotnet ef database update
-   ```
+## Ya resuelto (no repetir)
 
-## 3. Pendientes de hardware (fuera del código, ver CONTEXTO.md sección 9)
-
-Estos no son instalaciones de software del repo, pero quedan anotados porque
-son bloqueantes para probar contra el Mobicon real:
-
-- Conseguir el software **MTManager** (Inventia) para configurar el Mobicon
-  MT-151 y leer su memory map real.
-- Conseguir el manual completo / memory map en PDF del Mobicon MT-151.
-- En la máquina Windows: `mbpoll.exe` está bloqueado por Kaspersky Endpoint
-  Security (gestionado por TI institucional) — pedir excepción para el
-  ejecutable o el puerto TCP 502/5020.
+- Relación Mobicon MT-151 / UTD: en la práctica, el software se conecta
+  directo a los terminales PORT1/PORT2 del MOBICON — no hace falta seguir
+  aclarando la terminología del manual para que esto funcione.
+- Control de acceso humano (menú + contraseña del HMI físico): replicado
+  como el modal "Unidad de Verificación" con PIN.
+- Bloqueo de Kaspersky sobre `mbpoll.exe`: ya no aplica — el proyecto no
+  depende de `mbpoll` para nada, la detección de puerto usa NModbus
+  directo (`PuertoSerialDetector`).

@@ -10,16 +10,12 @@ public interface IPuertoSerialDetector
     Task<string?> DetectarAsync(byte slaveId, CancellationToken ct);
 }
 
-// Para la configuración inicial de un sitio real: en vez de pedirle al
-// técnico que abra el Administrador de dispositivos y adivine cuál COM es
-// el adaptador USB-RS485, se prueba cada puerto serial que Windows ve
-// conectado con una lectura Modbus real (registro 15, "Alarmas" -- el mismo
-// que ya usa GetAlarmas, confirmado contra la especificación del
-// Interrogador portátil) y se usa el primero que responda. Cada intento abre
-// su propio SerialPort de corta duración -- no reutiliza el de
-// ModbusConnectionFactory porque ese es el que mantiene abierto el ciclo de
-// sondeo en segundo plano, y no queremos pisarlo ni depender de que ya haya
-// una conexión configurada (todavía no la hay, es justo lo que se busca).
+// Para la config inicial de un sitio real: prueba cada puerto serial con
+// una lectura Modbus real (registro 15, "Alarmas") y usa el primero que
+// responda, en vez de pedirle al técnico que adivine el COM. Cada intento
+// abre su propio SerialPort de corta duración -- no reutiliza el de
+// ModbusConnectionFactory (ese mantiene abierto el sondeo de fondo) para
+// no pisarlo ni depender de una conexión que todavía no existe.
 public class PuertoSerialDetector : IPuertoSerialDetector
 {
     private const int BaudRate = 9600;

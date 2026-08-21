@@ -11,7 +11,8 @@ public class Dispositivo
     public string? PuertoSerial { get; set; }   // COM3, /dev/ttyUSB0, etc (si RTU)
 
     // Datos de identificación del sitio (pantalla "Datos del sitio" del HMI
-    // físico). No son registros Modbus: son metadatos fijos del sitio/pozo.
+    // físico). Todos menos ContrasenaUtd tienen registro Modbus real (ver
+    // SiteRegisterMap) y se escriben al equipo al guardar.
     public string? Nsm { get; set; }
     public string? Nsue { get; set; }
     public string? Nsut { get; set; }
@@ -24,16 +25,17 @@ public class Dispositivo
     public string? Latitud { get; set; }
     public string? Longitud { get; set; }
 
-    // Configuración de SMS (pantalla "SMS" del HMI físico). Igual que los
-    // datos del sitio: no son registros Modbus, son metadatos del
-    // dispositivo. SmsTipoMensaje: 1 = Mensaje de UV, 3 = Mensaje de prueba.
+    // Configuración de SMS (pantalla "SMS" del HMI físico). Todos menos
+    // SmsTipoMensaje tienen registro Modbus real (sin dirección documentada
+    // para este). SmsTipoMensaje: 1 = Mensaje de UV, 3 = Mensaje de prueba.
     public string? SmsNumero { get; set; }
     public int? SmsHoraEnvio { get; set; }
     public int? SmsMinutoEnvio { get; set; }
     public int? SmsTipoMensaje { get; set; }
 
-    // Configuración de FTP (pantalla "FTP" del HMI físico). Mismo patrón:
-    // metadatos del dispositivo, no registros Modbus.
+    // Configuración de FTP (pantalla "FTP" del HMI físico). Todos menos
+    // FtpTipoMensaje tienen registro Modbus real (sin dirección documentada
+    // para este).
     public string? FtpIpServidor { get; set; }
     public string? FtpUsuario { get; set; }
     public string? FtpContrasena { get; set; }
