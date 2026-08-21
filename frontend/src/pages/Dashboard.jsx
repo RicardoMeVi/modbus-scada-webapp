@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getDispositivos } from "../api";
+import { getDispositivos, getEstadoVerificacion } from "../api";
 import { traducirNombreRegistro } from "../i18n/registros";
 import { EncabezadoPagina } from "../components/EncabezadoPagina";
 
@@ -11,12 +11,22 @@ export function Dashboard({ lecturas, conectado, onNavegar }) {
   const { t } = useTranslation();
   const [dispositivos, setDispositivos] = useState([]);
   const [error, setError] = useState(null);
+  const [pinPorDefecto, setPinPorDefecto] = useState(false);
 
   useEffect(() => {
     getDispositivos()
       .then(setDispositivos)
       .catch(() => setError(t("comun.noSeConectoBackend")));
   }, [t]);
+
+  // Aviso de higiene, no de conexión -- el PIN "1234" de fábrica solo
+  // debería quedar así en desarrollo. Nunca se pide/recibe el PIN real acá,
+  // solo el booleano (ver GetEstado en VerificacionController).
+  useEffect(() => {
+    getEstadoVerificacion()
+      .then((estado) => setPinPorDefecto(estado.pinPorDefecto))
+      .catch(() => {});
+  }, []);
 
   const dispositivo = dispositivos[0];
   const registrosDestacados = dispositivo?.registros.filter((r) =>
@@ -42,6 +52,12 @@ export function Dashboard({ lecturas, conectado, onNavegar }) {
           <button type="button" className="banner-cta" onClick={() => onNavegar("conexion")}>
             {t("dashboard.sinConexionBoton")}
           </button>
+        </div>
+      )}
+
+      {pinPorDefecto && (
+        <div className="banner-sin-conexion">
+          <span>{t("dashboard.pinPorDefectoAviso")}</span>
         </div>
       )}
 

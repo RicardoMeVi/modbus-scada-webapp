@@ -56,7 +56,8 @@
     "encendido": "On",
     "apagado": "Off",
     "sinConexionAviso": "Not receiving any data from the device yet.",
-    "sinConexionBoton": "Configure connection"
+    "sinConexionBoton": "Configure connection",
+    "pinPorDefectoAviso": "The access PIN is still the factory default (1234). Change it in appsettings.Campo.json before installing at a real site."
   },
   "datosSitio": {
     "titulo": "Site data",

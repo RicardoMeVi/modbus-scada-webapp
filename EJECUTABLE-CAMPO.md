@@ -188,3 +188,19 @@ ambos casos hay que tocar "Guardar" para persistirlo.
 Guardar Datos del sitio/SMS/FTP es todo o nada: si el equipo no confirma
 la escritura (apagado, desconectado), no se guarda nada, ni siquiera
 local — mejor un error claro que un estado a medias.
+
+## Antes de entregar la notebook para un sitio real
+
+- **Cambiar el PIN de "Unidad de Verificación"**: sigue en `1234` de
+  fábrica en `Verificacion:Pin`. Se pisa agregando esa clave a
+  `appsettings.Campo.json` en la carpeta de instalación
+  (`%LOCALAPPDATA%\ModbusScadaCampo\`), ej.:
+  ```json
+  { "Verificacion": { "Pin": "5678" } }
+  ```
+  Mientras siga en `1234`, el Dashboard muestra un aviso recordándolo
+  (`GET /api/verificacion/estado` -- nunca expone el PIN real, solo si
+  sigue siendo el de fábrica).
+- Confirmar el puerto real en "Conexión" (ver arriba) y el nombre del
+  sitio en "Datos del sitio" -- ambos quedan con valores de ejemplo
+  hasta que alguien los corrija.
