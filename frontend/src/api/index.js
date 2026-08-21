@@ -21,23 +21,23 @@ export function escribirValor(dispositivoId, registroId, valor) {
 }
 
 // Datos de identificación del sitio (NSM, NSUE, NSUT, RFC, Unidad de
-// verificación, Contraseña UTD, coordenadas). Devuelve { escritoEnEquipo }:
-// el guardado local ya ocurrió si esto no tira, pero escritoEnEquipo=false
-// avisa que el equipo real no confirmó la escritura (apagado, desconectado).
+// verificación, Contraseña UTD, coordenadas). Todo o nada: el backend solo
+// persiste si el equipo real confirmó la escritura -- si no, esto tira (el
+// backend responde 502) y no se guardó nada, ni siquiera local.
 export function actualizarDatosSitio(dispositivoId, datos) {
-  return api.put(`/api/dispositivos/${dispositivoId}/datos-sitio`, datos).then((res) => res.data);
+  return api.put(`/api/dispositivos/${dispositivoId}/datos-sitio`, datos);
 }
 
 // Configuración de SMS (número de teléfono, hora/minuto de envío
-// automático, tipo de mensaje). Mismo { escritoEnEquipo } que actualizarDatosSitio.
+// automático, tipo de mensaje). Mismo todo-o-nada que actualizarDatosSitio.
 export function actualizarSms(dispositivoId, datos) {
-  return api.put(`/api/dispositivos/${dispositivoId}/sms`, datos).then((res) => res.data);
+  return api.put(`/api/dispositivos/${dispositivoId}/sms`, datos);
 }
 
 // Configuración de FTP (IP servidor, usuario, contraseña, carpeta,
-// hora/minuto de envío automático, tipo de mensaje). Mismo { escritoEnEquipo }.
+// hora/minuto de envío automático, tipo de mensaje). Mismo todo-o-nada.
 export function actualizarFtp(dispositivoId, datos) {
-  return api.put(`/api/dispositivos/${dispositivoId}/ftp`, datos).then((res) => res.data);
+  return api.put(`/api/dispositivos/${dispositivoId}/ftp`, datos);
 }
 
 // Estado de alarmas (registro 15 bits 0-4 + registro 29 bit 0 del equipo

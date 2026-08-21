@@ -101,7 +101,7 @@ export function FichaFtp({ dispositivo }) {
     if (hayErrores) return;
     setGuardando(true);
     try {
-      const resultado = await actualizarFtp(dispositivo.id, {
+      await actualizarFtp(dispositivo.id, {
         ipServidor: campos.ipServidor || null,
         usuario: campos.usuario || null,
         contrasena: campos.contrasena || null,
@@ -110,7 +110,7 @@ export function FichaFtp({ dispositivo }) {
         minutoEnvio: campos.minutoEnvio || null,
         tipoMensaje: campos.tipoMensaje === "" ? null : Number(campos.tipoMensaje),
       });
-      setEstado(resultado.escritoEnEquipo ? "ok" : "aviso");
+      setEstado("ok");
     } catch {
       setEstado("error");
     } finally {
@@ -265,13 +265,7 @@ export function FichaFtp({ dispositivo }) {
       {estado && (
         <Toast
           tipo={estado}
-          mensaje={
-            estado === "ok"
-              ? t("ftp.toastOk")
-              : estado === "aviso"
-                ? t("ftp.toastAviso")
-                : t("ftp.toastError")
-          }
+          mensaje={estado === "ok" ? t("ftp.toastOk") : t("ftp.toastError")}
           onCerrar={() => setEstado(null)}
         />
       )}
