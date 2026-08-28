@@ -28,6 +28,18 @@ public class ModbusPollingService : BackgroundService
     // a cada ciclo saturaría innecesariamente un bus RS-485 compartido.
     // Se leen 1 de cada 6 ciclos (~cada 30s).
     private const int CiclosPorLecturaDeSitio = 6;
+
+    // El registro Modbus de Fecha/Hora de la UTD es una foto fija -- el
+    // manual del Interrogador documenta que la UTD NO lo actualiza sola con
+    // el tiempo real, solo cuando alguien le escribe un valor nuevo
+    // explícitamente (flujo "Modificar"/"OK"). Sin esto, lo que se ve acá
+    // nunca coincide con el reloj real de la pantalla física de la UTD,
+    // que sí tickea solo (lee su reloj interno directo, sin pasar por el
+    // espejo). Cada tantos ciclos, el backend hace de "Interrogador
+    // automático": le escribe la hora actual, imitando el mismo gesto
+    // manual. Cada ~5 min (no cada ciclo) para no pisar una edición manual
+    // reciente del usuario ni saturar el bus con escrituras constantes.
+    private const int CiclosPorSincronizarReloj = 60;
     private int _ciclo;
 
     public ModbusPollingService(
@@ -63,13 +75,14 @@ public class ModbusPollingService : BackgroundService
             .ToListAsync(stoppingToken);
 
         bool leerConfigSitio = _ciclo % CiclosPorLecturaDeSitio == 0;
+        bool sincronizarReloj = _ciclo % CiclosPorSincronizarReloj == 0;
         _ciclo++;
 
         foreach (var dispositivo in dispositivos)
         {
             try
             {
-                await PollDeviceAsync(db, dispositivo, leerConfigSitio, stoppingToken);
+                await PollDeviceAsync(db, dispositivo, leerConfigSitio, sincronizarReloj, stoppingToken);
             }
             catch (Exception ex)
             {
@@ -79,11 +92,11 @@ public class ModbusPollingService : BackgroundService
         }
     }
 
-    private async Task PollDeviceAsync(AppDbContext db, Dispositivo dispositivo, bool leerConfigSitio, CancellationToken stoppingToken)
+    private async Task PollDeviceAsync(AppDbContext db, Dispositivo dispositivo, bool leerConfigSitio, bool sincronizarReloj, CancellationToken stoppingToken)
     {
         if (dispositivo.Conexion == TipoConexion.Rtu)
         {
-            await PollDeviceRtuAsync(db, dispositivo, leerConfigSitio, stoppingToken);
+            await PollDeviceRtuAsync(db, dispositivo, leerConfigSitio, sincronizarReloj, stoppingToken);
             return;
         }
 
@@ -91,7 +104,7 @@ public class ModbusPollingService : BackgroundService
         await tcpClient.ConnectAsync(dispositivo.IpAddress!, dispositivo.Puerto, stoppingToken);
         using IModbusMaster master = _modbusFactory.CreateMaster(tcpClient);
 
-        await LeerYPublicarRegistrosAsync(db, dispositivo, master, leerConfigSitio, stoppingToken);
+        await LeerYPublicarRegistrosAsync(db, dispositivo, master, leerConfigSitio, sincronizarReloj, stoppingToken);
     }
 
     // A diferencia de TCP (conexión nueva y descartable por ciclo), el
@@ -99,13 +112,13 @@ public class ModbusPollingService : BackgroundService
     // reutiliza el mismo SerialPort entre ciclos. Si algo falla durante la
     // lectura, se cierra la conexión para que el próximo ciclo la reabra
     // desde cero en vez de insistir con un puerto en mal estado.
-    private async Task PollDeviceRtuAsync(AppDbContext db, Dispositivo dispositivo, bool leerConfigSitio, CancellationToken stoppingToken)
+    private async Task PollDeviceRtuAsync(AppDbContext db, Dispositivo dispositivo, bool leerConfigSitio, bool sincronizarReloj, CancellationToken stoppingToken)
     {
         var master = _connectionFactory.ObtenerMasterRtu(dispositivo);
 
         try
         {
-            await LeerYPublicarRegistrosAsync(db, dispositivo, master, leerConfigSitio, stoppingToken);
+            await LeerYPublicarRegistrosAsync(db, dispositivo, master, leerConfigSitio, sincronizarReloj, stoppingToken);
         }
         catch
         {
@@ -114,9 +127,59 @@ public class ModbusPollingService : BackgroundService
         }
     }
 
-    private async Task LeerYPublicarRegistrosAsync(
-        AppDbContext db, Dispositivo dispositivo, IModbusMaster master, bool leerConfigSitio, CancellationToken stoppingToken)
+    // Nombre -> cómo convertir DateTime.Now a lo que espera ese registro
+    // (ver PlaceholderDeviceSeeder/MockDataSeeder para las direcciones:
+    // Día=700, Mes=701, Año=702, Hora=703, Minutos=705, Segundos=707).
+    private static readonly Dictionary<string, Func<DateTime, ushort>> CamposReloj = new()
     {
+        ["Día"] = ahora => (ushort)ahora.Day,
+        ["Mes"] = ahora => (ushort)ahora.Month,
+        ["Año"] = ahora => (ushort)ahora.Year,
+        ["Hora"] = ahora => (ushort)ahora.Hour,
+        ["Minutos"] = ahora => (ushort)ahora.Minute,
+        ["Segundos"] = ahora => (ushort)ahora.Second,
+    };
+
+    // Escribe la hora actual en los registros de Fecha/Hora del dispositivo
+    // -- ver comentario de CiclosPorSincronizarReloj. Best-effort por campo,
+    // igual que el resto de las escrituras de config: si el dispositivo no
+    // tiene alguno de estos registros (ej. el simulador mock), simplemente
+    // no hay nada que escribir para ese nombre.
+    private async Task SincronizarRelojAsync(IModbusMaster master, Dispositivo dispositivo)
+    {
+        var ahora = DateTime.Now;
+
+        foreach (var registro in dispositivo.Registros)
+        {
+            if (!CamposReloj.TryGetValue(registro.Nombre, out var obtenerValor)
+                || registro.Tabla != TipoTablaModbus.HoldingRegister)
+            {
+                continue;
+            }
+
+            try
+            {
+                await master.WriteSingleRegisterAsync(dispositivo.SlaveId, (ushort)registro.Direccion, obtenerValor(ahora));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "No se pudo sincronizar '{Campo}' (dirección {Direccion}) del dispositivo {Nombre}",
+                    registro.Nombre, registro.Direccion, dispositivo.Nombre);
+            }
+        }
+    }
+
+    private async Task LeerYPublicarRegistrosAsync(
+        AppDbContext db, Dispositivo dispositivo, IModbusMaster master, bool leerConfigSitio, bool sincronizarReloj, CancellationToken stoppingToken)
+    {
+        if (sincronizarReloj)
+        {
+            // Antes de leer, para que la lectura de este mismo ciclo (más
+            // abajo) ya publique la hora recién sincronizada por SignalR,
+            // en vez de esperar al próximo ciclo.
+            await SincronizarRelojAsync(master, dispositivo);
+        }
+
         if (leerConfigSitio)
         {
             // Actualiza las columnas fijas (Rfc, Nsm, SmsNumero, etc.) desde
