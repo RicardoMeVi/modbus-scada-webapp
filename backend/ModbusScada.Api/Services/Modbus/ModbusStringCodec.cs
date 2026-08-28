@@ -29,6 +29,14 @@ public static class ModbusStringCodec
         return new string(caracteres.ToArray());
     }
 
+    // Todos los campos de texto reales del equipo (RFC, IP de FTP, etc.) son
+    // ASCII imprimible (dígitos, letras, puntos, etc.) -- nunca caracteres
+    // de control. Si UnpackAscii devuelve algo fuera de ese rango, es señal
+    // de un registro corrupto en la transmisión (bit flip en RS-485), no un
+    // valor real del equipo.
+    public static bool EsAsciiImprimible(string valor) =>
+        valor.All(c => c >= 0x20 && c <= 0x7E);
+
     public static bool GetBit(ushort valorRegistro, int bit) => (valorRegistro & (1 << bit)) != 0;
 
     public static ushort SetBit(ushort valorRegistro, int bit, bool encendido) =>

@@ -8,7 +8,7 @@ import { EncabezadoPagina } from "../components/EncabezadoPagina";
 
 // Configuración de SMS, igual a la pantalla "SMS" del HMI físico
 // (Kinco/ICH). Ver CONTEXTONuevo.md, sección 3.4.
-export function Mensajes() {
+export function Mensajes({ conectado }) {
   const { t } = useTranslation();
   const { dispositivos, error, cargando } = useDispositivos();
 
@@ -41,7 +41,7 @@ export function Mensajes() {
             </div>
 
             <div className="card-body">
-              <FichaSms dispositivo={dispositivo} />
+              <FichaSms dispositivo={dispositivo} conectado={conectado} />
             </div>
           </div>
         ))}

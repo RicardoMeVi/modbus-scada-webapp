@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useModbusHub } from "./hooks/useModbusHub";
@@ -28,11 +28,36 @@ function App() {
   const { dispositivos } = useDispositivos();
   const seccion = SECCIONES.find((s) => s.id === seccionActiva);
 
+  // Sin esto, "hayDatosReales" (abajo) solo se recalcula cuando llega una
+  // lectura nueva por SignalR -- si el equipo se desconecta y deja de
+  // mandar lecturas, nada dispara un re-render y la última lectura sigue
+  // "pareciendo reciente" para siempre (Date.now() no es reactivo solo).
+  // Este tick fuerza un re-render cada 5s para que el chequeo de antigüedad
+  // se vuelva a evaluar aunque no llegue nada nuevo.
+  const [, forzarTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => forzarTick((n) => n + 1), 5000);
+    return () => clearInterval(id);
+  }, []);
+
   // "conectado" (websocket con el backend local) es casi siempre true, aun
   // con el equipo Modbus totalmente desconectado -- no sirve para el
   // indicador que ve el técnico. Acá se exige además que haya llegado
-  // alguna lectura real de algún registro configurado.
-  const hayDatosReales = dispositivos.some((d) => d.registros.some((r) => lecturas[r.id] != null));
+  // alguna lectura real de algún registro configurado, y que sea reciente:
+  // `lecturas` se acumula y nunca se limpia (ver useModbusHub), así que sin
+  // el chequeo de antigüedad una lectura vieja de antes de desconectar el
+  // equipo seguía marcando "En línea" para siempre. El sondeo de fondo es
+  // cada 5s (ver ModbusPollingService.PollInterval) -- 20s da margen para
+  // reintentos sin parpadear en falso entre ciclos normales.
+  const UMBRAL_DATO_RECIENTE_MS = 20_000;
+  const hayDatosReales = dispositivos.some((d) =>
+    d.registros.some((r) => {
+      const lectura = lecturas[r.id];
+      if (lectura == null) return false;
+      const timestamp = new Date(lectura.timestamp ?? lectura.Timestamp).getTime();
+      return Date.now() - timestamp < UMBRAL_DATO_RECIENTE_MS;
+    })
+  );
   const equipoConectado = conectado && hayDatosReales;
 
   return (
@@ -72,11 +97,11 @@ function App() {
             {seccionActiva === "dashboard" && (
               <Dashboard lecturas={lecturas} conectado={equipoConectado} onNavegar={setSeccionActiva} />
             )}
-            {seccionActiva === "datos-sitio" && <DatosDelSitio />}
+            {seccionActiva === "datos-sitio" && <DatosDelSitio conectado={equipoConectado} />}
             {seccionActiva === "conexion" && <Conexion />}
             {seccionActiva === "medidores" && <Medidores lecturas={lecturas} />}
-            {seccionActiva === "mensajes" && <Mensajes />}
-            {seccionActiva === "ftp" && <Ftp />}
+            {seccionActiva === "mensajes" && <Mensajes conectado={equipoConectado} />}
+            {seccionActiva === "ftp" && <Ftp conectado={equipoConectado} />}
             {seccionActiva === "fecha-hora" && <FechaHora lecturas={lecturas} />}
             {seccionActiva === "alarmas" && <Alarmas />}
             {!["dashboard", "datos-sitio", "conexion", "medidores", "mensajes", "ftp", "fecha-hora", "alarmas"].includes(seccionActiva) && (

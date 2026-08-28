@@ -13,7 +13,7 @@ import { EncabezadoPagina } from "../components/EncabezadoPagina";
 // Modbus (puerto COM) vive en su propia sección ("Conexión") -- no es un
 // dato de identidad del sitio, es una configuración técnica que ni existía
 // en el HMI físico.
-export function DatosDelSitio() {
+export function DatosDelSitio({ conectado }) {
   const { t } = useTranslation();
   const { dispositivos, error, cargando } = useDispositivos();
 
@@ -46,7 +46,7 @@ export function DatosDelSitio() {
             </div>
 
             <div className="card-body">
-              <FichaSitio dispositivo={dispositivo} />
+              <FichaSitio dispositivo={dispositivo} conectado={conectado} />
             </div>
           </div>
         ))}

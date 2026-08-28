@@ -46,5 +46,15 @@ public class Dispositivo
     public string? FtpMinutoEnvio { get; set; }
     public int? FtpTipoMensaje { get; set; }
 
+    // Momento de la última lectura de "config de sitio" (Datos del
+    // sitio/SMS/FTP) que efectivamente trajo al menos un campo válido del
+    // equipo real (ver SiteConfigModbusIO/ModbusPollingService). A
+    // diferencia de Fecha/Hora (que llega por SignalR y arranca vacía en
+    // cada apertura), estos campos viven en columnas fijas que se guardan
+    // en la base -- sin esto, el front no puede distinguir "esto lo trajo
+    // el equipo hace unos segundos" de "esto quedó de la última vez que
+    // hubo conexión, quién sabe cuándo".
+    public DateTime? ConfiguracionSitioLeidaEn { get; set; }
+
     public ICollection<RegistroModbus> Registros { get; set; } = new List<RegistroModbus>();
 }

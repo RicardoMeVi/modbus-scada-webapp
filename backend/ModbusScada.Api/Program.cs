@@ -117,7 +117,57 @@ else if (usarSqlite)
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+    // EnsureCreated no hace nada si el archivo ya existía (no compara el
+    // modelo actual contra el esquema real) -- así que un modbus_scada.db
+    // de una instalación anterior nunca gana columnas nuevas solo, y
+    // cualquier query que las use tira "no such column" y tumba el
+    // BackgroundService entero (pasó con ConfiguracionSitioLeidaEn). Esto
+    // agrega, best-effort, las columnas nullable que falten -- no es un
+    // reemplazo de migraciones reales (no maneja renombres/tipos/drops),
+    // solo cubre el caso común de sumar un campo opcional nuevo.
+    AgregarColumnasFaltantes(db);
     PlaceholderDeviceSeeder.EnsureDispositivoExiste(db);
+}
+
+// Ver comentario en el bloque `usarSqlite` de arriba: EnsureCreated no
+// actualiza el esquema de un modbus_scada.db que ya existía. Esta lista es
+// el único lugar a tocar cuando se agregue una columna nullable nueva a
+// Dispositivo/RegistroModbus -- un cambio de tipo, un rename o un drop
+// necesitan más que esto (en ese caso sí hace falta una migración real).
+void AgregarColumnasFaltantes(AppDbContext db)
+{
+    (string Tabla, string Columna, string TipoSql)[] columnasEsperadas =
+    [
+        ("Dispositivos", "ConfiguracionSitioLeidaEn", "TEXT"),
+    ];
+
+    var conexion = db.Database.GetDbConnection();
+    conexion.Open();
+
+    foreach (var (tabla, columna, tipoSql) in columnasEsperadas)
+    {
+        using var comandoInfo = conexion.CreateCommand();
+        comandoInfo.CommandText = $"PRAGMA table_info(\"{tabla}\")";
+        using var lector = comandoInfo.ExecuteReader();
+
+        bool existe = false;
+        while (lector.Read())
+        {
+            if (string.Equals(lector.GetString(1), columna, StringComparison.OrdinalIgnoreCase))
+            {
+                existe = true;
+                break;
+            }
+        }
+        lector.Close();
+
+        if (!existe)
+        {
+            using var comandoAlter = conexion.CreateCommand();
+            comandoAlter.CommandText = $"ALTER TABLE \"{tabla}\" ADD COLUMN \"{columna}\" {tipoSql} NULL";
+            comandoAlter.ExecuteNonQuery();
+        }
+    }
 }
 
 if (useMockData)

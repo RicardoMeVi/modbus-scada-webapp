@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { actualizarDatosSitio } from "../api";
 import { Toast } from "./Toast";
@@ -9,6 +9,19 @@ import { IconoSeccion } from "./icons/IconoSeccion";
 // caracteres de homoclave = 12 o 13 caracteres en total.
 const RFC_REGEX = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/;
 
+function camposDesde(dispositivo, conectado) {
+  return {
+    nsm: conectado ? dispositivo.nsm ?? "" : "",
+    nsue: conectado ? dispositivo.nsue ?? "" : "",
+    nsut: conectado ? dispositivo.nsut ?? "" : "",
+    rfc: conectado ? dispositivo.rfc ?? "" : "",
+    unidadVerificacion: conectado ? dispositivo.unidadVerificacion ?? "" : "",
+    contrasenaUtd: conectado ? dispositivo.contrasenaUtd ?? "" : "",
+    latitud: conectado ? dispositivo.latitud ?? "" : "",
+    longitud: conectado ? dispositivo.longitud ?? "" : "",
+  };
+}
+
 // Datos de identificación del sitio, igual a la pantalla "Datos del sitio"
 // del HMI físico (Kinco/ICH): NSM, NSUE, NSUT, RFC, Unidad de verificación,
 // Contraseña UTD y coordenadas. Todos menos Contraseña UTD tienen registro
@@ -17,21 +30,32 @@ const RFC_REGEX = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/;
 // sección 3.2: "String N car."). Latitud/Longitud son texto (String 11/15
 // en el equipo real) -- se valida el rango numérico por usabilidad, pero
 // se guarda y envía el string tal cual, no un número parseado.
-export function FichaSitio({ dispositivo }) {
+// A diferencia de Fecha/Hora (que llega por SignalR y arranca vacía en cada
+// apertura), estos campos son columnas fijas cacheadas en la base -- sin el
+// chequeo de abajo, la pantalla mostraba lo último guardado aunque el
+// equipo llevara horas desconectado. `conectado` es el mismo booleano que
+// ya calcula App.jsx para el badge "En línea"/"Desconectado" del topbar
+// (viene de lecturas Modbus recientes, no de un timestamp de config de
+// sitio aparte) -- se reutiliza para que ambos indicadores digan siempre lo
+// mismo. Antes esta pantalla tenía su propio chequeo de frescura (60s)
+// independiente del badge, y podían mostrar cosas distintas al mismo
+// tiempo.
+export function FichaSitio({ dispositivo, conectado }) {
   const { t } = useTranslation();
-  const [campos, setCampos] = useState({
-    nsm: dispositivo.nsm ?? "",
-    nsue: dispositivo.nsue ?? "",
-    nsut: dispositivo.nsut ?? "",
-    rfc: dispositivo.rfc ?? "",
-    unidadVerificacion: dispositivo.unidadVerificacion ?? "",
-    contrasenaUtd: dispositivo.contrasenaUtd ?? "",
-    latitud: dispositivo.latitud ?? "",
-    longitud: dispositivo.longitud ?? "",
-  });
+  const [campos, setCampos] = useState(() => camposDesde(dispositivo, conectado));
+  const [editando, setEditando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [estado, setEstado] = useState(null); // "ok" | "error" | null
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
+
+  // useDispositivos refresca cada 10s -- sin este efecto la pantalla se
+  // quedaba con el snapshot del primer render para siempre. Se frena
+  // mientras el usuario está editando para no pisarle lo que está tipeando.
+  useEffect(() => {
+    if (editando) return;
+    setCampos(camposDesde(dispositivo, conectado));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispositivo, conectado, editando]);
 
   const rfcInvalido = campos.rfc !== "" && !RFC_REGEX.test(campos.rfc);
 
@@ -44,6 +68,7 @@ export function FichaSitio({ dispositivo }) {
   const hayErrores = rfcInvalido || latitudInvalida || longitudInvalida;
 
   function actualizarCampo(campo, valor) {
+    setEditando(true);
     setEstado(null);
     setCampos((prev) => ({ ...prev, [campo]: valor }));
   }
@@ -93,6 +118,10 @@ export function FichaSitio({ dispositivo }) {
         longitud: campos.longitud || null,
       });
       setEstado("ok");
+      // El backend ya escribió y releyó para confirmar (todo o nada) --
+      // volver a seguir la config del equipo en vez de seguir mostrando lo
+      // recién tipeado.
+      setEditando(false);
     } catch {
       setEstado("error");
     } finally {

@@ -49,6 +49,13 @@ function diasEnMes(anio, mes) {
 // Hora" del HMI físico (Kinco/ICH): reloj interno de la UTD (sección 3.1 de
 // CONTEXTONuevo.md), con flujo de edición "modificar → escritura → lectura
 // de confirmación" (cada campo es un Holding Register individual).
+// Clave de localStorage para el ancla del reloj visual (ver más abajo) --
+// una por dispositivo, para no pisar el ancla de otro sitio si algún día
+// hay más de uno.
+function claveAnclaReloj(registros) {
+  return `relojFechaHora:${registros[0]?.dispositivoId ?? "unico"}`;
+}
+
 export function FichaFechaHora({ registros, lecturas }) {
   const { t } = useTranslation();
   const registroPorNombre = Object.fromEntries(registros.map((r) => [r.nombre, r]));
@@ -68,25 +75,107 @@ export function FichaFechaHora({ registros, lecturas }) {
   // escritura y "revertir" visualmente el cambio que se acaba de confirmar.
   const ultimaEscrituraRef = useRef(null);
 
+  // El registro Modbus de Fecha/Hora es una foto fija que la UTD no
+  // actualiza sola con el tiempo real (ver manual del Interrogador,
+  // "Operación": "tampoco realizará la actualización automática de la
+  // fecha y hora conforme transcurra el tiempo") -- por eso hace falta este
+  // reloj puramente visual: ancla la última lectura real (+ el momento en
+  // que llegó) y de ahí en más suma tiempo local para que en pantalla se
+  // vea avanzar como en el panel Kinco físico. `valorReal` guarda la última
+  // tupla real ya anclada -- sin compararla, cada lectura repetida del
+  // mismo valor estático (llega cada ~5s aunque no haya cambiado nada) iba
+  // a pisar el reloj visual y hacerlo "saltar" para atrás.
+  const baseRelojRef = useRef(null);
+
   // Mientras no se está editando, los campos siguen el reloj en vivo
-  // (llega por SignalR, igual que Caudal/Totalizado en Medidores).
+  // (llega por SignalR, igual que Caudal/Totalizado en Medidores). Si los
+  // seis campos llegaron y son iguales a lo ya anclado, no se toca `campos`
+  // -- se deja avanzar solo al tick visual de abajo.
   useEffect(() => {
     if (editando) return;
-    setCampos((prev) => {
-      const siguiente = {};
-      for (const { nombre, clave } of CAMPOS) {
-        const registro = registroPorNombre[nombre];
-        const lectura = registro ? lecturas[registro.id] : null;
-        const timestamp = lectura && new Date(lectura.timestamp ?? lectura.Timestamp);
-        const esConfirmacionFresca =
-          !ultimaEscrituraRef.current || (timestamp && timestamp >= ultimaEscrituraRef.current);
 
-        siguiente[clave] = lectura && esConfirmacionFresca ? (lectura.valor ?? lectura.Valor) : (prev[clave] ?? "");
+    const valorReal = {};
+    let completo = true;
+    for (const { nombre, clave } of CAMPOS) {
+      const registro = registroPorNombre[nombre];
+      const lectura = registro ? lecturas[registro.id] : null;
+      const timestamp = lectura && new Date(lectura.timestamp ?? lectura.Timestamp);
+      const esConfirmacionFresca =
+        !ultimaEscrituraRef.current || (timestamp && timestamp >= ultimaEscrituraRef.current);
+
+      if (lectura && esConfirmacionFresca) {
+        valorReal[clave] = lectura.valor ?? lectura.Valor;
+      } else {
+        completo = false;
       }
-      return siguiente;
-    });
+    }
+
+    if (!completo) {
+      // Sin datos reales todavía (o parciales): mostrar lo que haya, sin
+      // arrancar el reloj visual.
+      setCampos((prev) => ({ ...prev, ...valorReal }));
+      return;
+    }
+
+    const yaAnclado = baseRelojRef.current?.valorReal;
+    const esIgual = yaAnclado && CAMPOS.every(({ clave }) => String(yaAnclado[clave]) === String(valorReal[clave]));
+    if (esIgual) return; // mismo valor estático de siempre -- no pisar el tick visual
+
+    // El componente se remonta al cambiar de sección o al reabrir la app --
+    // sin esto, cada remontaje perdía baseRelojRef (es un ref, vive y muere
+    // con el componente) y el reloj visual "rebobinaba" al valor original y
+    // volvía a contar desde ahí, en vez de seguir avanzando como si nunca
+    // se hubiera interrumpido. Si el valor real es el mismo que la última
+    // vez que se ancló (aunque haya sido en otro montaje/otra sesión de la
+    // app), se reutiliza el `capturadoEn` guardado en vez de reiniciarlo a
+    // "ahora".
+    const clave = claveAnclaReloj(registros);
+    let capturadoEn = Date.now();
+    try {
+      const guardado = JSON.parse(localStorage.getItem(clave) ?? "null");
+      if (guardado && CAMPOS.every(({ clave: c }) => String(guardado.valorReal[c]) === String(valorReal[c]))) {
+        capturadoEn = guardado.capturadoEn;
+      }
+    } catch {
+      // localStorage no disponible o dato corrupto -- seguir con "ahora".
+    }
+
+    const { anio, mes, dia, hora, minutos, segundos } = valorReal;
+    baseRelojRef.current = {
+      valorReal,
+      fecha: new Date(Number(anio), Number(mes) - 1, Number(dia), Number(hora), Number(minutos), Number(segundos)),
+      capturadoEn,
+    };
+    try {
+      localStorage.setItem(clave, JSON.stringify({ valorReal, capturadoEn }));
+    } catch {
+      // Best-effort: sin persistencia el reloj visual sigue andando, solo
+      // vuelve a arrancar desde el valor real si se remonta el componente.
+    }
+    setCampos(valorReal);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editando, lecturas]);
+
+  // Tick puramente visual: no vuelve a preguntarle nada al equipo, solo
+  // suma tiempo local sobre la última ancla real. Usar un objeto Date real
+  // (en vez de sumar dígitos a mano) para que el acarreo entre
+  // segundos/minutos/horas/día/mes/año salga bien solo.
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (editando || !baseRelojRef.current) return;
+      const { fecha, capturadoEn } = baseRelojRef.current;
+      const visual = new Date(fecha.getTime() + (Date.now() - capturadoEn));
+      setCampos({
+        anio: String(visual.getFullYear()),
+        mes: String(visual.getMonth() + 1),
+        dia: String(visual.getDate()),
+        hora: String(visual.getHours()),
+        minutos: String(visual.getMinutes()),
+        segundos: String(visual.getSeconds()),
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [editando]);
 
   const maxDia = diasEnMes(campos.anio, campos.mes);
   const diaInvalido = campos.dia !== "" && campos.dia !== undefined && Number(campos.dia) > maxDia;

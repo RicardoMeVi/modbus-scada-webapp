@@ -8,7 +8,7 @@ import { EncabezadoPagina } from "../components/EncabezadoPagina";
 
 // Configuración de FTP, igual a la pantalla "FTP" del HMI físico
 // (Kinco/ICH). Ver CONTEXTONuevo.md, sección 3.4.
-export function Ftp() {
+export function Ftp({ conectado }) {
   const { t } = useTranslation();
   const { dispositivos, error, cargando } = useDispositivos();
 
@@ -41,7 +41,7 @@ export function Ftp() {
             </div>
 
             <div className="card-body">
-              <FichaFtp dispositivo={dispositivo} />
+              <FichaFtp dispositivo={dispositivo} conectado={conectado} />
             </div>
           </div>
         ))}

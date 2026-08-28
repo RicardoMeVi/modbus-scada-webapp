@@ -124,7 +124,14 @@ public class ModbusPollingService : BackgroundService
             // último que alguien guardó desde la app, nunca lo que el
             // equipo realmente tiene. Best-effort por campo (ver
             // SiteConfigModbusIO), no aborta el resto del ciclo si falla.
-            await SiteConfigModbusIO.LeerCamposAsync(master, dispositivo, _logger);
+            // Solo se marca como "fresca" (ConfiguracionSitioLeidaEn) si al
+            // menos un campo se leyó y validó de verdad -- el front usa esa
+            // marca para no mostrar como si fuera actual algo que en
+            // realidad quedó guardado de una sesión vieja.
+            if (await SiteConfigModbusIO.LeerCamposAsync(master, dispositivo, _logger))
+            {
+                dispositivo.ConfiguracionSitioLeidaEn = DateTime.UtcNow;
+            }
         }
 
         foreach (var registro in dispositivo.Registros)

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { actualizarFtp } from "../api";
 import { Toast } from "./Toast";
@@ -18,21 +18,46 @@ const IP_REGEX = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[
 // equipo al guardar. Largos máximos según la especificación del
 // Interrogador portátil (sección 3: "String N car." por campo). Las
 // tarjetas de GSM/GPRS/IHM leen del mismo GET .../alarmas que Alarmas.
-export function FichaFtp({ dispositivo }) {
+//
+// A diferencia de Fecha/Hora (que llega por SignalR y arranca vacía en
+// cada apertura), estos campos son columnas fijas cacheadas en la base --
+// sin el chequeo de abajo, la pantalla mostraba lo último guardado aunque
+// el equipo llevara horas desconectado. `conectado` es el mismo booleano
+// que ya calcula App.jsx para el badge "En línea"/"Desconectado" del
+// topbar -- se reutiliza para que ambos indicadores digan siempre lo
+// mismo (antes esta pantalla tenía su propio chequeo de frescura de 60s
+// independiente, y podían mostrar cosas distintas al mismo tiempo).
+function camposDesde(dispositivo, conectado) {
+  return {
+    ipServidor: conectado ? dispositivo.ftpIpServidor ?? "" : "",
+    usuario: conectado ? dispositivo.ftpUsuario ?? "" : "",
+    contrasena: conectado ? dispositivo.ftpContrasena ?? "" : "",
+    carpeta: conectado ? dispositivo.ftpCarpeta ?? "" : "",
+    horaEnvio: conectado ? dispositivo.ftpHoraEnvio ?? "" : "",
+    minutoEnvio: conectado ? dispositivo.ftpMinutoEnvio ?? "" : "",
+    tipoMensaje: conectado && dispositivo.ftpTipoMensaje ? String(dispositivo.ftpTipoMensaje) : "",
+  };
+}
+
+export function FichaFtp({ dispositivo, conectado }) {
   const { t } = useTranslation();
   const alarmas = useAlarmas(dispositivo.id);
-  const [campos, setCampos] = useState({
-    ipServidor: dispositivo.ftpIpServidor ?? "",
-    usuario: dispositivo.ftpUsuario ?? "",
-    contrasena: dispositivo.ftpContrasena ?? "",
-    carpeta: dispositivo.ftpCarpeta ?? "",
-    horaEnvio: dispositivo.ftpHoraEnvio ?? "",
-    minutoEnvio: dispositivo.ftpMinutoEnvio ?? "",
-    tipoMensaje: dispositivo.ftpTipoMensaje ? String(dispositivo.ftpTipoMensaje) : "",
-  });
+  const [campos, setCampos] = useState(() => camposDesde(dispositivo, conectado));
+  const [editando, setEditando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [estado, setEstado] = useState(null);
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
+
+  // useDispositivos refresca cada 10s (ver ese hook) -- sin este efecto, la
+  // pantalla se quedaba con el snapshot del primer render para siempre
+  // (useState solo usa su valor inicial una vez) y nunca se enteraba de que
+  // el equipo se conectó y trajo datos reales recién. Se frena mientras el
+  // usuario está editando para no pisarle lo que está tipeando.
+  useEffect(() => {
+    if (editando) return;
+    setCampos(camposDesde(dispositivo, conectado));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispositivo, conectado, editando]);
 
   // IP, usuario, contraseña y carpeta son obligatorios: una configuración
   // de FTP sin alguno de estos cuatro no sirve para nada (no hay a dónde
@@ -44,6 +69,7 @@ export function FichaFtp({ dispositivo }) {
   const hayErrores = ipInvalida || faltanCampos;
 
   function actualizarCampo(campo, valor) {
+    setEditando(true);
     setEstado(null);
     setCampos((prev) => ({ ...prev, [campo]: valor }));
   }
@@ -110,6 +136,11 @@ export function FichaFtp({ dispositivo }) {
         tipoMensaje: campos.tipoMensaje === "" ? null : Number(campos.tipoMensaje),
       });
       setEstado("ok");
+      // El backend ya escribió y releyó para confirmar (todo o nada, ver
+      // SiteConfigModbusIO) -- volver a seguir la config del equipo en vez
+      // de seguir mostrando lo recién tipeado, así el próximo refresco de
+      // useDispositivos (10s) puede reflejar la confirmación real.
+      setEditando(false);
     } catch {
       setEstado("error");
     } finally {

@@ -34,13 +34,21 @@ public static class SiteConfigModbusIO
         return !huboError;
     }
 
-    public static async Task LeerCamposAsync(IModbusMaster master, Dispositivo dispositivo, ILogger logger)
+    // Devuelve true si se pudo leer y validar al menos un campo -- lo usa
+    // ModbusPollingService para decidir si esta lectura cuenta como
+    // "config de sitio fresca" (ConfiguracionSitioLeidaEn) o si el ciclo
+    // entero fue puro ruido y no hay que confiar en nada de lo que quedó
+    // en el objeto Dispositivo.
+    public static async Task<bool> LeerCamposAsync(IModbusMaster master, Dispositivo dispositivo, ILogger logger)
     {
+        bool huboExito = false;
+
         foreach (var campo in SiteRegisterMap.Campos)
         {
             try
             {
                 await LeerCampoAsync(master, dispositivo, campo);
+                huboExito = true;
             }
             catch (Exception ex)
             {
@@ -48,6 +56,8 @@ public static class SiteConfigModbusIO
                     campo.Propiedad, campo.Direccion, dispositivo.Nombre);
             }
         }
+
+        return huboExito;
     }
 
     // Escribe y relee para confirmar -- un ACK a nivel protocolo no
@@ -100,11 +110,56 @@ public static class SiteConfigModbusIO
     {
         var propiedad = typeof(Dispositivo).GetProperty(campo.Propiedad)!;
 
+        // Descarta una lectura inválida: deja el campo en null (no en el
+        // valor viejo) y recién ahí tira. A pedido explícito -- el front
+        // nunca debe mostrar como "actual" algo que no se pudo confirmar en
+        // este ciclo, ni siquiera el último valor bueno conocido. `null` (no
+        // "") es clave para que siga siendo seguro: EscribirCampoAsync
+        // salta los campos null al guardar, así que esto no reintroduce el
+        // bug de borrado real que motivó el chequeo de vacío (ver más abajo).
+        void Descartar(string motivo)
+        {
+            propiedad.SetValue(dispositivo, null);
+            throw new InvalidOperationException(motivo);
+        }
+
         if (campo.Tipo == TipoRegistroSitio.String)
         {
             var registros = await master.ReadHoldingRegistersAsync(
                 dispositivo.SlaveId, (ushort)campo.Direccion, (ushort)campo.LongitudRegistros);
-            propiedad.SetValue(dispositivo, ModbusStringCodec.UnpackAscii(registros));
+            var valor = ModbusStringCodec.UnpackAscii(registros);
+
+            // Un bus RS-485 al límite puede devolver un CRC válido con un
+            // registro individual corrupto (ver caso real: registro que
+            // debía ser '.' llegó como 2136 en vez de 46) -- UnpackAscii no
+            // tiene forma de detectarlo solo, así que se valida acá antes
+            // de aceptar el valor.
+            if (!ModbusStringCodec.EsAsciiImprimible(valor))
+            {
+                Descartar($"Lectura descartada: '{campo.Propiedad}' contiene caracteres no imprimibles (posible glitch de comunicación).");
+            }
+
+            // Un string vacío pasa el chequeo de arriba por vacuidad (no hay
+            // ningún carácter que lo reviente) -- pero un campo entero de 17
+            // registros leyendo 0x0000 en todos es exactamente la firma que
+            // ya vimos cuando la conexión estaba rota de verdad (ver
+            // CONTEXTONuevo.md/PENDIENTES: direcciones reales devolviendo
+            // puro cero con Err=0), no un dato real del equipo.
+            if (valor.Length == 0)
+            {
+                Descartar($"Lectura descartada: '{campo.Propiedad}' vino completamente vacía (probable desconexión, no un valor real).");
+            }
+
+            // Chequeo de formato adicional cuando existe (ver comentario en
+            // SiteRegisterMap): un registro corrupto enmascarado a 1 byte
+            // puede seguir siendo "imprimible" (ej. un contador interno que
+            // decodifica como ':', ';', etc.) sin dejar de ser basura.
+            if (campo.ValidadorAdicional is not null && !campo.ValidadorAdicional(valor))
+            {
+                Descartar($"Lectura descartada: '{campo.Propiedad}' = '{valor}' no tiene el formato esperado.");
+            }
+
+            propiedad.SetValue(dispositivo, valor);
         }
         else
         {

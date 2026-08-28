@@ -1,10 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { actualizarSms } from "../api";
 import { Toast } from "./Toast";
 import { IconoSeccion } from "./icons/IconoSeccion";
 import { EstadoTarjeta } from "./EstadoTarjeta";
 import { useAlarmas } from "../hooks/useAlarmas";
+
+function camposDesde(dispositivo, conectado) {
+  return {
+    numero: conectado ? dispositivo.smsNumero ?? "" : "",
+    horaEnvio: conectado ? dispositivo.smsHoraEnvio ?? "" : "",
+    minutoEnvio: conectado ? dispositivo.smsMinutoEnvio ?? "" : "",
+    tipoMensaje: conectado && dispositivo.smsTipoMensaje ? String(dispositivo.smsTipoMensaje) : "",
+  };
+}
 
 // Configuración de SMS, igual a la pantalla "SMS" del HMI físico
 // (Kinco/ICH): número de teléfono, hora/minuto de envío automático y tipo
@@ -13,18 +22,25 @@ import { useAlarmas } from "../hooks/useAlarmas";
 // escriben al equipo al guardar. GSM/GPRS/IHM son los mismos bits de
 // "Alarmas" -- solo lectura, del mismo GET .../alarmas que la pantalla
 // Alarmas, para que las dos digan lo mismo.
-export function FichaSms({ dispositivo }) {
+//
+// Igual que FichaFtp/FichaSitio: estos campos son columnas fijas cacheadas
+// en la base, no algo que llegue por SignalR. `conectado` es el mismo
+// booleano del badge "En línea"/"Desconectado" del topbar (App.jsx) -- se
+// reutiliza para que todos los indicadores digan siempre lo mismo.
+export function FichaSms({ dispositivo, conectado }) {
   const { t } = useTranslation();
   const alarmas = useAlarmas(dispositivo.id);
-  const [campos, setCampos] = useState({
-    numero: dispositivo.smsNumero ?? "",
-    horaEnvio: dispositivo.smsHoraEnvio ?? "",
-    minutoEnvio: dispositivo.smsMinutoEnvio ?? "",
-    tipoMensaje: dispositivo.smsTipoMensaje ? String(dispositivo.smsTipoMensaje) : "",
-  });
+  const [campos, setCampos] = useState(() => camposDesde(dispositivo, conectado));
+  const [editando, setEditando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [estado, setEstado] = useState(null);
   const [enviando, setEnviando] = useState(false);
+
+  useEffect(() => {
+    if (editando) return;
+    setCampos(camposDesde(dispositivo, conectado));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispositivo, conectado, editando]);
 
   const tipoMensajeValido = campos.tipoMensaje === "1" || campos.tipoMensaje === "3";
 
@@ -36,6 +52,7 @@ export function FichaSms({ dispositivo }) {
     tipoMensajeValido && numeroValido && campos.horaEnvio !== "" && campos.minutoEnvio !== "";
 
   function actualizarCampo(campo, valor) {
+    setEditando(true);
     setEstado(null);
     setCampos((prev) => ({ ...prev, [campo]: valor }));
   }
@@ -86,6 +103,7 @@ export function FichaSms({ dispositivo }) {
         tipoMensaje: campos.tipoMensaje === "" ? null : Number(campos.tipoMensaje),
       });
       setEstado("ok");
+      setEditando(false);
     } catch {
       setEstado("error");
     } finally {

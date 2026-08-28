@@ -12,6 +12,7 @@
     "volverSitio": "← Pantalla del sitio",
     "panelControl": "Panel de control",
     "slave": "slave",
+    "sinPuerto": "sin puerto",
     "noHayDispositivos": "No hay dispositivos configurados todavía.",
     "noSeConectoBackend": "No se pudo conectar con el backend.",
     "cerrar": "Cerrar",
