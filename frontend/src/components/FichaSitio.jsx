@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { actualizarDatosSitio } from "../api";
 import { Toast } from "./Toast";
@@ -8,6 +8,10 @@ import { IconoSeccion } from "./icons/IconoSeccion";
 // RFC mexicano: 3-4 letras (persona moral/física) + 6 dígitos (fecha) + 3
 // caracteres de homoclave = 12 o 13 caracteres en total.
 const RFC_REGEX = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/;
+
+const CLAVES_CAMPOS = [
+  "nsm", "nsue", "nsut", "rfc", "unidadVerificacion", "contrasenaUtd", "latitud", "longitud",
+];
 
 function camposDesde(dispositivo, conectado) {
   return {
@@ -20,6 +24,10 @@ function camposDesde(dispositivo, conectado) {
     latitud: conectado ? dispositivo.latitud ?? "" : "",
     longitud: conectado ? dispositivo.longitud ?? "" : "",
   };
+}
+
+function camposIguales(a, b) {
+  return CLAVES_CAMPOS.every((clave) => String(a[clave] ?? "") === String(b[clave] ?? ""));
 }
 
 // Datos de identificación del sitio, igual a la pantalla "Datos del sitio"
@@ -47,13 +55,28 @@ export function FichaSitio({ dispositivo, conectado }) {
   const [guardando, setGuardando] = useState(false);
   const [estado, setEstado] = useState(null); // "ok" | "error" | null
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
+  // Snapshot de lo que se guardó y confirmó la última vez (todo o nada:
+  // el backend ya escribió y releyó del equipo real antes de responder
+  // "ok"). useDispositivos solo refresca cada 10s por REST -- justo
+  // después de guardar, `dispositivo` (el prop) todavía trae el valor
+  // VIEJO durante esa ventana. Sin esto, el efecto de abajo pisaba el
+  // campo recién guardado con ese valor viejo apenas se apagaba
+  // `editando`, y se veía "volver" al dato anterior por unos segundos
+  // hasta el próximo refresco. Se limpia solo en cuanto `dispositivo`
+  // alcanza lo que ya sabemos confirmado.
+  const ultimoGuardadoRef = useRef(null);
 
   // useDispositivos refresca cada 10s -- sin este efecto la pantalla se
   // quedaba con el snapshot del primer render para siempre. Se frena
   // mientras el usuario está editando para no pisarle lo que está tipeando.
   useEffect(() => {
     if (editando) return;
-    setCampos(camposDesde(dispositivo, conectado));
+    const fresco = camposDesde(dispositivo, conectado);
+    if (ultimoGuardadoRef.current && !camposIguales(fresco, ultimoGuardadoRef.current)) {
+      return; // el REST todavía no alcanzó lo que ya confirmamos guardado
+    }
+    ultimoGuardadoRef.current = null;
+    setCampos(fresco);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispositivo, conectado, editando]);
 
@@ -120,7 +143,9 @@ export function FichaSitio({ dispositivo, conectado }) {
       setEstado("ok");
       // El backend ya escribió y releyó para confirmar (todo o nada) --
       // volver a seguir la config del equipo en vez de seguir mostrando lo
-      // recién tipeado.
+      // recién tipeado, pero protegiendo ese valor hasta que el próximo
+      // refresco de useDispositivos lo alcance (ver comentario del ref).
+      ultimoGuardadoRef.current = { ...campos };
       setEditando(false);
     } catch {
       setEstado("error");

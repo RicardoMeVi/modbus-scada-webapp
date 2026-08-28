@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { actualizarFtp } from "../api";
 import { Toast } from "./Toast";
@@ -9,6 +9,12 @@ import { useAlarmas } from "../hooks/useAlarmas";
 
 // IPv4: cuatro octetos 0-255 separados por punto.
 const IP_REGEX = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+
+const CLAVES_CAMPOS = ["ipServidor", "usuario", "contrasena", "carpeta", "horaEnvio", "minutoEnvio", "tipoMensaje"];
+
+function camposIguales(a, b) {
+  return CLAVES_CAMPOS.every((clave) => String(a[clave] ?? "") === String(b[clave] ?? ""));
+}
 
 // Configuración de FTP, igual a la pantalla "FTP" del HMI físico
 // (Kinco/ICH): IP del servidor, usuario, contraseña, carpeta de
@@ -47,6 +53,11 @@ export function FichaFtp({ dispositivo, conectado }) {
   const [guardando, setGuardando] = useState(false);
   const [estado, setEstado] = useState(null);
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
+  // Ver comentario igual en FichaSitio.jsx: protege el valor recién
+  // guardado hasta que useDispositivos (refresco cada 10s) lo alcance, para
+  // que no se vea "volver" al dato viejo por unos segundos después de
+  // guardar.
+  const ultimoGuardadoRef = useRef(null);
 
   // useDispositivos refresca cada 10s (ver ese hook) -- sin este efecto, la
   // pantalla se quedaba con el snapshot del primer render para siempre
@@ -55,7 +66,12 @@ export function FichaFtp({ dispositivo, conectado }) {
   // usuario está editando para no pisarle lo que está tipeando.
   useEffect(() => {
     if (editando) return;
-    setCampos(camposDesde(dispositivo, conectado));
+    const fresco = camposDesde(dispositivo, conectado);
+    if (ultimoGuardadoRef.current && !camposIguales(fresco, ultimoGuardadoRef.current)) {
+      return;
+    }
+    ultimoGuardadoRef.current = null;
+    setCampos(fresco);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispositivo, conectado, editando]);
 
@@ -138,8 +154,9 @@ export function FichaFtp({ dispositivo, conectado }) {
       setEstado("ok");
       // El backend ya escribió y releyó para confirmar (todo o nada, ver
       // SiteConfigModbusIO) -- volver a seguir la config del equipo en vez
-      // de seguir mostrando lo recién tipeado, así el próximo refresco de
-      // useDispositivos (10s) puede reflejar la confirmación real.
+      // de seguir mostrando lo recién tipeado, protegiendo ese valor hasta
+      // que el próximo refresco de useDispositivos (10s) lo alcance.
+      ultimoGuardadoRef.current = { ...campos };
       setEditando(false);
     } catch {
       setEstado("error");

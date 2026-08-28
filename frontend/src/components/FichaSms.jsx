@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { actualizarSms } from "../api";
 import { Toast } from "./Toast";
 import { IconoSeccion } from "./icons/IconoSeccion";
 import { EstadoTarjeta } from "./EstadoTarjeta";
 import { useAlarmas } from "../hooks/useAlarmas";
+
+const CLAVES_CAMPOS = ["numero", "horaEnvio", "minutoEnvio", "tipoMensaje"];
 
 function camposDesde(dispositivo, conectado) {
   return {
@@ -13,6 +15,10 @@ function camposDesde(dispositivo, conectado) {
     minutoEnvio: conectado ? dispositivo.smsMinutoEnvio ?? "" : "",
     tipoMensaje: conectado && dispositivo.smsTipoMensaje ? String(dispositivo.smsTipoMensaje) : "",
   };
+}
+
+function camposIguales(a, b) {
+  return CLAVES_CAMPOS.every((clave) => String(a[clave] ?? "") === String(b[clave] ?? ""));
 }
 
 // Configuración de SMS, igual a la pantalla "SMS" del HMI físico
@@ -35,10 +41,17 @@ export function FichaSms({ dispositivo, conectado }) {
   const [guardando, setGuardando] = useState(false);
   const [estado, setEstado] = useState(null);
   const [enviando, setEnviando] = useState(false);
+  // Ver comentario igual en FichaSitio.jsx.
+  const ultimoGuardadoRef = useRef(null);
 
   useEffect(() => {
     if (editando) return;
-    setCampos(camposDesde(dispositivo, conectado));
+    const fresco = camposDesde(dispositivo, conectado);
+    if (ultimoGuardadoRef.current && !camposIguales(fresco, ultimoGuardadoRef.current)) {
+      return;
+    }
+    ultimoGuardadoRef.current = null;
+    setCampos(fresco);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispositivo, conectado, editando]);
 
@@ -103,6 +116,7 @@ export function FichaSms({ dispositivo, conectado }) {
         tipoMensaje: campos.tipoMensaje === "" ? null : Number(campos.tipoMensaje),
       });
       setEstado("ok");
+      ultimoGuardadoRef.current = { ...campos };
       setEditando(false);
     } catch {
       setEstado("error");
