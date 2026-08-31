@@ -32,14 +32,14 @@ offset, sección 3.6) son valores de 32 bits — el manual no especifica el
 orden de bytes (ABCD/DCBA/BADC/CDAB). Se asume float32 + ABCD por ahora,
 sin confirmar contra un caudal real distinto de 0.
 
-## 4. Contraseña UV: decidir si se mantiene el campo
+## 4. Contraseña UV: confirmar el valor, no solo que responda
 
-Nunca tuvo dirección Modbus documentada (solo registro interno `LW10026`,
-sin espejo Modbus) — el campo en la app es puramente local, nunca se lee
-ni se escribe al equipo real. Queda la duda de si vale la pena mantenerlo
-así (una nota personal del técnico) o quitarlo del formulario de "Datos
-del sitio" para no dar a entender que sincroniza con algo que en realidad
-nunca toca.
+Ya se consiguió una dirección (251, fuera del manual del Interrogador) y
+se agregó a `SiteRegisterMap.cs` — ModScan confirma que el equipo responde
+algo ahí. Falta el mismo nivel de confirmación que se hizo para NSM:
+escribir un valor de prueba desde la app, releerlo con ModScan
+independientemente, y confirmar que coincide (no solo que "hay algo", sino
+que es lo que se espera).
 
 ## 5. Handshake de control de escritura: automatizar si aparece la dirección
 

@@ -181,15 +181,19 @@ arriba) -- coincide con la columna "Dir. HMI UTD (RW)" del manual original.
 | Latitud | 94 | 95 | String 11 car. | 1 carácter por registro de 16 bits |
 | Longitud | 105 | 106 | String 15 car. | 1 carácter por registro de 16 bits |
 | Unidad De Verificación | 120 | 121 | 16 bits | Registro de control (ver sección 4) |
-| Contraseña UV | — | — | 16 bits | Registro interno del sistema (LW10026), sin dirección Modbus documentada -- ver nota abajo |
+| Contraseña UV | 251 | — | 16 bits | No está en el manual del Interrogador (era LW10026, interno, sin dirección) -- dirección conseguida por otro lado, ver nota abajo |
 
-**Contraseña UV:** nunca tuvo dirección Modbus en el manual (solo LW10026,
-interno). El código la mantiene como campo **solo local** (se guarda en la
-base del ejecutable, nunca se lee ni se escribe al equipo real) -- si en
-algún sitio la app muestra este valor, es lo último que un usuario tecleó
-ahí, no una confirmación del equipo. Pendiente decidir si vale la pena
-mantenerlo así de "solo nota personal" o quitarlo del formulario para no
-confundir (ver `PENDIENTES_INSTALACION.md`).
+**Contraseña UV -- ACTUALIZACIÓN:** a diferencia de lo que decían
+versiones anteriores de este documento, **ya se consiguió una dirección
+Modbus** (251, fuera del manual del Interrogador). Confirmado con ModScan
+que el equipo responde algo ahí -- pero, a diferencia de NSM, **no se
+confirmó el valor en sí** (no se probó escribir un valor de prueba y
+releerlo para comparar, como sí se hizo para validar el offset de NSM).
+Con esto, la recomendación anterior de "sacar el campo del formulario"
+queda **revertida** -- ya tiene sentido mantenerlo, en `SiteRegisterMap.cs`
+como cualquier otro campo, ahora que sí sincroniza con algo real. Falta
+confirmar el valor con una prueba de escritura+relectura (ver
+`PENDIENTES_INSTALACION.md`).
 
 **Nota de tipo de dato string:** el manual especifica "1 carácter por cada
 registro de 16 bits" — a diferencia de la convención común de 2 caracteres

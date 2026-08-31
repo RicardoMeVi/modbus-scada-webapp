@@ -8,10 +8,15 @@ public enum TipoRegistroSitio { String, UInt16 }
 // (nombre de la propiedad en Dispositivo, dirección Modbus real, tipo,
 // largo en registros si es String, validación adicional opcional).
 // Direcciones tomadas de la especificación del Interrogador portátil
-// (secciones 3.1-3.4). Los campos sin dirección documentada (ContrasenaUtd,
-// SmsTipoMensaje, FtpTipoMensaje) quedan deliberadamente fuera de este mapa
-// -- se siguen guardando solo en la base de datos local, no se inventa una
-// dirección para ellos.
+// (secciones 3.1-3.4), con el ajuste -1 confirmado con hardware real (ver
+// comentario más abajo, arriba de `Campos`). Los campos sin dirección
+// confirmada (SmsTipoMensaje, FtpTipoMensaje) quedan deliberadamente fuera
+// de este mapa -- se siguen guardando solo en la base de datos local, no
+// se inventa una dirección para ellos. ContrasenaUtd (dirección 251) no
+// venía en el manual del Interrogador -- se consiguió por otro lado y se
+// confirmó con ModScan que responde algo ahí, pero no se confirmó el
+// valor en sí (no se probó escribir y releer para comparar) como sí se
+// hizo con NSM.
 //
 // `ValidadorAdicional`: SiteConfigModbusIO ya descarta cualquier lectura
 // con caracteres no imprimibles, pero eso no alcanza para todos los casos
@@ -36,11 +41,19 @@ public static class SiteRegisterMap
     private static readonly Regex Ipv4Regex =
         new(@"^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$", RegexOptions.Compiled);
 
-    
+    // Mismo formato que valida el frontend (FichaSitio.jsx): 3-4 letras +
+    // 6 dígitos de fecha + 3 caracteres de homoclave.
     private static readonly Regex RfcRegex =
         new(@"^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$", RegexOptions.Compiled);
 
-    
+    // OJO -- direcciones corregidas -1 respecto a la "Dirección Modbus" que
+    // documenta el manual del Interrogador (secciones 3.2-3.4). Confirmado
+    // con hardware real (ModScan, campo NSM): el primer carácter de un
+    // string aparecía en la dirección cruda "Dirección Modbus - 1" (que
+    // coincide con la columna "Dirección HMI UTD"/RW de esa misma tabla).
+    // Fecha/Hora y Medidores NO llevan este ajuste (confirmados correctos
+    // tal cual documenta el manual) -- ver CONTEXTONuevo.md sección 3 para
+    // el detalle completo de por qué.
     public static readonly IReadOnlyList<CampoSitio> Campos = new[]
     {
         new CampoSitio(nameof(Dispositivo.Rfc), 30, TipoRegistroSitio.String, 13, RfcRegex.IsMatch),
@@ -50,7 +63,10 @@ public static class SiteRegisterMap
         new CampoSitio(nameof(Dispositivo.Latitud), 94, TipoRegistroSitio.String, 11),
         new CampoSitio(nameof(Dispositivo.Longitud), 105, TipoRegistroSitio.String, 15),
         new CampoSitio(nameof(Dispositivo.UnidadVerificacion), 120, TipoRegistroSitio.UInt16),
- 
+        // Dirección conseguida aparte (no está en el manual del
+        // Interrogador) -- ver comentario de arriba del todo.
+        new CampoSitio(nameof(Dispositivo.ContrasenaUtd), 251, TipoRegistroSitio.UInt16),
+
         new CampoSitio(nameof(Dispositivo.SmsNumero), 121, TipoRegistroSitio.String, 10),
         new CampoSitio(nameof(Dispositivo.SmsHoraEnvio), 131, TipoRegistroSitio.UInt16),
         new CampoSitio(nameof(Dispositivo.SmsMinutoEnvio), 132, TipoRegistroSitio.UInt16),
