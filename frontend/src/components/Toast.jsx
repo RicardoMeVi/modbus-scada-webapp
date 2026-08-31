@@ -47,7 +47,7 @@ export function Toast({ tipo, mensaje, onCerrar }) {
         )}
       </span>
       <span>{mensaje}</span>
-      <button className="toast-cerrar" onClick={cerrar} aria-label={t("comun.cerrar")}>
+      <button type="button" className="toast-cerrar" onClick={cerrar} aria-label={t("comun.cerrar")}>
         ✕
       </button>
     </div>

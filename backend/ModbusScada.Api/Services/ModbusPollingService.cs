@@ -140,6 +140,21 @@ public class ModbusPollingService : BackgroundService
         ["Segundos"] = ahora => (ushort)ahora.Second,
     };
 
+    // Rango plausible por nombre de registro -- ver comentario donde se usa
+    // (LeerYPublicarRegistrosAsync). Año va hasta 2099 nomás porque un
+    // registro de 16 bits corrupto puede devolver cualquier cosa hasta
+    // 65535; cualquier año fuera de este rango es obviamente un glitch, no
+    // un valor real de la UTD.
+    private static readonly Dictionary<string, (double Min, double Max)> RangosPlausibles = new()
+    {
+        ["Día"] = (1, 31),
+        ["Mes"] = (1, 12),
+        ["Año"] = (2000, 2099),
+        ["Hora"] = (0, 23),
+        ["Minutos"] = (0, 59),
+        ["Segundos"] = (0, 59),
+    };
+
     // Escribe la hora actual en los registros de Fecha/Hora del dispositivo
     // -- ver comentario de CiclosPorSincronizarReloj. Best-effort por campo,
     // igual que el resto de las escrituras de config: si el dispositivo no
@@ -200,6 +215,23 @@ public class ModbusPollingService : BackgroundService
         foreach (var registro in dispositivo.Registros)
         {
             double valor = await LeerRegistroAsync(master, dispositivo.SlaveId, registro);
+
+            // A diferencia de los campos de texto (SiteConfigModbusIO ya
+            // valida formato/imprimibilidad), los registros numéricos como
+            // Fecha/Hora no tenían ningún chequeo -- un glitch de un solo
+            // registro (bit flip en RS-485) se aceptaba y publicaba igual.
+            // Caso real: Año leyendo 2075 mientras Día/Mes/Hora/Min/Seg
+            // daban valores plausibles -- el resto del mensaje llegó bien,
+            // solo ese registro se corrompió. Mejor no publicar esta
+            // lectura puntual (se reintenta el próximo ciclo, 5s después)
+            // que mostrar una fecha imposible.
+            if (RangosPlausibles.TryGetValue(registro.Nombre, out var rango) && (valor < rango.Min || valor > rango.Max))
+            {
+                _logger.LogWarning(
+                    "Lectura descartada: '{Campo}' = {Valor} fuera de rango plausible ({Min}-{Max}), posible glitch de comunicación.",
+                    registro.Nombre, valor, rango.Min, rango.Max);
+                continue;
+            }
 
             db.LecturasHistoricas.Add(new LecturaHistorica
             {

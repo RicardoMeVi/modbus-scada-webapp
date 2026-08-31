@@ -50,7 +50,7 @@ public static class SiteRegisterMap
         new CampoSitio(nameof(Dispositivo.Latitud), 94, TipoRegistroSitio.String, 11),
         new CampoSitio(nameof(Dispositivo.Longitud), 105, TipoRegistroSitio.String, 15),
         new CampoSitio(nameof(Dispositivo.UnidadVerificacion), 120, TipoRegistroSitio.UInt16),
-
+ 
         new CampoSitio(nameof(Dispositivo.SmsNumero), 121, TipoRegistroSitio.String, 10),
         new CampoSitio(nameof(Dispositivo.SmsHoraEnvio), 131, TipoRegistroSitio.UInt16),
         new CampoSitio(nameof(Dispositivo.SmsMinutoEnvio), 132, TipoRegistroSitio.UInt16),
