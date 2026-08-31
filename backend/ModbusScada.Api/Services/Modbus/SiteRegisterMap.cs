@@ -12,11 +12,10 @@ public enum TipoRegistroSitio { String, UInt16 }
 // comentario más abajo, arriba de `Campos`). Los campos sin dirección
 // confirmada (SmsTipoMensaje, FtpTipoMensaje) quedan deliberadamente fuera
 // de este mapa -- se siguen guardando solo en la base de datos local, no
-// se inventa una dirección para ellos. ContrasenaUtd (dirección 251) no
+// se inventa una dirección para ellos. ContrasenaUtd (dirección 250) no
 // venía en el manual del Interrogador -- se consiguió por otro lado y se
-// confirmó con ModScan que responde algo ahí, pero no se confirmó el
-// valor en sí (no se probó escribir y releer para comparar) como sí se
-// hizo con NSM.
+// confirmó con la misma prueba de escritura+relectura que NSM (251, la
+// primera dirección probada, no coincidía con lo escrito -- 250 sí).
 //
 // `ValidadorAdicional`: SiteConfigModbusIO ya descarta cualquier lectura
 // con caracteres no imprimibles, pero eso no alcanza para todos los casos
@@ -64,8 +63,10 @@ public static class SiteRegisterMap
         new CampoSitio(nameof(Dispositivo.Longitud), 105, TipoRegistroSitio.String, 15),
         new CampoSitio(nameof(Dispositivo.UnidadVerificacion), 120, TipoRegistroSitio.UInt16),
         // Dirección conseguida aparte (no está en el manual del
-        // Interrogador) -- ver comentario de arriba del todo.
-        new CampoSitio(nameof(Dispositivo.ContrasenaUtd), 251, TipoRegistroSitio.UInt16),
+        // Interrogador) -- confirmada con prueba de escritura+relectura
+        // (mismo método que NSM): 251 daba un valor que no coincidía con
+        // lo recién guardado, 250 sí.
+        new CampoSitio(nameof(Dispositivo.ContrasenaUtd), 250, TipoRegistroSitio.UInt16),
 
         new CampoSitio(nameof(Dispositivo.SmsNumero), 121, TipoRegistroSitio.String, 10),
         new CampoSitio(nameof(Dispositivo.SmsHoraEnvio), 131, TipoRegistroSitio.UInt16),

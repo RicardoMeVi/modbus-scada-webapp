@@ -32,14 +32,11 @@ offset, sección 3.6) son valores de 32 bits — el manual no especifica el
 orden de bytes (ABCD/DCBA/BADC/CDAB). Se asume float32 + ABCD por ahora,
 sin confirmar contra un caudal real distinto de 0.
 
-## 4. Contraseña UV: confirmar el valor, no solo que responda
+## 4. ~~Contraseña UV~~ — resuelto
 
-Ya se consiguió una dirección (251, fuera del manual del Interrogador) y
-se agregó a `SiteRegisterMap.cs` — ModScan confirma que el equipo responde
-algo ahí. Falta el mismo nivel de confirmación que se hizo para NSM:
-escribir un valor de prueba desde la app, releerlo con ModScan
-independientemente, y confirmar que coincide (no solo que "hay algo", sino
-que es lo que se espera).
+~~Confirmar el valor, no solo que responda~~ — hecho. Dirección real: 250
+(no 251, que fue el primer intento y no coincidía al escribir/releer). Ver
+"Ya resuelto" abajo.
 
 ## 5. Handshake de control de escritura: automatizar si aparece la dirección
 
@@ -65,6 +62,8 @@ equivalentes (si es que existen), agregarlos ahí.
   -1 respecto al manual (confirmado con ModScan real, ver
   `CONTEXTONuevo.md` sección 3). Fecha/Hora y Medidores confirmados
   correctos **sin** ese ajuste.
+- **Contraseña UV**: dirección real confirmada en 250 (fuera del manual
+  del Interrogador), con la misma prueba de escritura+relectura que NSM.
 - **Relación Mobicon MT-151 / UTD**: aclarada del todo. Son sistemas
   separados, sin relación — el Mobicon nunca tuvo los datos de la UTD.
   El software no usa el Mobicon para nada; se conecta directo al conector
