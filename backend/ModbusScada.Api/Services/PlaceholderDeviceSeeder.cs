@@ -29,6 +29,11 @@ public static class PlaceholderDeviceSeeder
             PuertoSerial = "COM3",
             Puerto = 502,
             SlaveId = 1,
+            // PIN inicial del modal "Unidad de Verificación" -- el técnico
+            // lo cambia desde "Datos del sitio" (Modbus, dirección 250) una
+            // vez instalado, y desde ahí en más hay que entrar con lo que
+            // haya quedado configurado.
+            ContrasenaUtd = Dispositivo.ContrasenaUtdPorDefecto,
             Registros = new List<RegistroModbus>
             {
                 // Caudal instantáneo/Totalizado: direcciones 9/11 según la

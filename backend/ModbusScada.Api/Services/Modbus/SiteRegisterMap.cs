@@ -16,7 +16,7 @@ public enum TipoRegistroSitio { String, UInt16 }
 // venía en el manual del Interrogador -- se consiguió por otro lado y se
 // confirmó con la misma prueba de escritura+relectura que NSM (251, la
 // primera dirección probada, no coincidía con lo escrito -- 250 sí).
-//
+    //
 // `ValidadorAdicional`: SiteConfigModbusIO ya descarta cualquier lectura
 // con caracteres no imprimibles, pero eso no alcanza para todos los casos
 // -- se confirmó con hardware real que el registro 442 (dentro del rango

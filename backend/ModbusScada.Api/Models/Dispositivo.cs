@@ -2,6 +2,13 @@ namespace ModbusScada.Api.Models;
 
 public class Dispositivo
 {
+    // Valor inicial de ContrasenaUtd para un sitio recién instalado (ver
+    // PlaceholderDeviceSeeder) -- es también el PIN por defecto del modal
+    // "Unidad de Verificación" (VerificacionController), porque son el
+    // mismo campo: cambiarlo desde "Datos del sitio" cambia con qué PIN
+    // hay que entrar la próxima vez que se abra la app
+    public const string ContrasenaUtdPorDefecto = "1";
+
     public int Id { get; set; }
     public string Nombre { get; set; } = string.Empty;
     public string? IpAddress { get; set; }      // null si es RTU serial
@@ -11,8 +18,10 @@ public class Dispositivo
     public string? PuertoSerial { get; set; }   // COM3, /dev/ttyUSB0, etc (si RTU)
 
     // Datos de identificación del sitio (pantalla "Datos del sitio" del HMI
-    // físico). Todos menos ContrasenaUtd tienen registro Modbus real (ver
-    // SiteRegisterMap) y se escriben al equipo al guardar.
+    // físico). Todos tienen registro Modbus real (ver SiteRegisterMap) y
+    // se escriben al equipo al guardar -- ContrasenaUtd (dirección 250) es
+    // además el PIN del modal "Unidad de Verificación", ver
+    // ContrasenaUtdPorDefecto arriba.
     public string? Nsm { get; set; }
     public string? Nsue { get; set; }
     public string? Nsut { get; set; }

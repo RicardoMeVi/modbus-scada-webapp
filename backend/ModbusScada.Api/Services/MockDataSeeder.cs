@@ -73,6 +73,10 @@ public static class MockDataSeeder
             Puerto = 502,
             SlaveId = 1,
             Conexion = TipoConexion.Tcp,
+            // Mismo PIN por defecto que el ejecutable de campo (ver
+            // Dispositivo.ContrasenaUtdPorDefecto) -- para que el modal
+            // "Unidad de Verificación" se pueda probar igual en local.
+            ContrasenaUtd = Dispositivo.ContrasenaUtdPorDefecto,
             Registros = new List<RegistroModbus>
             {
                 new()
