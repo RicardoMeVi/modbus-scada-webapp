@@ -45,6 +45,11 @@ public static class SiteConfigModbusIO
 
         foreach (var campo in SiteRegisterMap.Campos)
         {
+            if (campo.ExcluirDeSondeoPasivo)
+            {
+                continue;
+            }
+
             try
             {
                 await LeerCampoAsync(master, dispositivo, campo);

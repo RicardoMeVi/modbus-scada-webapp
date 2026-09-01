@@ -28,12 +28,25 @@ public enum TipoRegistroSitio { String, UInt16 }
 // solo IP de FTP tiene un formato lo bastante estricto como para validarlo
 // así -- el resto de los campos de texto no tienen un formato conocido
 // para chequear más allá de "es imprimible".
+// `ExcluirDeSondeoPasivo`: no se relee en el sondeo de fondo automático
+// (SiteConfigModbusIO.LeerCamposAsync, cada ~30s) -- solo se lee/escribe
+// cuando el usuario guarda explícitamente desde "Datos del sitio"
+// (EscribirCamposAsync, que ya hace escritura + relectura de confirmación
+// antes de persistir). Pensado para ContrasenaUtd: como también es el PIN
+// del modal de acceso a la app, un glitch de comunicación puntual en el
+// sondeo pasivo podía pisarlo con basura sin que el usuario tocara nada,
+// dejándolo afuera de su propia app con el PIN "correcto" que él mismo
+// puso. A diferencia de Fecha/Hora (donde un valor fuera de rango se
+// puede detectar y descartar), un PIN puede ser cualquier número -- no
+// hay forma de distinguir "esto es basura" de "esto es un PIN real", así
+// que la única defensa real es no releerlo pasivamente en absoluto.
 public record CampoSitio(
     string Propiedad,
     int Direccion,
     TipoRegistroSitio Tipo,
     int LongitudRegistros = 1,
-    Func<string, bool>? ValidadorAdicional = null);
+    Func<string, bool>? ValidadorAdicional = null,
+    bool ExcluirDeSondeoPasivo = false);
 
 public static class SiteRegisterMap
 {
@@ -65,8 +78,10 @@ public static class SiteRegisterMap
         // Dirección conseguida aparte (no está en el manual del
         // Interrogador) -- confirmada con prueba de escritura+relectura
         // (mismo método que NSM): 251 daba un valor que no coincidía con
-        // lo recién guardado, 250 sí.
-        new CampoSitio(nameof(Dispositivo.ContrasenaUtd), 250, TipoRegistroSitio.UInt16),
+        // lo recién guardado, 250 sí. ExcluirDeSondeoPasivo=true porque
+        // también es el PIN de acceso a la app -- ver comentario en
+        // CampoSitio arriba.
+        new CampoSitio(nameof(Dispositivo.ContrasenaUtd), 250, TipoRegistroSitio.UInt16, ExcluirDeSondeoPasivo: true),
 
         new CampoSitio(nameof(Dispositivo.SmsNumero), 121, TipoRegistroSitio.String, 10),
         new CampoSitio(nameof(Dispositivo.SmsHoraEnvio), 131, TipoRegistroSitio.UInt16),
