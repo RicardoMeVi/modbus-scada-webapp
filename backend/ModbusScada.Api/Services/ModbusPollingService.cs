@@ -210,14 +210,18 @@ public class ModbusPollingService : BackgroundService
             {
                 dispositivo.ConfiguracionSitioLeidaEn = DateTime.UtcNow;
             }
-
-            // ContrasenaUtd queda afuera de LeerCamposAsync (ver
-            // ExcluirDeSondeoPasivo) porque también es el PIN de acceso a
-            // la app -- esta función aparte sí la revisa, pero con doble
-            // confirmación antes de aceptar un cambio (ver comentario en
-            // SiteConfigModbusIO).
-            await SiteConfigModbusIO.VerificarCambioDeContrasenaAsync(master, dispositivo, _logger);
         }
+
+        // ContrasenaUtd queda afuera de LeerCamposAsync (ver
+        // ExcluirDeSondeoPasivo) porque también es el PIN de acceso a la
+        // app -- esta función aparte sí la revisa, con doble confirmación
+        // antes de aceptar un cambio (ver comentario en SiteConfigModbusIO).
+        // A diferencia del resto de "config de sitio" (leerConfigSitio,
+        // ~30s), esto corre **cada ciclo** (~5s) -- es una sola lectura de
+        // un registro, no satura el bus, y hace que la doble confirmación
+        // tarde ~10s en vez de hasta 60s+ (que se sentía como que algo
+        // andaba mal, aunque funcionaba).
+        await SiteConfigModbusIO.VerificarCambioDeContrasenaAsync(master, dispositivo, _logger);
 
         foreach (var registro in dispositivo.Registros)
         {
