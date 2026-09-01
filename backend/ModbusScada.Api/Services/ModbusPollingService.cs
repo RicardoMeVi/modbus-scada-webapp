@@ -210,6 +210,13 @@ public class ModbusPollingService : BackgroundService
             {
                 dispositivo.ConfiguracionSitioLeidaEn = DateTime.UtcNow;
             }
+
+            // ContrasenaUtd queda afuera de LeerCamposAsync (ver
+            // ExcluirDeSondeoPasivo) porque también es el PIN de acceso a
+            // la app -- esta función aparte sí la revisa, pero con doble
+            // confirmación antes de aceptar un cambio (ver comentario en
+            // SiteConfigModbusIO).
+            await SiteConfigModbusIO.VerificarCambioDeContrasenaAsync(master, dispositivo, _logger);
         }
 
         foreach (var registro in dispositivo.Registros)

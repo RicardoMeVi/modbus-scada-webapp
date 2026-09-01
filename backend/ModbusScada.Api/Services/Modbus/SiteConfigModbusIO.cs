@@ -13,6 +13,67 @@ namespace ModbusScada.Api.Services.Modbus;
 // si persiste algo (ver DispositivosController: todo o nada).
 public static class SiteConfigModbusIO
 {
+    // Candidato pendiente de confirmar por dispositivo, para
+    // VerificarCambioDeContrasenaAsync -- ver comentario ahí. En memoria
+    // nomás (no en la base): si el backend se reinicia justo en el medio,
+    // como mucho se pierde el candidato pendiente y hace falta un ciclo
+    // más para confirmar un cambio real hecho en la UTD -- no hay nada
+    // crítico que perder.
+    private static readonly Dictionary<int, ushort> _candidatosContrasena = new();
+
+    // ContrasenaUtd está marcada ExcluirDeSondeoPasivo (no la toca
+    // LeerCamposAsync) porque también es el PIN de acceso a la app -- un
+    // valor corrupto aceptado de una sola lectura dejaba al usuario
+    // afuera. Pero el usuario SÍ quiere que un cambio hecho directo en el
+    // menú físico de la UTD (sin pasar por la app) eventualmente se
+    // refleje acá. Esta función concilia ambas cosas: exige ver el MISMO
+    // valor distinto dos ciclos seguidos antes de aceptarlo como un
+    // cambio real -- un glitch aislado de comunicación prácticamente
+    // nunca se repite idéntico dos veces seguidas, a diferencia de un
+    // cambio deliberado (que se mantiene estable hasta el próximo cambio).
+    public static async Task VerificarCambioDeContrasenaAsync(IModbusMaster master, Dispositivo dispositivo, ILogger logger)
+    {
+        var campo = SiteRegisterMap.Campos.First(c => c.Propiedad == nameof(Dispositivo.ContrasenaUtd));
+
+        ushort leido;
+        try
+        {
+            var registros = await master.ReadHoldingRegistersAsync(dispositivo.SlaveId, (ushort)campo.Direccion, 1);
+            leido = registros[0];
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "No se pudo leer Contraseña UTD (dirección {Direccion}) del dispositivo {Nombre}",
+                campo.Direccion, dispositivo.Nombre);
+            return;
+        }
+
+        if (dispositivo.ContrasenaUtd is not null
+            && ushort.TryParse(dispositivo.ContrasenaUtd, out var actual)
+            && actual == leido)
+        {
+            _candidatosContrasena.Remove(dispositivo.Id);
+            return; // sigue igual que lo que ya tenemos -- nada que hacer
+        }
+
+        if (_candidatosContrasena.TryGetValue(dispositivo.Id, out var candidatoAnterior) && candidatoAnterior == leido)
+        {
+            // Mismo valor distinto dos veces seguidas: se acepta como
+            // cambio real hecho en la UTD.
+            dispositivo.ContrasenaUtd = leido.ToString();
+            _candidatosContrasena.Remove(dispositivo.Id);
+            logger.LogInformation(
+                "Contraseña UTD del dispositivo {Nombre} actualizada -- cambio confirmado directo en el equipo.",
+                dispositivo.Nombre);
+        }
+        else
+        {
+            // Primera vez que se ve este valor distinto -- todavía no se
+            // acepta, se guarda como candidato para el próximo ciclo.
+            _candidatosContrasena[dispositivo.Id] = leido;
+        }
+    }
+
     public static async Task<bool> EscribirCamposAsync(IModbusMaster master, Dispositivo dispositivo, ILogger logger)
     {
         bool huboError = false;

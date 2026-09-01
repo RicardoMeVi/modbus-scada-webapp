@@ -193,6 +193,20 @@ recomendación anterior de "sacar el campo del formulario" queda
 **revertida** -- ya tiene sentido mantenerlo, en `SiteRegisterMap.cs` como
 cualquier otro campo, ahora que sí sincroniza con algo real y confirmado.
 
+**Contraseña UV es también el PIN del modal "Unidad de Verificación"**
+(`VerificacionController` valida contra este mismo campo, no un valor de
+config aparte -- ver `Dispositivo.ContrasenaUtdPorDefecto`). Por eso está
+marcado `ExcluirDeSondeoPasivo` en `SiteRegisterMap.cs`: una lectura
+corrupta de un campo cualquiera se puede descartar (formato inválido,
+vacío, etc.), pero un PIN puede ser cualquier número -- no hay forma de
+distinguir basura de un valor real, así que el sondeo automático de fondo
+(~30s) no lo toca. Solo cambia cuando el usuario guarda explícitamente
+desde "Datos del sitio" (escritura + relectura de confirmación), **o**
+cuando `SiteConfigModbusIO.VerificarCambioDeContrasenaAsync` ve el mismo
+valor distinto dos ciclos seguidos -- para que un cambio hecho directo en
+el menú físico de la UTD también se refleje, sin quedar expuesto a un
+glitch aislado de un solo ciclo.
+
 **Nota de tipo de dato string:** el manual especifica "1 carácter por cada
 registro de 16 bits" — a diferencia de la convención común de 2 caracteres
 ASCII por registro de 16 bits. Respetar esta particularidad tal como está
