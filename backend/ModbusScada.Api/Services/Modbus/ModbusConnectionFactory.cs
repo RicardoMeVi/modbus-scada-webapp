@@ -16,6 +16,23 @@ public class ModbusConnectionFactory : IModbusConnectionFactory, IDisposable
 
     private readonly ModbusFactory _modbusFactory = new();
     private readonly ConcurrentDictionary<string, (SerialPort Puerto, IModbusMaster Master)> _conexiones = new();
+    private readonly ConcurrentDictionary<int, SemaphoreSlim> _bloqueos = new();
+
+    public async Task<IDisposable> BloquearAsync(int dispositivoId, CancellationToken ct = default)
+    {
+        var semaforo = _bloqueos.GetOrAdd(dispositivoId, _ => new SemaphoreSlim(1, 1));
+        await semaforo.WaitAsync(ct);
+        return new Liberador(semaforo);
+    }
+
+    // IDisposable minimo para poder usar "using var _ = await BloquearAsync(...)"
+    // en el punto de uso, en vez de acordarse de llamar Release() a mano.
+    private sealed class Liberador : IDisposable
+    {
+        private readonly SemaphoreSlim _semaforo;
+        public Liberador(SemaphoreSlim semaforo) => _semaforo = semaforo;
+        public void Dispose() => _semaforo.Release();
+    }
 
     public IModbusMaster ObtenerMasterRtu(Dispositivo dispositivo)
     {

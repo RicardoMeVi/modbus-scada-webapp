@@ -18,6 +18,13 @@ public class RealSiteConfigWriter : ISiteConfigWriter
 
     public async Task<bool> EscribirAsync(Dispositivo dispositivo)
     {
+        // Ver comentario en IModbusConnectionFactory.BloquearAsync: sin
+        // esto, este guardado (llega por HTTP, en cualquier momento) podía
+        // entrelazarse en el cable con el sondeo de fondo que corre cada
+        // 5s -- caso real: un Guardar de Contraseña UTD confirmaba bien en
+        // el momento, pero el equipo terminaba con otro valor.
+        using var _ = await _connectionFactory.BloquearAsync(dispositivo.Id);
+
         try
         {
             if (dispositivo.Conexion == TipoConexion.Rtu)

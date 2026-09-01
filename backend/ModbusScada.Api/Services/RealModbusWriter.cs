@@ -17,6 +17,12 @@ public class RealModbusWriter : IModbusWriter
 
     public async Task EscribirAsync(Dispositivo dispositivo, RegistroModbus registro, double valor, CancellationToken ct = default)
     {
+        // Ver comentario en IModbusConnectionFactory.BloquearAsync: sin
+        // esto, esta escritura (que llega por HTTP, en cualquier momento)
+        // podía entrelazarse en el cable con el sondeo de fondo que
+        // corre cada 5s.
+        using var _ = await _connectionFactory.BloquearAsync(dispositivo.Id, ct);
+
         if (dispositivo.Conexion == TipoConexion.Rtu)
         {
             var master = _connectionFactory.ObtenerMasterRtu(dispositivo);

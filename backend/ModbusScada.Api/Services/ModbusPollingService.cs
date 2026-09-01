@@ -104,6 +104,10 @@ public class ModbusPollingService : BackgroundService
         await tcpClient.ConnectAsync(dispositivo.IpAddress!, dispositivo.Puerto, stoppingToken);
         using IModbusMaster master = _modbusFactory.CreateMaster(tcpClient);
 
+        // Ver comentario en IModbusConnectionFactory.BloquearAsync: sin
+        // esto, una escritura que llega por HTTP mientras este ciclo está
+        // a mitad de leer podría entrelazarse en el mismo socket/puerto.
+        using var _ = await _connectionFactory.BloquearAsync(dispositivo.Id, stoppingToken);
         await LeerYPublicarRegistrosAsync(db, dispositivo, master, leerConfigSitio, sincronizarReloj, stoppingToken);
     }
 
@@ -118,6 +122,7 @@ public class ModbusPollingService : BackgroundService
 
         try
         {
+            using var _ = await _connectionFactory.BloquearAsync(dispositivo.Id, stoppingToken);
             await LeerYPublicarRegistrosAsync(db, dispositivo, master, leerConfigSitio, sincronizarReloj, stoppingToken);
         }
         catch
