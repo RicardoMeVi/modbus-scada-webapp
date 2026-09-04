@@ -1,0 +1,90 @@
+COMO GENERAR EL .EXE NUEVO (despues de cambiar codigo)
+========================================================
+
+Regla de oro: el .exe es un build congelado. Si cambias algo en backend/
+o frontend/, el instalador que ya tenes NO se actualiza solo. Hay que
+repetir estos pasos.
+
+Requisitos en la maquina donde compilas (no en la maquina destino):
+- .NET SDK
+- Node.js + npm
+- Rust + Tauri (cargo, y las dependencias de compilacion de Windows)
+
+PASOS
+-----
+
+1) Abrir PowerShell en la raiz del proyecto:
+   C:\Users\rmedina\Desktop\Modbus Project
+
+2) Publicar el backend + frontend embebido (esto SIEMPRE va primero):
+
+   powershell -File scripts/build-campo.ps1
+
+   Esto compila el frontend en modo "campo" (URLs relativas), lo copia a
+   wwwroot del backend, publica el backend como .exe autocontenido
+   (win-x64, no necesita .NET instalado en la notebook del tecnico), y
+   copia todo a frontend/src-tauri/binaries/ (ahi es donde Tauri lo busca).
+
+3) Empaquetar la app de escritorio con Tauri:
+
+   cd frontend
+   npm run tauri:build
+
+   Esto tarda varios minutos (compila Rust). Al terminar deja:
+
+   frontend/src-tauri/target/release/bundle/msi/ModbusScadaCampo_<version>_x64_en-US.msi
+   frontend/src-tauri/target/release/bundle/nsis/ModbusScadaCampo_<version>_x64-setup.exe
+   frontend/src-tauri/target/release/app.exe   <- suelto, sin instalar, util para probar rapido
+
+   Cualquiera de los dos instaladores (msi o nsis) sirve para instalar la
+   app normal (crea acceso directo, aparece en "Agregar o quitar
+   programas", etc.).
+
+IMPORTANTE
+----------
+- NUNCA saltear el paso 2. "tauri:build" solo empaqueta lo que ya este
+  copiado en src-tauri/binaries/ -- si no corriste build-campo.ps1 antes
+  (o corriste build-campo.ps1 pero tu cambio es mas nuevo que eso), el
+  instalador sale con el backend VIEJO, sin ningun aviso ni error.
+
+- Para subir el numero de version (recomendado cuando el cambio es
+  importante, asi Windows lo trata como una version distinta y no hay
+  dudas de cual .exe es cual), hay que tocar DOS archivos a mano (no se
+  sincronizan solos):
+
+    frontend/package.json           -> "version": "0.2.6"
+    frontend/src-tauri/tauri.conf.json -> "version": "0.2.6"
+
+  Despues de cambiar los dos, repetir el paso 2 y 3 de arriba.
+
+ATAJOS UTILES MIENTRAS PROBAS (sin generar instalador cada vez)
+-----------------------------------------------------------------
+- Probar la app de escritorio sin empaquetar instalador:
+    cd frontend
+    npm run tauri:dev
+  (igual necesita haber corrido build-campo.ps1 antes si tocaste
+  backend/ o frontend/src/)
+
+- Correr solo el backend publicado (sin ventana de Tauri), para probar
+  desde el navegador en http://127.0.0.1:5136:
+    powershell -File scripts/run-campo.ps1
+
+PROBLEMAS COMUNES
+------------------
+- "address already in use" en el puerto 5136: quedo un proceso viejo
+  corriendo. Matarlo con:
+    Get-Process -Name 'app','modbus-scada-api','ModbusScada.Api' -ErrorAction SilentlyContinue | Stop-Process -Force
+
+- Reinstalaste la version nueva y la app sigue mostrando lo viejo: puede
+  ser cache del WebView2 interno de Tauri. Cerrar la app y borrar la
+  carpeta:
+    %LOCALAPPDATA%\mx.ich.modbusscada.campo\
+  (el nombre exacto de la carpeta es el "identifier" de
+  frontend/src-tauri/tauri.conf.json)
+
+- Base de datos con datos viejos de una prueba anterior: borrar
+  modbus_scada.db (y los -shm/-wal que la acompañan) de la carpeta donde
+  corre el backend, y volver a abrir la app -- se recrea sola.
+
+Referencia completa (con mas detalle tecnico, iconos, etc.):
+EJECUTABLE-CAMPO.md en la raiz del proyecto.
