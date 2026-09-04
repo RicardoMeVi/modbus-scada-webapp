@@ -49,8 +49,11 @@ public class Dispositivo
     public string? FtpUsuario { get; set; }
     public string? FtpContrasena { get; set; }
     public string? FtpCarpeta { get; set; }
-    // A diferencia de SMS (registros de 16 bits simples), en FTP la
-    // especificación dice String 11 / String 15 caracteres para estos dos.
+    // El manual dice "String 11"/"String 15 caracteres" para estos dos,
+    // pero es un error de documentación (ver comentario en
+    // SiteRegisterMap.cs) -- son registros de 16 bits simples, igual que
+    // en SMS. Quedan como string acá (no int) por consistencia con el
+    // resto de los campos de esta pantalla, no por el tipo Modbus real.
     public string? FtpHoraEnvio { get; set; }
     public string? FtpMinutoEnvio { get; set; }
     public int? FtpTipoMensaje { get; set; }

@@ -36,7 +36,8 @@
     "exportarReporte": "Exportar reporte",
     "exportando": "Exportando…",
     "exportarError": "No se pudo generar el reporte. Intentá de nuevo.",
-    "exportarListo": "Reporte descargado en la carpeta de Descargas."
+    "exportarListo": "Reporte descargado en la carpeta de Descargas.",
+    "avisoNoSostenido": "{{dispositivo}}: el cambio en '{{campos}}' no se sostuvo en el equipo. Volvé a intentar."
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -88,7 +89,8 @@
     "listaActualizada": "Lista de puertos actualizada.",
     "listaError": "No se pudo actualizar la lista de puertos.",
     "toastOk": "Conexión guardada correctamente.",
-    "toastError": "No se pudo guardar. Intentá de nuevo."
+    "toastError": "No se pudo guardar. Intentá de nuevo.",
+    "bloqueadoConectado": "El equipo ya está conectado y respondiendo. Para cambiar el puerto, primero desconectalo."
   },
   "sms": {
     "titulo": "Mensaje (SMS)",
@@ -176,7 +178,8 @@
     "ingresar": "Ingresar",
     "cargando": "Cargando…",
     "sinDispositivos": "No hay dispositivos configurados todavía.",
-    "noSeCargoSitio": "No se pudo cargar el sitio."
+    "noSeCargoSitio": "No se pudo cargar el sitio.",
+    "buscandoSenal": "Buscando señal del equipo…"
   },
   "reporte": {
     "hojaConfiguracion": "Configuración",

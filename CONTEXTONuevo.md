@@ -207,6 +207,34 @@ valor distinto dos ciclos seguidos -- para que un cambio hecho directo en
 el menú físico de la UTD también se refleje, sin quedar expuesto a un
 glitch aislado de un solo ciclo.
 
+**Nota de fiabilidad de la escritura -- RESUELTA.** Escribir 250 de forma
+aislada (función 06, función 16, solo un write, incluso con el registro
+de control de escritura -- sección 4, dirección 26 -- en 1) nunca
+persistía: ACK válido, pero relee 0 al toque. Se descartó una dirección
+de escritura separada (260): es un registro libre sin relación real con
+la contraseña.
+
+La pista real vino del propio flujo del Interrogador portátil: para
+entrar a "Unidad de Verificación" hay que escribir/confirmar la
+contraseña VIGENTE antes de poder cambiar nada (sección de "Operación del
+Interrogador portátil" del manual). Aplicando esa misma idea a la
+escritura de 250 -- **reafirmar el valor actual primero, y recién
+después escribir el nuevo** (dos writes en secuencia, no uno) -- la
+escritura pasó a persistir de verdad. Confirmado con hardware real,
+probando el cambio muchas veces seguidas desde la app: **persiste ~9 de
+cada 10 veces**. Implementado en
+`SiteConfigModbusIO.EscribirContrasenaUtdAsync`.
+
+La falla ocasional que queda (~1 de cada 10) es el mismo patrón de
+"confirma al toque pero revierte poco después" que ya se resolvió para el
+resto de los campos (ver sección de reconfirmación más abajo) -- por eso
+Contraseña UTD ya **no** está excluida de esa reconfirmación (corta +
+demorada en segundo plano): antes se excluía a propósito porque se creía
+que la escritura nunca persistía (reconfirmar habría hecho fallar TODO
+guardado de "Datos del sitio"), pero ahora que persiste la mayoría de las
+veces, tiene sentido tratarla como cualquier otro campo y avisar
+honestamente en el raro caso que no se sostenga.
+
 **Nota de tipo de dato string:** el manual especifica "1 carácter por cada
 registro de 16 bits" — a diferencia de la convención común de 2 caracteres
 ASCII por registro de 16 bits. Respetar esta particularidad tal como está
@@ -223,10 +251,30 @@ antes de usarlos (sin confirmar con hardware todavía, por analogía).
 | Usuario | 148 | 149 | String 17 car. | 1 carácter por registro |
 | Contraseña | 183 | 184 | String 17 car. | 1 carácter por registro |
 | Carpeta de almacenamiento | 198 | 199 | String 17 car. | 1 carácter por registro |
-| Hora envío automático | 238 | 239 | String 11 car. | 1 carácter por registro |
-| Minuto envío automático | 239 | 240 | String 15 car. | 1 carácter por registro |
+| Hora envío automático | 238 | 239 | 16 bits | Manual dice "String 11 car." -- error de documentación, ver nota abajo |
+| Minuto envío automático | 239 | 240 | 16 bits | Manual dice "String 15 car." -- mismo error |
 | kID2 (sin implementar) | 24* | 25 | 16 bits | *sin confirmar |
 | EnvioFTP (sin implementar) | 27* | 28 | Bit | *sin confirmar |
+
+**Hora/Minuto envío automático -- CORRECCIÓN confirmada con hardware
+real:** el manual dice "String 11 car."/"String 15 car." para estos dos
+(copiado por error de Latitud/Longitud, un par de filas arriba en la
+misma tabla del manual). En la UTD real son **registros de 16 bits
+simples**, igual que en SMS -- confirmado porque la propia pantalla física
+de la UTD muestra el valor CRUDO del registro sin decodificar como texto
+("48 : 53 hrs" en vez de "0 : 5", que sería el resultado de interpretar
+48 y 53 como caracteres ASCII '0' y '5'). Con el largo viejo (11
+registros) declarado en `SiteRegisterMap.cs`, guardar la hora pisaba de
+paso 11 registros completos, incluido el del minuto (239) -- por eso el
+minuto nunca se leía bien. Corregido a `TipoRegistroSitio.UInt16` para
+ambos; la dirección (238/239) ya estaba bien, no hacía falta tocarla.
+
+**Riesgo similar sin confirmar todavía -- Contraseña/Carpeta de FTP:**
+Contraseña (183, largo 17) ocupa 183-199, y Carpeta (198, largo 17) ocupa
+198-214 -- se superponen en 198 y 199. En la práctica puede no notarse si
+ambos valores son más cortos que el máximo declarado, pero es el mismo
+patrón de bug que Hora/Minuto. Pendiente de probar con valores largos
+reales antes de tocar el código a ciegas.
 
 ### 3.4 SMS
 Mismo ajuste -1 que 3.2. `kID`/`EnvioSMS` no están implementados, mismo
@@ -288,53 +336,60 @@ visibles vía Modbus. Esto explica por qué las direcciones Modbus y las
 direcciones internas de HMI (`LW`, `RW`, `LB`) son distintas — el mapa de
 arriba ya da la dirección Modbus correcta a usar, no la interna.
 
-## 4. Mecanismo de control de escritura — CONFIRMADO que hace falta, sin automatizar
+## 4. Mecanismo de control de escritura — CONFIRMADO y AUTOMATIZADO
 
 **Confirmado con hardware real:** sin este handshake, las escrituras desde
 la app se "confirman" al toque (escribe, relee, coincide) pero la UTD las
 revierte poco después -- síntoma real observado con RFC/NSM antes de este
-hallazgo. Poniendo el campo de control en **1** manualmente, en el menú
-secreto físico de la UTD, las escrituras desde la app empezaron a
-persistir de verdad. Esto confirma la hipótesis que tenían versiones
-anteriores de este documento (que "probablemente pesaba menos de lo que
-parecía") -- en realidad sí hace falta, al menos en este equipo.
+hallazgo, y más tarde también con Contraseña UTD. Poniendo el campo de
+control en **1**, las escrituras desde la app empiezan a persistir de
+verdad.
 
-**El backend .NET sigue sin automatizarlo** -- no hay ningún código que
-escriba este registro de control. Sigue siendo un paso **manual, físico,
-en el menú secreto de la UTD**, hecho una sola vez. No se automatizó
-porque **el manual no documenta la dirección Modbus de ese registro de
-control** (solo se ve como un campo en la pantalla "Tipo de dato" de la
-Figura 5, sin número de dirección) -- escribirle a una dirección adivinada
-sería riesgoso (podría pisar otra cosa). Si en algún momento se consigue
-esa dirección (preguntándole a quien programó la UTD, o probando con
-ModScan alrededor de los registros de Medidores/"Tipo de dato"), se puede
-automatizar el paso 1 de la lista de abajo.
+**Dirección Modbus confirmada: registro 26** (Holding Register, no coil
+pese a que la dirección interna del HMI usa el prefijo `LB`). Se encontró
+por prueba directa -- no está en el manual del Interrogador ni en la
+especificación técnica (esa solo lo muestra como campo visual en la
+pantalla "Tipo de dato" de la Figura 5, sin número de dirección, y
+`LB9154` que se sospechaba relacionado resultó ser un registro distinto,
+"Expulsar bitácora"). Se ubicó haciendo un diff de un rango amplio de
+holding registers (0-49) antes y después de mover el toggle físico en el
+menú secreto: la posición 26 fue la única que cambió.
 
-El sistema (manual) implementa un **handshake de control** que define quién tiene
-permiso de escribir en un momento dado, para evitar conflictos de
-escritura simultánea entre la UTD y quien se conecta como maestro
-(actualmente el Interrogador Portátil; en el futuro, el backend .NET).
-
-- Registro de control: dentro de "Tipo de dato" (relacionado con dirección
-  `LB9154` / contexto de "Datos del sitio").
 - **Valor 0** → la UTD toma el control (escribe hacia el maestro).
-- **Valor 1** → el maestro (Interrogador / futuro backend) toma el control,
-  habilitando la escritura de datos hacia la UTD.
+- **Valor 1** → el maestro (Interrogador / ahora el backend .NET) toma el
+  control, habilitando la escritura de datos hacia la UTD.
 
-**Implicación directa para el backend .NET:** antes de escribir cualquier
-parámetro (fecha/hora, configuración de sitio, etc.), el backend debe:
-1. Escribir el registro de control con el valor que solicita el control
-   (equivalente a "1").
-2. Realizar la escritura de los parámetros deseados.
-3. Realizar una lectura de confirmación para verificar que el valor se
-   aplicó correctamente (tal como hace el Interrogador Portátil actual con
-   fecha/hora: escribe, luego relee para confirmar).
+**El backend .NET ya lo automatiza** (`SiteConfigModbusIO.EscribirCamposAsync`,
+`SiteRegisterMap.RegistroControlEscritura = 26`) replicando el
+comportamiento que describe la especificación técnica del Interrogador
+("Escritura de datos hacia la UTD" / "Consideraciones de seguridad y
+control de acceso"): el Interrogador original prende este candado
+automáticamente al entrar a la pantalla protegida por contraseña "Unidad
+de Verificación", y lo apaga al salir, dejando el equipo en modo lectura
+el resto del tiempo. El backend replica exactamente ese prender/apagar,
+pero con el alcance de cada guardado (no de una sesión larga):
+
+1. Escribe el registro 26 en 1 y relee para confirmar. Si no confirma
+   (la UTD no cedió el control), aborta ahí mismo -- no tiene sentido
+   intentar escribir los campos, se revertirían igual.
+2. Escribe y relee cada campo de `SiteRegisterMap.Campos` (RFC, NSM, SMS,
+   FTP, etc. -- todos los que tengan valor no nulo, ver comentario de
+   `EscribirCampoAsync`).
+3. Devuelve el registro 26 a 0 en un `finally`, pase lo que pase (éxito,
+   error parcial, o excepción) -- para no dejar el equipo en modo maestro
+   permanente por un guardado que falló a mitad de camino.
+
+Ya **no hace falta ningún paso manual en el menú secreto de la UTD** para
+que persistan los guardados desde "Datos del sitio"/SMS/FTP -- el técnico
+ya no necesita tocar esa pantalla salvo que quiera operar la UTD en modo
+local por alguna otra razón.
 
 Además, existe una capa adicional de control de acceso en el flujo humano
 actual (menú "Unidad de Verificación" + contraseña) — **ya implementada**:
 el modal "Unidad de Verificación" con PIN (`POST /api/verificacion/validar`)
-replica ese mismo gate, sin relación con el handshake Modbus de arriba
-(protocolos distintos, no confundir uno con otro).
+replica ese mismo gate de acceso a la app, sin relación directa con el
+registro 26 de arriba (ese PIN es de acceso a la app; el registro 26 es
+del protocolo Modbus -- capas distintas, no confundir una con otra).
 
 ## 5. Referencia visual para el Front (React) — estructura a replicar
 

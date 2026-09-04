@@ -9,7 +9,7 @@ import { EncabezadoPagina } from "../components/EncabezadoPagina";
 // de "Datos del sitio" -- no es un dato de identidad del sitio, es
 // configuración técnica que ni existía en el HMI físico (el Kinco tenía un
 // solo cable fijo, nunca necesitó elegir puerto).
-export function Conexion() {
+export function Conexion({ conectado }) {
   const { t } = useTranslation();
   const { dispositivos, error, cargando } = useDispositivos();
 
@@ -41,7 +41,7 @@ export function Conexion() {
             </div>
 
             <div className="card-body">
-              <FichaConexion dispositivo={dispositivo} />
+              <FichaConexion dispositivo={dispositivo} conectado={conectado} />
             </div>
           </div>
         ))}

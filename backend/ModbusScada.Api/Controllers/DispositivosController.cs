@@ -65,6 +65,18 @@ public class DispositivosController : ControllerBase
             return NotFound();
         }
 
+        // Solo se reescriben en el equipo los campos que realmente
+        // cambiaron -- ver comentario en ISiteConfigWriter.EscribirAsync.
+        var camposModificados = new HashSet<string>();
+        if (dispositivo.Nsm != request.Nsm) camposModificados.Add(nameof(Dispositivo.Nsm));
+        if (dispositivo.Nsue != request.Nsue) camposModificados.Add(nameof(Dispositivo.Nsue));
+        if (dispositivo.Nsut != request.Nsut) camposModificados.Add(nameof(Dispositivo.Nsut));
+        if (dispositivo.Rfc != request.Rfc) camposModificados.Add(nameof(Dispositivo.Rfc));
+        if (dispositivo.UnidadVerificacion != request.UnidadVerificacion) camposModificados.Add(nameof(Dispositivo.UnidadVerificacion));
+        if (dispositivo.ContrasenaUtd != request.ContrasenaUtd) camposModificados.Add(nameof(Dispositivo.ContrasenaUtd));
+        if (dispositivo.Latitud != request.Latitud) camposModificados.Add(nameof(Dispositivo.Latitud));
+        if (dispositivo.Longitud != request.Longitud) camposModificados.Add(nameof(Dispositivo.Longitud));
+
         dispositivo.Nsm = request.Nsm;
         dispositivo.Nsue = request.Nsue;
         dispositivo.Nsut = request.Nsut;
@@ -74,7 +86,7 @@ public class DispositivosController : ControllerBase
         dispositivo.Latitud = request.Latitud;
         dispositivo.Longitud = request.Longitud;
 
-        if (!await _siteConfigWriter.EscribirAsync(dispositivo))
+        if (!await _siteConfigWriter.EscribirAsync(dispositivo, camposModificados))
         {
             return StatusCode(StatusCodes.Status502BadGateway, "El equipo no confirmó la escritura. No se guardó nada.");
         }
@@ -96,12 +108,17 @@ public class DispositivosController : ControllerBase
             return NotFound();
         }
 
+        var camposModificados = new HashSet<string>();
+        if (dispositivo.SmsNumero != request.Numero) camposModificados.Add(nameof(Dispositivo.SmsNumero));
+        if (dispositivo.SmsHoraEnvio != request.HoraEnvio) camposModificados.Add(nameof(Dispositivo.SmsHoraEnvio));
+        if (dispositivo.SmsMinutoEnvio != request.MinutoEnvio) camposModificados.Add(nameof(Dispositivo.SmsMinutoEnvio));
+
         dispositivo.SmsNumero = request.Numero;
         dispositivo.SmsHoraEnvio = request.HoraEnvio;
         dispositivo.SmsMinutoEnvio = request.MinutoEnvio;
         dispositivo.SmsTipoMensaje = request.TipoMensaje;
 
-        if (!await _siteConfigWriter.EscribirAsync(dispositivo))
+        if (!await _siteConfigWriter.EscribirAsync(dispositivo, camposModificados))
         {
             return StatusCode(StatusCodes.Status502BadGateway, "El equipo no confirmó la escritura. No se guardó nada.");
         }
@@ -123,6 +140,14 @@ public class DispositivosController : ControllerBase
             return NotFound();
         }
 
+        var camposModificados = new HashSet<string>();
+        if (dispositivo.FtpIpServidor != request.IpServidor) camposModificados.Add(nameof(Dispositivo.FtpIpServidor));
+        if (dispositivo.FtpUsuario != request.Usuario) camposModificados.Add(nameof(Dispositivo.FtpUsuario));
+        if (dispositivo.FtpContrasena != request.Contrasena) camposModificados.Add(nameof(Dispositivo.FtpContrasena));
+        if (dispositivo.FtpCarpeta != request.Carpeta) camposModificados.Add(nameof(Dispositivo.FtpCarpeta));
+        if (dispositivo.FtpHoraEnvio != request.HoraEnvio) camposModificados.Add(nameof(Dispositivo.FtpHoraEnvio));
+        if (dispositivo.FtpMinutoEnvio != request.MinutoEnvio) camposModificados.Add(nameof(Dispositivo.FtpMinutoEnvio));
+
         dispositivo.FtpIpServidor = request.IpServidor;
         dispositivo.FtpUsuario = request.Usuario;
         dispositivo.FtpContrasena = request.Contrasena;
@@ -131,7 +156,7 @@ public class DispositivosController : ControllerBase
         dispositivo.FtpMinutoEnvio = request.MinutoEnvio;
         dispositivo.FtpTipoMensaje = request.TipoMensaje;
 
-        if (!await _siteConfigWriter.EscribirAsync(dispositivo))
+        if (!await _siteConfigWriter.EscribirAsync(dispositivo, camposModificados))
         {
             return StatusCode(StatusCodes.Status502BadGateway, "El equipo no confirmó la escritura. No se guardó nada.");
         }

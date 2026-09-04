@@ -36,7 +36,8 @@
     "exportarReporte": "Export report",
     "exportando": "Exporting…",
     "exportarError": "Could not generate the report. Try again.",
-    "exportarListo": "Report downloaded to your Downloads folder."
+    "exportarListo": "Report downloaded to your Downloads folder.",
+    "avisoNoSostenido": "{{dispositivo}}: the change to '{{campos}}' didn't hold on the device. Try again."
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -88,7 +89,8 @@
     "listaActualizada": "Port list refreshed.",
     "listaError": "Could not refresh the port list.",
     "toastOk": "Connection saved successfully.",
-    "toastError": "Could not save. Try again."
+    "toastError": "Could not save. Try again.",
+    "bloqueadoConectado": "The device is already connected and responding. Disconnect it first to change the port."
   },
   "sms": {
     "titulo": "Message (SMS)",
@@ -176,7 +178,8 @@
     "ingresar": "Enter",
     "cargando": "Loading…",
     "sinDispositivos": "No devices configured yet.",
-    "noSeCargoSitio": "Could not load the site."
+    "noSeCargoSitio": "Could not load the site.",
+    "buscandoSenal": "Looking for the device signal…"
   },
   "reporte": {
     "hojaConfiguracion": "Configuration",

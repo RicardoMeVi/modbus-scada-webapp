@@ -8,6 +8,12 @@ import { API_BASE_URL } from "../api";
 export function useModbusHub() {
   const [lecturas, setLecturas] = useState({});
   const [conectado, setConectado] = useState(false);
+  // Aviso de que un guardado reciente (Datos del sitio/SMS/FTP) mostró
+  // éxito al toque pero, en la revisión demorada en segundo plano, no se
+  // sostuvo de verdad (ver RealSiteConfigWriter.RevisarDespuesAsync) --
+  // llega unos segundos después del toast de éxito, así que es un aviso aparte,
+  // no algo que reemplace ese toast.
+  const [avisoNoSostenido, setAvisoNoSostenido] = useState(null);
   const connectionRef = useRef(null);
 
   useEffect(() => {
@@ -23,6 +29,10 @@ export function useModbusHub() {
 
     connection.on("lectura", (lectura) => {
       setLecturas((prev) => ({ ...prev, [lectura.registroId ?? lectura.RegistroId]: lectura }));
+    });
+
+    connection.on("guardadoNoSostenido", (aviso) => {
+      setAvisoNoSostenido(aviso);
     });
 
     connection.onreconnecting(() => setConectado(false));
@@ -56,5 +66,5 @@ export function useModbusHub() {
     };
   }, []);
 
-  return { lecturas, conectado };
+  return { lecturas, conectado, avisoNoSostenido, limpiarAvisoNoSostenido: () => setAvisoNoSostenido(null) };
 }

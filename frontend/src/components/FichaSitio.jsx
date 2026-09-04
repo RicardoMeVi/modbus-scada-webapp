@@ -111,8 +111,11 @@ export function FichaSitio({ dispositivo, conectado }) {
 
   // Contraseña UTD: PIN numérico (el equipo real solo tiene teclado
   // numérico para esto), igual que el PIN de la Unidad de Verificación.
+  // Máximo 9 dígitos -- el mismo límite que permite el teclado físico de
+  // la UTD (ver comentario en SiteRegisterMap.cs sobre el registro de 32
+  // bits que hizo falta para poder guardar un valor de este largo).
   function actualizarContrasenaUtd(valor) {
-    actualizarCampo("contrasenaUtd", valor.replace(/\D/g, "").slice(0, 10));
+    actualizarCampo("contrasenaUtd", valor.replace(/\D/g, "").slice(0, 9));
   }
 
   // Latitud/Longitud: solo dígitos, punto y signo negativo, respetando el

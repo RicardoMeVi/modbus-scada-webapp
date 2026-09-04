@@ -3,7 +3,7 @@ using ModbusScada.Api.Models;
 
 namespace ModbusScada.Api.Services.Modbus;
 
-public enum TipoRegistroSitio { String, UInt16 }
+public enum TipoRegistroSitio { String, UInt16, UInt32 }
 
 // (nombre de la propiedad en Dispositivo, dirección Modbus real, tipo,
 // largo en registros si es String, validación adicional opcional).
@@ -50,6 +50,22 @@ public record CampoSitio(
 
 public static class SiteRegisterMap
 {
+    // Registro de control de escritura -- "Tipo de dato" -> "Escritura
+    // Kinco a Interrogador" en el menú físico secreto de la UTD (0 = la
+    // UTD tiene el control y escribe hacia el maestro, 1 = el maestro
+    // toma el control y puede escribir hacia la UTD). Encontrado por
+    // prueba directa (diff de un rango de holding registers antes/después
+    // de mover el toggle físico), no por el manual -- ahí no tiene
+    // dirección asignada, solo aparece como campo visual en la pantalla
+    // "Tipo de dato" (Figura 5). El manual sí describe el comportamiento
+    // esperado (sección "Escritura de datos hacia la UTD" / "Consideraciones
+    // de seguridad"): el Interrogador prende este candado al entrar a la
+    // pantalla con contraseña "Unidad de Verificación" y lo apaga al
+    // salir, dejando el equipo en modo lectura el resto del tiempo --
+    // EscribirCamposAsync replica ese mismo prender/apagar alrededor de
+    // cada guardado, en vez de depender de que alguien lo deje fijo a mano.
+    public const int RegistroControlEscritura = 26;
+
     private static readonly Regex Ipv4Regex =
         new(@"^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$", RegexOptions.Compiled);
 
@@ -78,10 +94,26 @@ public static class SiteRegisterMap
         // Dirección conseguida aparte (no está en el manual del
         // Interrogador) -- confirmada con prueba de escritura+relectura
         // (mismo método que NSM): 251 daba un valor que no coincidía con
-        // lo recién guardado, 250 sí. ExcluirDeSondeoPasivo=true porque
-        // también es el PIN de acceso a la app -- ver comentario en
-        // CampoSitio arriba.
-        new CampoSitio(nameof(Dispositivo.ContrasenaUtd), 250, TipoRegistroSitio.UInt16, ExcluirDeSondeoPasivo: true),
+        // lo recién guardado, 250 sí. Esa prueba original se hizo con un
+        // PIN corto (cabe en 16 bits) y llevó a mapear esto como UInt16 de
+        // un solo registro -- pero la UTD acepta contraseñas de hasta 9
+        // dígitos (hasta 999999999), que no entran en 16 bits. Confirmado
+        // con un caso real: al poner "123456789" directo en la UTD, el
+        // sistema (que solo leía el registro 250) mostraba "52501" --
+        // exactamente 123456789 mod 65536, es decir la palabra BAJA de
+        // 123456789 (0x075BCD15 -> bajo=0xCD15=52501, alto=0x075B=1883).
+        // Eso indica que la UTD guarda esto como un valor de 32 bits en dos
+        // registros consecutivos, 250=palabra baja / 251=palabra alta (por
+        // eso 251 "no coincidía" en la prueba original: para un PIN corto
+        // la palabra alta vale 0, y en ese momento se interpretó como "esta
+        // no es la dirección correcta" en vez de "esta es la otra mitad").
+        // Confirmado matemáticamente a partir de una lectura real; falta
+        // todavía una prueba de escritura de ida y vuelta con un PIN largo
+        // en equipo real para confirmar el orden de palabras al escribir
+        // (ver EscribirContrasenaUtdAsync en SiteConfigModbusIO).
+        // ExcluirDeSondeoPasivo=true porque también es el PIN de acceso a
+        // la app -- ver comentario en CampoSitio arriba.
+        new CampoSitio(nameof(Dispositivo.ContrasenaUtd), 250, TipoRegistroSitio.UInt32, LongitudRegistros: 2, ExcluirDeSondeoPasivo: true),
 
         new CampoSitio(nameof(Dispositivo.SmsNumero), 121, TipoRegistroSitio.String, 10),
         new CampoSitio(nameof(Dispositivo.SmsHoraEnvio), 131, TipoRegistroSitio.UInt16),
@@ -91,7 +123,15 @@ public static class SiteRegisterMap
         new CampoSitio(nameof(Dispositivo.FtpUsuario), 148, TipoRegistroSitio.String, 17),
         new CampoSitio(nameof(Dispositivo.FtpContrasena), 183, TipoRegistroSitio.String, 17),
         new CampoSitio(nameof(Dispositivo.FtpCarpeta), 198, TipoRegistroSitio.String, 17),
-        new CampoSitio(nameof(Dispositivo.FtpHoraEnvio), 238, TipoRegistroSitio.String, 11),
-        new CampoSitio(nameof(Dispositivo.FtpMinutoEnvio), 239, TipoRegistroSitio.String, 15),
+        // El manual dice "String 11"/"String 15 caracteres" para estos dos
+        // (copiado por error de Latitud/Longitud, un par de filas arriba en
+        // la misma tabla) -- confirmado con hardware real que en realidad
+        // son registros numéricos de 16 bits simples, igual que en SMS: la
+        // propia pantalla física de la UTD muestra el valor crudo del
+        // registro sin decodificar ("48 : 53 hrs" en vez de "0 : 5"), y el
+        // largo declarado (11/15) hacía que escribir la hora pisara 11
+        // registros de golpe, incluyendo el del minuto.
+        new CampoSitio(nameof(Dispositivo.FtpHoraEnvio), 238, TipoRegistroSitio.UInt16),
+        new CampoSitio(nameof(Dispositivo.FtpMinutoEnvio), 239, TipoRegistroSitio.UInt16),
     };
 }

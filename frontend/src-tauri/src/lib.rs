@@ -19,13 +19,17 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .manage(SidecarProcess(Mutex::new(None)))
         .setup(|app| {
-            if cfg!(debug_assertions) {
-                app.handle().plugin(
-                    tauri_plugin_log::Builder::default()
-                        .level(log::LevelFilter::Info)
-                        .build(),
-                )?;
-            }
+            // Antes esto solo se activaba en debug (`cfg!(debug_assertions)`)
+            // -- pero `tauri build`/`tauri:build` (lo que genera el .exe de
+            // campo) siempre es release, así que el plugin nunca se
+            // registraba ahí y la app instalada nunca escribió ningún
+            // archivo de log, ni para esto ni para nada. Se activa siempre
+            // para poder diagnosticar en campo (ver %LOCALAPPDATA%\<identifier>\logs\).
+            app.handle().plugin(
+                tauri_plugin_log::Builder::default()
+                    .level(log::LevelFilter::Info)
+                    .build(),
+            )?;
 
             let (mut rx, child) = app
                 .shell()

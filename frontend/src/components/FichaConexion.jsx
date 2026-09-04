@@ -11,7 +11,7 @@ import { IconoSeccion } from "./icons/IconoSeccion";
 // selecciona solo; el campo es un select real, no un input a mano.
 const NOMBRE_PUERTO_VALIDO = /^COM\d+$/i;
 
-export function FichaConexion({ dispositivo }) {
+export function FichaConexion({ dispositivo, conectado }) {
   const { t } = useTranslation();
   // Si lo que quedó guardado no es un nombre de puerto válido (ej. "3COM3",
   // de una detección vieja antes de filtrar esto en el backend), no tiene
@@ -101,14 +101,20 @@ export function FichaConexion({ dispositivo }) {
   return (
     <form className="ficha-sitio" onSubmit={guardar}>
       <div className="ficha-conexion-detectar">
-        <button type="button" className="boton-detectar" onClick={detectar} disabled={detectando}>
+        <button type="button" className="boton-detectar" onClick={detectar} disabled={detectando || conectado}>
           {detectando ? t("conexion.detectando") : t("conexion.detectarAutomaticamente")}
         </button>
-        {mensajeDeteccion === "encontrado" && (
-          <span className="conexion-mensaje ok">{t("conexion.encontrado", { puerto: puertoSerial })}</span>
-        )}
-        {mensajeDeteccion === "noEncontrado" && (
-          <span className="conexion-mensaje mal">{t("conexion.noEncontrado")}</span>
+        {conectado ? (
+          <span className="conexion-mensaje mal">{t("conexion.bloqueadoConectado")}</span>
+        ) : (
+          <>
+            {mensajeDeteccion === "encontrado" && (
+              <span className="conexion-mensaje ok">{t("conexion.encontrado", { puerto: puertoSerial })}</span>
+            )}
+            {mensajeDeteccion === "noEncontrado" && (
+              <span className="conexion-mensaje mal">{t("conexion.noEncontrado")}</span>
+            )}
+          </>
         )}
       </div>
 
@@ -122,6 +128,7 @@ export function FichaConexion({ dispositivo }) {
               </span>
               <select
                 value={puertoSerial}
+                disabled={conectado}
                 onChange={(e) => {
                   setEstado(null);
                   setPuertoSerial(e.target.value);
@@ -169,7 +176,7 @@ export function FichaConexion({ dispositivo }) {
       </div>
 
       <div className="ficha-sitio-acciones">
-        <button type="submit" className="ficha-sitio-guardar" disabled={guardando || !puertoSerial}>
+        <button type="submit" className="ficha-sitio-guardar" disabled={guardando || !puertoSerial || conectado}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M20 6 9 17l-5-5" />
           </svg>

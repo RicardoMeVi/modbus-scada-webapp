@@ -8,5 +8,5 @@ namespace ModbusScada.Api.Services.Modbus;
 // rechaza cada guardado.
 public class NullSiteConfigWriter : ISiteConfigWriter
 {
-    public Task<bool> EscribirAsync(Dispositivo dispositivo) => Task.FromResult(true);
+    public Task<bool> EscribirAsync(Dispositivo dispositivo, IReadOnlySet<string> camposModificados) => Task.FromResult(true);
 }

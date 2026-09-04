@@ -20,10 +20,20 @@ alarma activa).
 ## 2. SMS y FTP: probar a fondo con la conexión directa
 
 Datos del sitio (RFC, NSM, NSUE, NSUT, Latitud, Longitud, Unidad de
-Verificación) ya se probó extensamente con la UTD real conectada directo
-y el handshake de escritura activado. **SMS y FTP no se probaron con el
-mismo nivel de detalle** — confirmar que lean y guarden bien con las
-direcciones corregidas (`SiteRegisterMap.cs` ya las tiene actualizadas).
+Verificación) ya se probó extensamente con la UTD real conectada directo,
+con el handshake de escritura ya automatizado (ver "Ya resuelto" abajo).
+**SMS no se probó con el mismo nivel de detalle todavía.**
+
+FTP sí se empezó a probar y ya salió un bug real (resuelto, ver "Ya
+resuelto"): Hora/Minuto de envío automático estaban mal declarados como
+strings largos en vez de registros de 16 bits simples, y se pisaban entre
+sí. Sigue pendiente:
+- **Contraseña/Carpeta de FTP**: sus rangos declarados se superponen
+  (183-199 y 198-214) -- mismo patrón de bug que Hora/Minuto, sin
+  confirmar todavía si se manifiesta en la práctica (depende del largo
+  real de los valores). Probar con una contraseña larga (14+ caracteres)
+  y ver si corrompe la carpeta.
+- IP Servidor y Usuario, sin probar a fondo con guardado real.
 
 ## 3. Medidores: orden de bytes sin confirmar
 
@@ -32,22 +42,7 @@ offset, sección 3.6) son valores de 32 bits — el manual no especifica el
 orden de bytes (ABCD/DCBA/BADC/CDAB). Se asume float32 + ABCD por ahora,
 sin confirmar contra un caudal real distinto de 0.
 
-## 4. ~~Contraseña UV~~ — resuelto
-
-~~Confirmar el valor, no solo que responda~~ — hecho. Dirección real: 250
-(no 251, que fue el primer intento y no coincidía al escribir/releer). Ver
-"Ya resuelto" abajo.
-
-## 5. Handshake de control de escritura: automatizar si aparece la dirección
-
-Confirmado que hace falta de verdad (sección 4 de `CONTEXTONuevo.md`) —
-sin poner el campo de control en 1 en el menú secreto físico de la UTD,
-las escrituras se revierten solas. Sigue siendo un paso manual porque el
-manual no documenta la dirección Modbus de ese registro. Si en algún
-momento se consigue esa dirección, se puede automatizar como parte del
-flujo de escritura del backend.
-
-## 6. Nivel del tanque / Bomba / Setpoint
+## 4. Nivel del tanque / Bomba / Setpoint
 
 No están en la especificación del Interrogador portátil — se sacaron del
 dispositivo real (commit `2973dfd`), quedan solo en el simulador de
@@ -62,14 +57,65 @@ equivalentes (si es que existen), agregarlos ahí.
   -1 respecto al manual (confirmado con ModScan real, ver
   `CONTEXTONuevo.md` sección 3). Fecha/Hora y Medidores confirmados
   correctos **sin** ese ajuste.
-- **Contraseña UV**: dirección real confirmada en 250 (fuera del manual
-  del Interrogador), con la misma prueba de escritura+relectura que NSM.
+- **Contraseña UV -- escritura resuelta**: dirección real confirmada en
+  250. Una escritura aislada (un solo write) nunca persistía; la solución
+  fue replicar el flujo del Interrogador portátil (reafirmar la
+  contraseña vigente antes de escribir la nueva -- dos writes en
+  secuencia, `SiteConfigModbusIO.EscribirContrasenaUtdAsync`). Confirmado
+  con hardware real, probando muchas veces seguidas desde la app: persiste
+  ~9 de cada 10 veces. La falla ocasional que queda la atrapa la
+  reconfirmación general (ver más abajo) -- ya no está excluida de esa
+  reconfirmación como al principio.
+- **Se reescribía todo el formulario en cada guardado**: antes, guardar
+  "Datos del sitio"/SMS/FTP reescribía TODOS los campos con valor, aunque
+  el usuario solo hubiera tocado uno -- más lento y más exposición
+  innecesaria al bug de abajo en campos que ni se querían cambiar. Ahora
+  `DispositivosController` calcula qué campos realmente cambiaron y solo
+  esos se escriben (`ISiteConfigWriter.EscribirAsync` recibe el set de
+  nombres modificados) -- calcado del propio equipo real, que tampoco
+  reescribe un campo si no lo editaste.
+- **Guardado con falso positivo**: `EscribirCampoAsync` confirmaba con una
+  relectura inmediata, pero eso podía dar éxito falso si el equipo
+  "flasheaba" el valor nuevo un instante y lo revertía después (visto con
+  Contraseña UTD, y reproducido con Hora/Minuto de FTP en un campo sin
+  ninguna relación). Solución en dos etapas, para no elegir entre rápido y
+  confiable:
+  1. Reconfirmación corta y sincrónica (300ms, `SiteConfigModbusIO.EsperaCorta`)
+     antes de responder al guardado -- atrapa la mayoría de los reverts sin
+     sentirse lento.
+  2. Revisión demorada en segundo plano (~1.7s más, `EsperaLarga`, corre
+     después de ya haber respondido -- `RealSiteConfigWriter.RevisarDespuesAsync`)
+     que relee de nuevo; si algo se escapó de la corta, avisa aparte por
+     SignalR (`guardadoNoSostenido`, escuchado en `useModbusHub`/`App.jsx`).
+  Aplica a todos los campos de Datos del sitio/SMS/FTP, incluida
+  Contraseña UTD (dejó de estar excluida una vez que se confirmó que su
+  escritura persiste la gran mayoría de las veces -- ver más abajo).
+- **Hora/Minuto de envío automático de FTP**: estaban declarados como
+  strings de 11/15 registros (copiado por error de Latitud/Longitud en el
+  manual) -- en realidad son registros de 16 bits simples, igual que en
+  SMS. Confirmado con hardware real: la pantalla física de la UTD muestra
+  el valor crudo sin decodificar ("48 : 53 hrs"). El largo viejo hacía que
+  guardar la hora pisara el registro del minuto. Corregido en
+  `SiteRegisterMap.cs` (la dirección ya estaba bien, solo el tipo estaba
+  mal).
+- **La app instalada nunca escribió logs**: el plugin de logging de Tauri
+  (`src-tauri/src/lib.rs`) solo se registraba `if cfg!(debug_assertions)`
+  -- pero `tauri build`/`tauri:build` (lo que genera el `.exe` de campo)
+  siempre es release, así que nunca se creaba ningún archivo de log en una
+  instalación real, para nada (no era específico de esta medición de
+  tiempos). Corregido: el plugin se activa siempre. Los logs quedan en
+  `%LOCALAPPDATA%\mx.ich.modbusscada.campo\logs\`.
 - **Relación Mobicon MT-151 / UTD**: aclarada del todo. Son sistemas
   separados, sin relación — el Mobicon nunca tuvo los datos de la UTD.
   El software no usa el Mobicon para nada; se conecta directo al conector
   de 5 pines de la UTD.
-- **Handshake de control de escritura**: confirmado que hace falta,
-  resuelto con un paso manual (ver punto 5 arriba).
+- **Handshake de control de escritura**: confirmado que hace falta, y
+  totalmente automatizado. Dirección real encontrada por prueba directa
+  (diff de holding registers antes/después de mover el toggle físico):
+  registro 26. El backend ahora lo prende antes de escribir cualquier
+  campo de Datos del sitio/SMS/FTP y lo devuelve a la UTD al terminar —
+  ya no hace falta ningún paso manual en el menú secreto de la UTD (ver
+  sección 4 de `CONTEXTONuevo.md`).
 - **Fecha/Hora "congelada"**: explicado (es una foto fija, no un reloj en
   vivo) y mitigado con un sincronizador automático cada ~5 min
   (`ModbusPollingService.CiclosPorSincronizarReloj`).
