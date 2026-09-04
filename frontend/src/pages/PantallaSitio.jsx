@@ -3,7 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getDispositivo, getDispositivos } from "../api";
 import { useModbusHub } from "../hooks/useModbusHub";
+import { useEquipoConectado } from "../hooks/useEquipoConectado";
 import { ModalVerificacion } from "../components/ModalVerificacion";
+import { CargandoSenal } from "../components/CargandoSenal";
 import { BotonTema } from "../components/layout/BotonTema";
 import { SelectorIdioma } from "../components/layout/SelectorIdioma";
 import logo from "../assets/Logo.png";
@@ -16,6 +18,15 @@ import "./PantallaSitio.css";
 // entra únicamente validando el PIN de la Unidad de Verificación. Sin
 // :dispositivoId en la URL (ruta "/") muestra el primer dispositivo
 // configurado; con :dispositivoId (ruta "/sitio/:id") apunta a uno puntual.
+//
+// Mientras no hay señal real del equipo (recién abierta la app, o
+// reconectando), se tapa toda la pantalla con CargandoSenal en vez del PIN:
+// el backend valida el PIN contra el último valor de Contraseña UTD
+// persistido en la base, y si el técnico lo cambió hace poco directo en el
+// panel físico de la UTD, ese valor tarda hasta ~10s en confirmarse (ver
+// SiteConfigModbusIO.VerificarCambioDeContrasenaAsync, doble confirmación a
+// propósito). Sin esta espera, un PIN recién cambiado y objetivamente
+// correcto podía rebotar como "incorrecto" contra el valor todavía viejo.
 const NOMBRES_HERO = ["Caudal instantáneo", "Totalizado"];
 
 export function PantallaSitio() {
@@ -25,7 +36,8 @@ export function PantallaSitio() {
   const [dispositivo, setDispositivo] = useState(null);
   const [error, setError] = useState(null);
   const [modalAbierto, setModalAbierto] = useState(false);
-  const { lecturas } = useModbusHub();
+  const { lecturas, conectado } = useModbusHub();
+  const equipoConectado = useEquipoConectado(dispositivo ? [dispositivo] : [], lecturas, conectado);
 
   useEffect(() => {
     if (dispositivoId) {
@@ -47,6 +59,14 @@ export function PantallaSitio() {
   }, [dispositivoId, t]);
 
   const registrosHero = dispositivo?.registros.filter((r) => NOMBRES_HERO.includes(r.nombre)) ?? [];
+
+  if (!error && !equipoConectado) {
+    return (
+      <div className="pantalla-sitio">
+        <CargandoSenal />
+      </div>
+    );
+  }
 
   return (
     <div className="pantalla-sitio">
